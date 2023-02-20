@@ -1,0 +1,13 @@
+module main
+
+var a:Numerable=90
+
+funct add(var number:Numerable,var toAdd:Numerable):Numerable=
+	yield number+toAdd
+return
+
+add(a,a)
+
+say()
+
+end
