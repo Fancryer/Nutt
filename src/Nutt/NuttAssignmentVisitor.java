@@ -8,19 +8,19 @@ public class NuttAssignmentVisitor extends NuttBaseVisitor<String>
 	NuttParser parser;
 	NuttInterpreter interpreter;
 	boolean debug;
-	
+
 	public NuttAssignmentVisitor(NuttParser parser,NuttInterpreter interpreter)
 	{
 		this(parser,interpreter,false);
 	}
-	
+
 	public NuttAssignmentVisitor(NuttParser parser,NuttInterpreter interpreter,boolean debug)
 	{
 		this.parser=parser;
 		this.interpreter=interpreter;
 		this.debug=debug;
 	}
-	
+
 	@Override
 	public String visitGroup_assignment(NuttParser.Group_assignmentContext ctx)
 	{
@@ -40,12 +40,8 @@ public class NuttAssignmentVisitor extends NuttBaseVisitor<String>
 			if(debug)
 			{
 				var fmt="Trying to assign value %s of type %s to %s of type %s%n";
-				var args=new Object[]
-						{
-								valueToAssign,valueToAssign.getType(),variableName,
-								interpreter.getValuable(variableName).getType()
-						};
-				System.out.printf(fmt,args);
+				System.out.printf(fmt,valueToAssign,valueToAssign.getType(),variableName,
+				                  interpreter.getValuable(variableName).getType());
 			}
 			interpreter.currentScope.setVariable(variableName,valueToAssign);
 			++i;

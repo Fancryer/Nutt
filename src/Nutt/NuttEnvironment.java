@@ -14,6 +14,8 @@ import gen.NuttParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.Tree;
 
 public class NuttEnvironment
 {
@@ -23,29 +25,29 @@ public class NuttEnvironment
 	ParseTree tree;
 	NuttInterpreter interpreter;
 	boolean debug;
-	
+
 	public NuttEnvironment()
 	{
-	
+
 	}
-	
+
 	public NuttEnvironment(java.lang.String source)
 	{
 		this(source,false);
 	}
-	
+
 	public NuttEnvironment(java.lang.String source,boolean debug)
 	{
 		this(source,debug,false);
 	}
-	
+
 	public NuttEnvironment(java.lang.String source,boolean debug,boolean drawEnvironment)
 	{
 		if(drawEnvironment)
 		{
 			var src_header=ConsoleColorizer.colorize("Source: %n[[%n".formatted(),"blue");
 			var src_footer=ConsoleColorizer.colorize("]]","blue");
-			
+
 			System.out.printf(src_header+"%s%n"+src_footer+"%n%n",ConsoleColorizer.colorize(source,"yellow"));
 			System.out.println(ConsoleColorizer.colorize("Output: ","blue"));
 		}
@@ -71,19 +73,24 @@ public class NuttEnvironment
 					default -> new Nil();
 				};
 	}
-	
+
+	public static NuttInterpreter.Variable constructNil(java.lang.String name,boolean isConstant)
+	{
+		return new NuttInterpreter.Variable("Either",new Nil(),name,isConstant);
+	}
+
 	public NuttEnvironment visit(java.lang.String source)
 	{
 		return visit(source,false);
 	}
-	
+
 	public NuttEnvironment visit(java.lang.String source,boolean debug)
 	{
 		setup(source,debug);
 		interpreter.statementVisitor.visit(tree);
 		return this;
 	}
-	
+
 	private void setup(java.lang.String source,boolean debug)
 	{
 		this.debug=debug;
@@ -93,5 +100,27 @@ public class NuttEnvironment
 		tree=parser.chunk();
 		interpreter=new NuttInterpreter();
 		interpreter.statementVisitor=new NuttStatementVisitor(parser,interpreter,debug);
+	}
+
+	public static java.lang.String toSourceCode(Tree tree,StringBuilder stringBuilder)
+	{
+		int childCount=tree.getChildCount();
+		for(int childIndex=0;childIndex<childCount;childIndex++)
+		{
+			Tree child=tree.getChild(childIndex);
+			if(child instanceof TerminalNode parserRuleContext)
+			{
+				java.lang.String text=parserRuleContext+" ";
+				stringBuilder.append(text);
+			}
+			toSourceCode(child,stringBuilder);
+		}
+		java.lang.String recoveredSourceCode=stringBuilder.toString().trim();
+		return recoveredSourceCode.replace("<EOF>","");
+	}
+
+	public static java.lang.String toSourceCode(Tree tree)
+	{
+		return toSourceCode(tree,new StringBuilder());
 	}
 }

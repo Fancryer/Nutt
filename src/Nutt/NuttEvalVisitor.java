@@ -1,5 +1,6 @@
 package Nutt;
 
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.INumerable;
@@ -9,6 +10,9 @@ import Nutt.Types.Nil;
 import Nutt.Types.TypeCaster;
 import gen.NuttBaseVisitor;
 import gen.NuttParser;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static Nutt.Types.Functional.Numerable.INumerable.*;
 
@@ -33,7 +37,8 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	@Override
 	public IValuable visitComparison_expression(NuttParser.Comparison_expressionContext ctx)
 	{
-		return new String(new NuttCompareVisitor(parser,interpreter).visitComparison_expression(ctx).toString());
+		return 
+				new String(new NuttCompareVisitor(parser,interpreter).visitComparison_expression(ctx).toString());
 	}
 
 	@Override
@@ -53,7 +58,8 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		throw new RuntimeException("Unknown varExpOrPar!");
 	}
 
-	@Override public IValuable visitString(NuttParser.StringContext ctx)
+	@Override
+	public IValuable visitString(NuttParser.StringContext ctx)
 	{
 		var stringContent=new java.lang.StringBuilder(ctx.getText());
 		stringContent.deleteCharAt(0).deleteCharAt(stringContent.length()-1);
@@ -62,7 +68,8 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		return inferred;
 	}
 
-	@Override public IValuable visitUnary_expression(NuttParser.Unary_expressionContext ctx)
+	@Override
+	public IValuable visitUnary_expression(NuttParser.Unary_expressionContext ctx)
 	{
 		var op=ctx.operatorUnary();
 		var value=visit(ctx.exp());
@@ -113,12 +120,14 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		throw new UnsupportedOperationException();
 	}
 
-	@Override public IValuable visitType_of_exp(NuttParser.Type_of_expContext ctx)
+	@Override
+	public IValuable visitType_of_exp(NuttParser.Type_of_expContext ctx)
 	{
 		return new String(visit(ctx.exp()).getType());
 	}
 
-	@Override public IValuable visitExplicit_atom(NuttParser.Explicit_atomContext ctx)
+	@Override
+	public IValuable visitExplicit_atom(NuttParser.Explicit_atomContext ctx)
 	{
 		var atom=ctx.atom();
 		if(atom.number()!=null)
@@ -152,24 +161,43 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		return new NuttFunctionVisitor(parser,interpreter).visitFunctioncall(ctx);
 	}
 
-	@Override public IValuable visitEither_output(NuttParser.Either_outputContext ctx)
+	@Override
+	public IValuable visitEither_output(NuttParser.Either_outputContext ctx)
 	{
 		if(ctx.either_type()!=null) return new Nil();
 		throw new RuntimeException();
 	}
 
-	@Override public IValuable visitDefault_output(NuttParser.Default_outputContext ctx)
+	@Override
+	public IValuable visitDefault_output(NuttParser.Default_outputContext ctx)
 	{
 		var type=ctx.type_decl();
-		if(type.nil_type()!=null)return new Nil();
+		if(type.nil_type()!=null) return new Nil();
 		return super.visitDefault_output(ctx);
 	}
 
-	@Override public IValuable visitFunc_output(NuttParser.Func_outputContext ctx)
+	@Override
+	public IValuable visitFunc_output(NuttParser.Func_outputContext ctx)
 	{
 		if(ctx.either_output()!=null) return visitEither_output(ctx.either_output());
 		if(ctx.default_output()!=null) return visitDefault_output(ctx.default_output());
 		throw new RuntimeException();
+	}
+
+	@Override
+	public IValuable visitIf_then_else_block(NuttParser.If_then_else_blockContext ctx)
+	{
+		///return new NuttStatementVisitor(parser,interpreter);
+		return new Nil();
+	}
+
+	@Override
+	public IValuable visitFunc_call_exp(NuttParser.Func_call_expContext ctx)
+	{
+		var procedureInstance=interpreter.getProcedure(ctx.funcname().getText()).setEnvironment(parser,interpreter);
+		List<IValuable> passedParameters=ctx.arguments==null?new ArrayList<>():
+				ctx.arguments.varExpOrPar().stream().map(this::visitVarExpOrPar).toList();
+		return new Procedure(procedureInstance).proceed(passedParameters).yield();
 	}
 
 	//	@Override
@@ -179,12 +207,14 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	//	}
 
 
-	@Override public IValuable visitFunction_yield(NuttParser.Function_yieldContext ctx)
+	@Override
+	public IValuable visitFunction_yield(NuttParser.Function_yieldContext ctx)
 	{
 		return visit(ctx.exp());
 	}
 
-	@Override public IValuable visitMath_exp(NuttParser.Math_expContext ctx)
+	@Override
+	public IValuable visitMath_exp(NuttParser.Math_expContext ctx)
 	{
 		var op=ctx.operator_math();
 		IValuable left=visit(ctx.left), right=visit(ctx.right);
@@ -214,12 +244,8 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		return new TypeInferencer().verdict("Numerable",valuable.getType());
 	}
 
-	@Override public IValuable visitStat(NuttParser.StatContext ctx)
-	{
-		return visit(ctx);
-	}
-
-	@Override public IValuable visitNumber(NuttParser.NumberContext ctx)
+	@Override
+	public IValuable visitNumber(NuttParser.NumberContext ctx)
 	{
 		IValuable valuable=null;
 		if(ctx.INT()!=null) valuable=new Int(ctx.INT().getText());
@@ -230,7 +256,8 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		return valuable;
 	}
 
-	@Override public IValuable visitType_cast(NuttParser.Type_castContext ctx)
+	@Override
+	public IValuable visitType_cast(NuttParser.Type_castContext ctx)
 	{
 		var value=visit(ctx.exp());
 		var oldType=value.getType();
@@ -250,15 +277,18 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		{
 			variableName=ctx.NAME().getSymbol().getText();
 			if(debug) System.out.println("Variable visited: "+variableName);
-			return interpreter.getValuable(variableName);
+			return interpreter.currentScope.getVariable(variableName).valuable;
 		}
 		throw new RuntimeException();
 	}
 
-	@Override public IValuable visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx)
+	@Override
+	public IValuable visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx)
 	{
 		return visit(ctx.exp());
 	}
+
+
 
 	@Override
 	public IValuable visitExplicit_variable(NuttParser.Explicit_variableContext ctx)
@@ -266,7 +296,8 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		return interpreter.getValuable(ctx.var().NAME().getSymbol().getText());
 	}
 
-	@Override public IValuable visitLogical_exp(NuttParser.Logical_expContext ctx)
+	@Override
+	public IValuable visitLogical_exp(NuttParser.Logical_expContext ctx)
 	{
 		return new String(new NuttConditionVisitor(parser,interpreter).visitLogical_exp(ctx).toString());
 	}

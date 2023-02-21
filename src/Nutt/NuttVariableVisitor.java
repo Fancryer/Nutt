@@ -1,6 +1,5 @@
 package Nutt;
 
-import Nutt.NuttInterpreter;
 import gen.NuttBaseVisitor;
 import gen.NuttParser;
 
@@ -34,10 +33,15 @@ public class NuttVariableVisitor extends NuttBaseVisitor<String>
 		}
 		throw new RuntimeException();
 	}
-
+	
 	@Override
 	public String visitExplicit_variable(NuttParser.Explicit_variableContext ctx)
 	{
 		return ctx.var().NAME().getSymbol().getText();
+	}
+
+	@Override public String visitVar_decl(NuttParser.Var_declContext ctx)
+	{
+		return ctx.var_header().NAME().getText();
 	}
 }

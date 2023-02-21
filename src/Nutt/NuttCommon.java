@@ -3,10 +3,7 @@ package Nutt;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NuttCommon
 {
@@ -66,5 +63,10 @@ public class NuttCommon
 			return sb.toString();
 
 		}
+	}
+
+	public static<T> List<T> getOrEmpty(List<T> collection)
+	{
+		return Objects.requireNonNullElse(collection,new ArrayList<>());
 	}
 }

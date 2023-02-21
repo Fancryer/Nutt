@@ -1,7 +1,9 @@
 package Nutt;
 
+import Nutt.NuttInterpreter.Variable;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.EmptyStackException;
 import java.util.Objects;
@@ -9,55 +11,63 @@ import java.util.TreeMap;
 
 public class NuttScope
 {
-	public final TreeMap<String,NuttInterpreter.Variable> variableMap;
+	public final TreeMap<String,Variable> variableMap;
 	NuttScope parent=null;
-	
-	public NuttScope(TreeMap<String,NuttInterpreter.Variable> parentMap)
+	public Variable yield=NuttEnvironment.constructNil("yield",false);
+
+	public NuttScope(TreeMap<String,Variable> parentMap)
 	{
 		this.variableMap=parentMap;
 	}
-	
+
 	public NuttScope()
 	{
 		this(new TreeMap<>());
 	}
-	
+
 	public boolean definedLocally(String variableName)
 	{
-		return variableMap.containsKey(variableName);
+		return has(variableName)||variableMap.containsKey(variableName);
+		//return variableMap.containsKey(variableName);
 	}
-	
+
+	private boolean has(String variableName)
+	{
+		return !variableMap.values().stream().filter(v->Objects.equals(v.name,variableName)).toList().isEmpty();
+	}
+
 	public boolean defined(String variableName)
 	{
 		return definedLocally(variableName)||parent!=null&&parent.defined(variableName);
 	}
-	
-	public NuttInterpreter.Variable forgetLocally(String variableName)
+
+	public Variable forgetLocally(String variableName)
 	{
 		return variableMap.remove(variableName);
 	}
-	
-	public NuttInterpreter.Variable forgetVariable(String variableName)
+
+	public Variable forgetVariable(String variableName)
 	{
-		NuttInterpreter.Variable returnVar=null;
+		Variable returnVar=null;
+		if(!defined(variableName)) return null;
 		if(definedLocally(variableName)) returnVar=forgetLocally(variableName);
 		if(parent!=null) returnVar=Objects.requireNonNullElse(returnVar,parent.forgetVariable(variableName));
 		return returnVar;
 	}
-	
-	public NuttInterpreter.Variable getVariable(String variableName) throws EmptyStackException
+
+	public Variable getVariable(String variableName) throws EmptyStackException
 	{
 		if(definedLocally(variableName)) return variableMap.get(variableName);
 		if(parent!=null) return parent.getVariable(variableName);
-		throw new EmptyStackException();
+		throw new RuntimeException(variableName+" not found!",new EmptyStackException());
 	}
 
 	public IValuable getValuable(String variableName) throws EmptyStackException
 	{
 		return getVariable(variableName).valuable;
 	}
-	
-	public NuttInterpreter.Variable setVariable(String variableName,IValuable value)
+
+	public Variable setVariable(String variableName,IValuable value)
 	{
 		try
 		{
@@ -68,22 +78,26 @@ public class NuttScope
 			{
 				throw new RuntimeException("Nutt variable store exception!");
 			}
-			variableRef.rebase(new NuttInterpreter.Variable(ceilType,value,variableRef.isConstant));
-			return variableRef;
+			return variableRef.setCeilType(ceilType).setValuable(value).setConstant(variableRef.isConstant);
 		}
 		catch(IllegalAccessException e)
 		{
 			throw new RuntimeException("Interpreter doesn't know the \"%s\" variable".formatted(variableName),e);
 		}
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName)
+
+	public Variable addVariable(Variable variable)
+	{
+		return addVariable(variable.name,variable.valuable,variable.ceilType,variable.isConstant);
+	}
+
+	public Variable addVariable(String variableName)
 	{
 		return addVariable(variableName,new Nil(),"Either");
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName,IValuable variable,String ceilType,
-	                                            boolean isConstant)
+
+	public Variable addVariable(String variableName,IValuable variable,String ceilType,boolean isConstant,
+	                            ParserRuleContext tree)
 	{
 		if(!NuttCommon.isTypeValid(variable.getType()))
 		{
@@ -95,32 +109,31 @@ public class NuttScope
 		}
 		if(definedLocally(variableName))
 		{
-			throw new RuntimeException("Variable %s is already defined!".formatted(variableName));
+			//System.out.println(this);
+			throw new RuntimeException("Variable %s is already defined at line %s!".formatted(variableName,tree.start.getLine()));
 		}
-		return variableMap.put(variableName,new NuttInterpreter.Variable(ceilType,variable,isConstant));
+		return variableMap.put(variableName,new Variable(ceilType,variable,variableName,isConstant));
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName,IValuable variable,String ceilType)
+
+	public Variable addVariable(String variableName,IValuable variable,String ceilType,boolean isConstant)
+	{
+		return addVariable(variableName,variable,ceilType,isConstant,null);
+	}
+
+	public Variable addVariable(String variableName,IValuable variable,String ceilType)
 	{
 		return addVariable(variableName,variable,ceilType,false);
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName,IValuable variable)
+
+	public Variable addVariable(String variableName,IValuable variable)
 	{
 		return addVariable(variableName,variable,variable.getType());
 	}
-	
-	NuttScope createScope()
-	{
-		var scope=new NuttScope();
-		scope.parent=this;
-		return scope;
-		
-	}
-	
+
 	@Override
 	public String toString()
 	{
-		return variableMap.toString();
+		if(parent==null) return variableMap.toString();
+		return variableMap+parent.toString();
 	}
 }

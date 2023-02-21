@@ -1,7 +1,10 @@
 package Nutt;
 
+import Nutt.NuttInterpreter.Variable;
+import Nutt.Types.Functional.Actionable.Procedure.Parameters;
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.IValuable;
+import Nutt.Types.Nil;
 import gen.NuttBaseVisitor;
 import gen.NuttParser;
 import gen.NuttParser.*;
@@ -64,27 +67,24 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitFunctiondef_stat(NuttParser.Functiondef_statContext ctx)
 	{
-		var functionName=String.join("",ctx.funcname().NAME().stream().map(term->term.getSymbol().getText()).toList());
-		var funct=ctx.func_any();
-		if(funct.lambda_decl()==null)
-		{
-			var funcBody=funct.funcbody();
-			if(funcBody!=null)
-			{
-				var parameterMaster=new NuttParametersVisitor(parser,interpreter);
-				var fmt="Defined function with name %s, %s%n";
-				var parameterNames=parameterMaster.visitFunc_parameters(funcBody.func_parameters());
-				var output=new NuttFunctionVisitor(parser,interpreter).visitFunc_output(funcBody.func_output());
-				var functionInstance=new Procedure(namesToVariables(parameterNames),output,funcBody.block());
-				System.out.printf(fmt,functionName,functionInstance);
-				interpreter.currentScope.addVariable(functionName,functionInstance,"Actionable",false);
-				return functionName;
-			}
-		}
-		return "";
+		var functionName=new NuttFunctionVisitor(parser,interpreter).getFunctionName(ctx.funcname().NAME());
+		var inputParameters=ctx.func_any().funcbody().func_parameters().parlist().var_decl_list().var_decl();
+		var block=ctx.func_any().funcbody().block();
+		var output=NuttEnvironment.constructNil("yield",false);
+		Procedure procedure=new Procedure().setParameters(new Parameters(inputParameters))
+		                                   .setFunctionBody(block)
+		                                   .setOutput(output)
+		                                   .setEnvironment(parser,interpreter);
+		interpreter.currentScope.addVariable(functionName,procedure,"Procedure",false,ctx);
+		return functionName;
 	}
 
-	private List<NuttInterpreter.Variable> namesToVariables(List<String> variableNames)
+	public Variable declareInPlace(Var_declContext ctx)
+	{
+		return interpreter.currentScope.forgetVariable(visitVar_decl(ctx));
+	}
+
+	private List<Variable> namesToVariables(List<String> variableNames)
 	{
 		return variableNames.stream().map(interpreter::getVariable).toList();
 	}
@@ -122,7 +122,7 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 			System.out.printf(format,variableName,value);
 		}
 		interpreter.currentScope.addVariable(variableName,value,value.getWrapType(),
-		                                     declaredAsConstant(declContext.var_header().constant_qualifier()));
+		                                     declaredAsConstant(declContext.var_header().constant_qualifier()),varDeclContext);
 		return variableName;
 	}
 
@@ -140,7 +140,7 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 		var variableInst=NuttEnvironment.constructValuable(getType(varDeclContext.type));
 
 		interpreter.currentScope.addVariable(variableName,variableInst,getType(varDeclContext.type),
-		                                     declaredAsConstant(declContext.var_header().constant_qualifier()));
+		                                     declaredAsConstant(declContext.var_header().constant_qualifier()),varDeclContext);
 		return variableName;
 	}
 
@@ -160,7 +160,7 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 		if(new TypeInferencer().verdict(declaredType,value.getType()))
 		{
 			interpreter.currentScope.addVariable(variableName,value,declaredType,
-			                                     declaredAsConstant(declContext.var_header().constant_qualifier()));
+			                                     declaredAsConstant(declContext.var_header().constant_qualifier()),varDeclContext);
 			return variableName;
 		}
 		throw new RuntimeException("Incompatible types: %s cannot store %s!".formatted(declaredType,value.getType()));
@@ -183,7 +183,7 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 			System.out.printf("variable %s is declared shortly (with%s explicit Nil value)%n%n",variableName,
 			                  nilIsExplicitlyDeclared?"":"out");
 		}
-		interpreter.currentScope.addVariable(variableName);
+		interpreter.currentScope.addVariable(variableName,new Nil(),"Either",false,varDeclContext);
 		return variableName;
 	}
 

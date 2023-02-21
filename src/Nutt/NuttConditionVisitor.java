@@ -18,19 +18,31 @@ public class NuttConditionVisitor extends NuttBaseVisitor<Boolean>
 
 	@Override public Boolean visitVarExpOrPar(NuttParser.VarExpOrParContext ctx)
 	{
+		if(ctx.var()!=null)return visitVar(ctx.var());
+		if(ctx.exp()!=null)return visit(ctx.exp());
+		if(ctx.parExp()!=null)return visitParExp(ctx.parExp());
 		if(debug) System.out.println(ctx.toStringTree(parser));
-		return super.visitVarExpOrPar(ctx);
+		throw new RuntimeException();
 	}
 
 	@Override public Boolean visitVarOrExp(NuttParser.VarOrExpContext ctx)
 	{
+		if(ctx.var()!=null) return visitVar(ctx.var());
+		if(ctx.parExp()!=null)return visitParExp(ctx.parExp());
 		if(debug) System.out.println(ctx.toStringTree(parser));
-		return super.visitVarOrExp(ctx);
+		throw new RuntimeException();
+	}
+
+	@Override public Boolean visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx)
+	{
+		return visit(ctx.exp());
 	}
 
 	@Override public Boolean visitParExp(NuttParser.ParExpContext ctx)
 	{
-		return new NuttEvalVisitor(parser,interpreter).visit(ctx.exp()).asFunctional().asBoolean();
+		var exp=new NuttEvalVisitor(parser,interpreter).visit(ctx.exp());
+		System.out.println(exp.getType());
+		return exp.asFunctional().asBoolean();
 	}
 
 	public NuttConditionVisitor(NuttParser parser,NuttInterpreter interpreter)
@@ -66,12 +78,19 @@ public class NuttConditionVisitor extends NuttBaseVisitor<Boolean>
 		return new NuttCompareVisitor(parser,interpreter).visitComparison_expression(ctx);
 	}
 
+	@Override public Boolean visitVar(NuttParser.VarContext ctx)
+	{
+		return interpreter.getVariable(ctx.NAME().getText()).valuable.asFunctional().asBoolean();
+	}
+
 	@Override public Boolean visitLogical_exp(NuttParser.Logical_expContext ctx)
 	{
+		var evaluator=new NuttEvalVisitor(parser,interpreter);
 		var left=visit(ctx.left);
 		var right=visit(ctx.right);
 		var op=ctx.operator_logical();
-		if(debug) System.out.printf("%s, %s%n",left,right);
+		//if(debug)
+			System.out.printf("%s, %s%n",left,right);
 		if(op.OP_And()!=null) return left&&right;
 		if(op.OP_Or()!=null) return left||right;
 		throw new UnsupportedOperationException();

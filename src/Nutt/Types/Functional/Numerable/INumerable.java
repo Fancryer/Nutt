@@ -15,7 +15,7 @@ public interface INumerable extends IFunctional
 	{
 		var l=new BigDecimal(left.getValue().toString());
 		var r=new BigDecimal(right.getValue().toString());
-		return fromString(String.valueOf(l.add(r)));
+		return fromString(String.valueOf(l.subtract(r)));
 	}
 
 	static INumerable fromString(String value)

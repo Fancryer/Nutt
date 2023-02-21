@@ -40,46 +40,52 @@ stat: demand
     | KW_Break
     //| 'goto' NAME #GoTo
     | do_done_block
-    | while_do_loop
+    | loop
     | in_place_op_stat
     | self_in_place_op_stat
-    //| 'repeat' block 'until' exp #RepeatUntil
     | if_then_else_block
     //| 'if' exp 'then' block ('elseif' exp 'then' block)* ('else' block)? KW_End #IfThenElse
     //| loop #LoopStatement
     //| 'local' 'funct' NAME funcbody #LocalFunct
     //| 'local' attnamelist ('=' explist)? #LocalVar
     //| try_catch #TryCatch
+    | OP_Pass
     | laststat
     ;
+
+OP_Pass: '...';
 
 group_assignment: varlist '=' explist;
 functiondef_stat: KW_Funct funcname func_any;
 macrodef_stat: KW_Define macro KW_As var;
 do_done_block: KW_Do block KW_Done;
-while_do_loop: KW_While explist KW_Do block KW_Done;
+while_do_loop: KW_While explist do_done_block;
+repeat_until_loop: KW_Repeat block KW_Until explist;
 in_place_op_stat: var in_place_op varExpOrPar;
 self_in_place_op_stat: var self_in_place_op;
 if_then_else_block: KW_If exp then_block else_block? KW_End;
 
-
+KW_Repeat: 'repeat';
+KW_Until: 'until';
 
 KW_As: 'as';
 KW_Define: 'define';
 
-then_block: KW_Then block;
+then_block: KW_Then? block;
 else_block: KW_Else block;
 
 forget: KW_Forget (KW_ALL | flat_name_list);
 
 flat_name_list: NAME (',' NAME)*;
 
-for_loop: KW_For var_header by_value_var_decl ',' counterBound=exp(',' step=exp)? KW_Do block KW_Done;
-for_each_loop: KW_For KW_Every namelist KW_In explist KW_Do block KW_Done;
+for_loop: KW_For var_header by_value_var_decl ',' counterBound=exp(',' step=exp)? do_done_block;
+for_each_loop: KW_For KW_Every var_decl KW_In explist do_done_block;
 
 loop: for_loop #ForLoop
 	| KW_Reverse for_loop #ReverseForLoop
-    | for_each_loop #ForEachLoop;
+    | for_each_loop #ForEachLoop
+    | while_do_loop #WhileDoLoop
+    | repeat_until_loop #RepeatUntilLoop;
 
 attnamelist: NAME attrib (',' NAME attrib)*;
 
@@ -182,7 +188,7 @@ nil_type: 'Nil';
 
 //Nutt types end
 
-namelist: var_decl (',' var_decl)*;
+var_decl_list: var_decl (',' var_decl)*;
 
 explist: (varExpOrPar ',')* varExpOrPar;
 
@@ -207,7 +213,9 @@ exp: var #explicit_variable
     | <assoc=right> left=exp OP_Power right=exp #power_expression
     | '(' exp ')' #parenthesis_exp
     | KW_TypeOf exp #type_of_exp
-    | exp KW_As type_decl #type_cast;
+    | exp KW_As type_decl #type_cast
+    | funcname OP_FunctCat funcname #func_cat_exp
+    | exp '?' if_true=exp ('@' if_false=exp)? ('@' if_undefined=exp)? #quarternary_exp;
 
 atom: explicit_nil
 	| explicit_bool
@@ -230,7 +238,7 @@ string: NORMALSTRING
 
 macro: MACROSTRING;
 
-functioncall: (module_name '.')? NAME '(' explist? ')';
+functioncall: (NAME '.')? NAME '(' explist? ')';
 
 varOrExp: var
     | parExp;
@@ -253,9 +261,9 @@ funcbody: func_parameters func_output block KW_Return;
 
 KW_Return: 'return';
 
-func_ref: func_parameters OP_FunctRef (varExpOrPar | functiondef);
-func_copy: func_parameters OP_FunctCopy (varExpOrPar | functiondef);
-func_concat: func_parameters OP_FunctCat (varExpOrPar | functiondef);
+func_ref: OP_FunctRef (varExpOrPar | functiondef);
+func_copy: OP_FunctCopy (varExpOrPar | functiondef);
+func_concat: OP_FunctCat (varExpOrPar | functiondef);
 
 func_any: lambda_decl
     | func_ref
@@ -263,10 +271,10 @@ func_any: lambda_decl
     | func_concat
     | funcbody;
 
-lambda_decl: func_parameters OP_LambdaReturn (stat | exp | 'nil');
+lambda_decl: '\\' (var_decl | func_parameters) OP_LambdaReturn (stat | exp);
 
-parlist: namelist (',' '...')?
-    | '...';
+parlist: var_decl_list;// (',' '...')?
+    //| '...';
 
 //tableconstructor: '{' fieldlist? '}';
 

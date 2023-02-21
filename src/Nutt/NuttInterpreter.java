@@ -1,5 +1,6 @@
 package Nutt;
 
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.IValuable;
 
 import java.util.EmptyStackException;
@@ -45,6 +46,11 @@ public class NuttInterpreter
 		}
 	}
 
+	public Procedure getProcedure(String procedureName)
+	{
+		return getVariable(procedureName).valuable.asFunctional().asActionable().asProcedure();
+	}
+
 	public void say(Object o)
 	{
 		System.out.print(ConsoleColorizer.colorize(o.toString(),outputColor));
@@ -65,47 +71,71 @@ public class NuttInterpreter
 		public String ceilType;
 		public IValuable valuable;
 		public boolean isConstant;
+		public String name;
 
-		public Variable(IValuable valuable,String ceilType)
+		public Variable(String ceilType,IValuable valuable,String name,boolean isConstant)
 		{
-			this(ceilType,valuable);
-		}
-
-		public Variable(IValuable valuable,String ceilType,boolean isConstant)
-		{
-			this(ceilType,valuable);
-		}
-
-		public Variable(String ceilType,IValuable valuable,boolean isConstant)
-		{
-			this.ceilType=ceilType;
-			this.valuable=valuable;
-			this.isConstant=isConstant;
-		}
-
-		public Variable(String ceilType,IValuable valuable)
-		{
-			this(ceilType,valuable,false);
-		}
-
-		public Variable(IValuable valuable)
-		{
-			this(valuable.getType(),valuable);
+			setCeilType(ceilType).setValuable(valuable).setName(name).setConstant(isConstant);
 		}
 
 		public Variable rebase(Variable variable)
 		{
-			ceilType=variable.ceilType;
-			valuable=variable.valuable;
-			isConstant=variable.isConstant;
+			return this.setCeilType(variable.ceilType)
+			           .setValuable(variable.valuable)
+			           .setName(variable.name)
+			           .setConstant(variable.isConstant);
+		}
+
+		public Variable setName(String name)
+		{
+			this.name=name;
+			return this;
+		}
+
+		public Variable setCeilType(String ceilType)
+		{
+			this.ceilType=ceilType;
+			return this;
+		}
+
+		public Variable setValuable(IValuable valuable)
+		{
+			this.valuable=valuable;
+			return this;
+		}
+
+		public Variable setConstant(boolean constant)
+		{
+			isConstant=constant;
 			return this;
 		}
 
 		@Override
 		public String toString()
 		{
-			return "Variable{ceilType='%s', value='%s', isConstant='%s'}".formatted(ceilType,valuable,isConstant);
+			return "Variable{name='%s' ceilType='%s', value='%s', isConstant='%s'}".formatted(name,ceilType,valuable,
+			                                                                                  isConstant);
 		}
 	}
-	
+
+	public NuttScope createScope()
+	{
+		var scope=new NuttScope();
+		scope.parent=currentScope;
+		return scope;
+	}
+
+	public NuttScope setScope(NuttScope scope)
+	{
+		currentScope=scope;
+		return currentScope;
+	}
+
+	public NuttScope removeScope()
+	{
+		//if(currentScope.parent==null) return currentScope;
+		var old=currentScope;
+		currentScope=currentScope.parent;
+		return old;
+	}
 }

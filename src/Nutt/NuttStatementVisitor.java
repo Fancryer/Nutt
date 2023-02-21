@@ -1,7 +1,6 @@
 package Nutt;
 
 import Nutt.Types.Functional.Numerable.INumerable;
-import Nutt.Types.Functional.Numerable.Int.Int;
 import gen.NuttBaseVisitor;
 import gen.NuttLexer;
 import gen.NuttParser;
@@ -45,7 +44,7 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visit(ParseTree tree)
 	{
-		//System.out.println(tree.toStringTree(parser));
+		//System.out.println(NuttEnvironment.toSourceCode(tree));
 		return super.visit(tree);
 	}
 
@@ -133,7 +132,15 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		{
 			if(new TypeInferencer().verdict("Numerable",variableRef.valuable.getType()))
 			{
-				variableRef.valuable=INumerable.add(variableRef.valuable.asFunctional().asNumerable(),new Int("1"));
+				variableRef.valuable=INumerable.incr(variableRef.valuable.asFunctional().asNumerable());
+				return "";
+			}
+		}
+		if(op.OP_DecrAssign()!=null)
+		{
+			if(new TypeInferencer().verdict("Numerable",variableRef.valuable.getType()))
+			{
+				variableRef.valuable=INumerable.decr( variableRef.valuable.asFunctional().asNumerable());
 				return "";
 			}
 		}
@@ -195,7 +202,7 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitFunctioncall(NuttParser.FunctioncallContext ctx)
 	{
-		return new NuttFunctionVisitor(parser,interpreter).visitFunctioncall(ctx).toString();
+		return new NuttFunctionVisitor(parser,interpreter).visitFunctioncall(ctx).getValue().toString();
 	}
 
 	@Override
@@ -247,11 +254,11 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 				exp->new NuttConditionVisitor(parser,interpreter).visit(exp);
 		Function<List<Boolean>,Boolean> allIsTrue=(list)->list.stream().allMatch(Boolean::valueOf);
 		Function<List<NuttParser.VarExpOrParContext>,List<Boolean>> evalAsBoolList=(expList)->expList.stream()
-				.map(visitExp)
-				.toList();
+		                                                                                             .map(visitExp)
+		                                                                                             .toList();
 		while(allIsTrue.apply(evalAsBoolList.apply(ctx.explist().varExpOrPar())))
 		{
-			visitBlock(ctx.block());
+			visitBlock(ctx.do_done_block().block());
 		}
 		return "";
 	}
@@ -268,27 +275,31 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitBlock(NuttParser.BlockContext ctx)
 	{
+		//System.out.println(interpreter.currentScope);
 		var oldScope=interpreter.currentScope;
-		interpreter.currentScope=interpreter.currentScope.createScope();
-		String returnString="";
-		for(var stat: ctx.stat()) returnString=this.visit(stat);
-		interpreter.currentScope=oldScope;
-		return returnString;
+		interpreter.setScope(interpreter.createScope());
+		for(var stat:ctx.stat())
+		{
+			visit(stat);
+		}
+		interpreter.setScope(oldScope);
+		return "";
 	}
 
-	//	@Override
-	//	public String visitRepeatUntil(NuttParser.RepeatUntilContext ctx)
-	//	{
-	//		return super.visitRepeatUntil(ctx);
-	//	}
+	@Override public String visitFunction_yield(NuttParser.Function_yieldContext ctx)
+	{
+		//interpreter.currentScope.yield.valuable=new NuttEvalVisitor(parser,interpreter).visit(ctx.exp());
+		interpreter.currentScope.setVariable("yield",new NuttEvalVisitor(parser,interpreter).visit(ctx.exp()));
+		return "";
+	}
 
 	@Override
 	public String visitIf_then_else_block(NuttParser.If_then_else_blockContext ctx)
 	{
 		var cond=new NuttConditionVisitor(parser,interpreter).visit(ctx.exp());
 		if(debug) System.out.println(cond);
-		if(cond) return visit(ctx.then_block());
-		if(ctx.else_block()!=null) return visit(ctx.else_block());
+		if(cond) return visitBlock(ctx.then_block().block());
+		if(ctx.else_block()!=null) return visitBlock(ctx.else_block().block());
 		return "";
 	}
 
@@ -301,23 +312,16 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitFunctiondef_stat(NuttParser.Functiondef_statContext ctx)
 	{
-		var oldScope=interpreter.currentScope;
-		interpreter.currentScope=interpreter.currentScope.createScope();
-		String returnString="";
-		var functionName=new NuttDeclarationVisitor(parser,interpreter).visitFunctiondef_stat(ctx);
-		System.out.println(interpreter.currentScope.getVariable(functionName));
-		interpreter.currentScope=oldScope;
-		return returnString;
+		return new NuttDeclarationVisitor(parser,interpreter).visitFunctiondef_stat(ctx);
 	}
 
 
-	
 	@Override
 	public String visitFunc_call_exp(NuttParser.Func_call_expContext ctx)
 	{
 		return super.visitFunc_call_exp(ctx);
 	}
-	
+
 	//	@Override
 	//	public String visitLocalFunct(NuttParser.LocalFunctContext ctx)
 	//	{

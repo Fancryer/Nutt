@@ -6,6 +6,7 @@ import Nutt.Types.Nil;
 import gen.NuttBaseVisitor;
 import gen.NuttParser;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.EmptyStackException;
@@ -29,22 +30,9 @@ public class NuttFunctionVisitor extends NuttBaseVisitor<IValuable>
 		this.debug=debug;
 	}
 
-	public String getFunctionName(NuttParser.FunctioncallContext ctx)
+	public String getFunctionName(List<TerminalNode> nameList)
 	{
-		String moduleName;
-		boolean local;
-		if(ctx.module_name()!=null)
-		{
-			moduleName=String.join(".",ctx.module_name().NAME().stream().map(ParseTree::getText).toList());
-			local=false;
-		}
-		else
-		{
-			moduleName="";
-			local=true;
-		}
-		var functionName=ctx.NAME().getText();
-		return moduleName+(local?"":".")+functionName;
+		return nameList!=null?String.join(".",nameList.stream().map(ParseTree::getText).toList()):"";
 	}
 
 	private boolean isNativeFunction(String name)
@@ -55,11 +43,17 @@ public class NuttFunctionVisitor extends NuttBaseVisitor<IValuable>
 	@Override
 	public IValuable visitFunctioncall(NuttParser.FunctioncallContext ctx)
 	{
-		var fullName=getFunctionName(ctx);
+		var fullName=getFunctionName(ctx.NAME());
 
 		String defined=isNativeFunction(fullName)?"native ":
 				interpreter.currentScope.defined(fullName)?"defined ":"not defined ";
 		if(debug) System.out.printf("Trying to call %sfunction %s!%n",defined,fullName);
+
+		if(!isNativeFunction(fullName))
+		{
+			var procedureInstance=interpreter.getProcedure(fullName).setEnvironment(parser,interpreter);
+			System.out.println(procedureInstance);
+		}
 
 		return runFunction(fullName,ctx.explist()==null?new ArrayList<>():getArguments(ctx.explist().varExpOrPar()));
 	}
@@ -92,7 +86,7 @@ public class NuttFunctionVisitor extends NuttBaseVisitor<IValuable>
 
 	private Procedure invokeProcedure(String name,List<IValuable> parameters)
 	{
-		return getProcedureAtName(name).setEnvironment(parser,interpreter).proceed(parameters);
+		return new Procedure(getProcedureAtName(name)).proceed(parameters);
 	}
 
 	private Procedure getProcedureAtName(String name)

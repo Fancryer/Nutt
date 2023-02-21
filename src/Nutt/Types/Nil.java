@@ -12,7 +12,7 @@ public class Nil implements IValuable
 
 	@Override public Object getValue()
 	{
-		return null;
+		return "nil";
 	}
 
 	@Override public String getType()

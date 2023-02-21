@@ -148,6 +148,16 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitWhile_do_loop(NuttParser.While_do_loopContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link NuttParser#repeat_until_loop}.
+	 * @param ctx the parse tree
+	 */
+	void enterRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link NuttParser#repeat_until_loop}.
+	 * @param ctx the parse tree
+	 */
+	void exitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link NuttParser#in_place_op_stat}.
 	 * @param ctx the parse tree
 	 */
@@ -273,6 +283,30 @@ public interface NuttListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitForEachLoop(NuttParser.ForEachLoopContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code WhileDoLoop}
+	 * labeled alternative in {@link NuttParser#loop}.
+	 * @param ctx the parse tree
+	 */
+	void enterWhileDoLoop(NuttParser.WhileDoLoopContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code WhileDoLoop}
+	 * labeled alternative in {@link NuttParser#loop}.
+	 * @param ctx the parse tree
+	 */
+	void exitWhileDoLoop(NuttParser.WhileDoLoopContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code RepeatUntilLoop}
+	 * labeled alternative in {@link NuttParser#loop}.
+	 * @param ctx the parse tree
+	 */
+	void enterRepeatUntilLoop(NuttParser.RepeatUntilLoopContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code RepeatUntilLoop}
+	 * labeled alternative in {@link NuttParser#loop}.
+	 * @param ctx the parse tree
+	 */
+	void exitRepeatUntilLoop(NuttParser.RepeatUntilLoopContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link NuttParser#attnamelist}.
 	 * @param ctx the parse tree
@@ -604,15 +638,15 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitNil_type(NuttParser.Nil_typeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link NuttParser#namelist}.
+	 * Enter a parse tree produced by {@link NuttParser#var_decl_list}.
 	 * @param ctx the parse tree
 	 */
-	void enterNamelist(NuttParser.NamelistContext ctx);
+	void enterVar_decl_list(NuttParser.Var_decl_listContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link NuttParser#namelist}.
+	 * Exit a parse tree produced by {@link NuttParser#var_decl_list}.
 	 * @param ctx the parse tree
 	 */
-	void exitNamelist(NuttParser.NamelistContext ctx);
+	void exitVar_decl_list(NuttParser.Var_decl_listContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link NuttParser#explist}.
 	 * @param ctx the parse tree
@@ -732,6 +766,18 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitComparison_expression(NuttParser.Comparison_expressionContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code quarternary_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterQuarternary_exp(NuttParser.Quarternary_expContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code quarternary_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitQuarternary_exp(NuttParser.Quarternary_expContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code unary_expression}
 	 * labeled alternative in {@link NuttParser#exp}.
 	 * @param ctx the parse tree
@@ -815,6 +861,18 @@ public interface NuttListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitType_of_exp(NuttParser.Type_of_expContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code func_cat_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunc_cat_exp(NuttParser.Func_cat_expContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code func_cat_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunc_cat_exp(NuttParser.Func_cat_expContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link NuttParser#atom}.
 	 * @param ctx the parse tree
