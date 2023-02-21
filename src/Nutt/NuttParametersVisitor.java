@@ -5,17 +5,17 @@ import gen.NuttParser;
 
 import java.util.List;
 
-public class NuttParametersVisitor extends NuttBaseVisitor<List<String>>
+public class NuttParametersVisitor extends NuttBaseVisitor<List<NuttInterpreter.Variable>>
 {
 	NuttParser parser;
 	NuttInterpreter interpreter;
 	boolean debug;
-
+	
 	public NuttParametersVisitor(NuttParser parser,NuttInterpreter interpreter)
 	{
 		this(parser,interpreter,false);
 	}
-
+	
 	public NuttParametersVisitor(NuttParser parser,NuttInterpreter interpreter,boolean debug)
 	{
 		this.parser=parser;
@@ -24,9 +24,9 @@ public class NuttParametersVisitor extends NuttBaseVisitor<List<String>>
 	}
 	
 	@Override
-	public List<String> visitFunc_parameters(NuttParser.Func_parametersContext ctx)
+	public List<NuttInterpreter.Variable> visitFunc_parameters(NuttParser.Func_parametersContext ctx)
 	{
 		var declarator=new NuttDeclarationVisitor(parser,interpreter);
-		return ctx.parlist().namelist().var_decl().stream().map(declarator::visitVar_decl).toList();
+		return ctx.parlist().namelist().var_decl().stream().map(v->interpreter.getVariable(declarator.visitVar_decl(v))).toList();
 	}
 }

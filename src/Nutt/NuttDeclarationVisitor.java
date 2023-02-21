@@ -64,6 +64,10 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitFunctiondef_stat(NuttParser.Functiondef_statContext ctx)
 	{
+		var oldScope=interpreter.currentScope;
+		interpreter.currentScope=interpreter.currentScope.createScope();
+		String returnString="";
+
 		var functionName=String.join("",ctx.funcname().NAME().stream().map(term->term.getSymbol().getText()).toList());
 		var funct=ctx.func_any();
 		if(funct.lambda_decl()==null)
@@ -74,14 +78,17 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 				var parameterMaster=new NuttParametersVisitor(parser,interpreter);
 				var fmt="Defined function with name %s, %s%n";
 				var parameterNames=parameterMaster.visitFunc_parameters(funcBody.func_parameters());
-				var output=new NuttFunctionVisitor(parser,interpreter).visitFunc_output(funcBody.func_output());
-				var functionInstance=new Procedure(namesToVariables(parameterNames),output,funcBody.block());
+				var output=new NuttTypeInferenceVisitor(parser,interpreter).visitFunc_output(funcBody.func_output());
+				var functionInstance=new Procedure(parameterNames,output,funcBody.block());
 				System.out.printf(fmt,functionName,functionInstance);
 				interpreter.currentScope.addVariable(functionName,functionInstance,"Actionable",false);
 				return functionName;
 			}
 		}
-		return "";
+
+		System.out.println(interpreter.currentScope.getVariable(functionName));
+		interpreter.currentScope=oldScope;
+		return returnString;
 	}
 
 	private List<NuttInterpreter.Variable> namesToVariables(List<String> variableNames)

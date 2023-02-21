@@ -195,7 +195,7 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitFunctioncall(NuttParser.FunctioncallContext ctx)
 	{
-		return new NuttFunctionVisitor(parser,interpreter).visitFunctioncall(ctx).toString();
+		return new NuttFunctionVisitor(parser,interpreter).visitFunctioncall(ctx).getValue().toString();
 	}
 
 	@Override
@@ -301,13 +301,7 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitFunctiondef_stat(NuttParser.Functiondef_statContext ctx)
 	{
-		var oldScope=interpreter.currentScope;
-		interpreter.currentScope=interpreter.currentScope.createScope();
-		String returnString="";
-		var functionName=new NuttDeclarationVisitor(parser,interpreter).visitFunctiondef_stat(ctx);
-		System.out.println(interpreter.currentScope.getVariable(functionName));
-		interpreter.currentScope=oldScope;
-		return returnString;
+		return new NuttDeclarationVisitor(parser,interpreter).visitFunctiondef_stat(ctx);
 	}
 
 

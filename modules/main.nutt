@@ -1,13 +1,17 @@
 module main
 
-var a:Numerable=90
-
-funct add(var number:Numerable,var toAdd:Numerable):Numerable=
-	yield number+toAdd
+funct a(var x:Int=-90):Int=
+	if x<0 then
+		yield 0
+	else
+		yield 1
+	end
 return
 
-add(a,a)
+var x1:Numerable=9
 
-say()
+x1=a()
+say(x1)
+say(a())
 
 end

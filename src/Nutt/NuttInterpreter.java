@@ -1,5 +1,6 @@
 package Nutt;
 
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.IValuable;
 
 import java.util.EmptyStackException;
@@ -45,6 +46,11 @@ public class NuttInterpreter
 		}
 	}
 
+	public Procedure getProcedure(String procedureName)
+	{
+		return getVariable(procedureName).valuable.asFunctional().asActionable().asProcedure();
+	}
+	
 	public void say(Object o)
 	{
 		System.out.print(ConsoleColorizer.colorize(o.toString(),outputColor));
