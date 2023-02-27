@@ -1,6 +1,7 @@
 package Nutt.Types.Functional.Listable.Map;
 
 import Nutt.Types.Functional.Listable.IListable;
+import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.IValuable;
 
 import java.util.TreeMap;
@@ -22,6 +23,26 @@ public class Map implements IListable
 	@Override public String getType()
 	{
 		return "Map";
+	}
+
+	@Override public IValuable add(IValuable value)
+	{
+		return null;
+	}
+
+	@Override public IValuable getAt(int i)
+	{
+		return elements.get(new Int(i));
+	}
+
+	@Override public IValuable setAt(IValuable value,int i)
+	{
+		return null;
+	}
+
+	@Override public IValuable insertAt(IValuable value,int i)
+	{
+		return null;
 	}
 
 	@Override public String getWrapType()

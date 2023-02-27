@@ -9,14 +9,21 @@ import java.util.Objects;
 public class Array implements IListable
 {
 	private ArrayList<IValuable> elements;
+	private final String elementBoundType;
 
 	public Array()
 	{
-		this(null);
+		this("Either",new ArrayList<>());
 	}
 
-	public Array(ArrayList<IValuable> eithers)
+	public Array(String elementBoundType)
 	{
+		this(elementBoundType,new ArrayList<>());
+	}
+
+	public Array(String elementBoundType,ArrayList<IValuable> eithers)
+	{
+		this.elementBoundType=elementBoundType;
 		setElements(eithers);
 	}
 
@@ -25,9 +32,11 @@ public class Array implements IListable
 		elements.clear();
 	}
 
-	public void add(IValuable either)
+	@Override public IValuable add(IValuable value)
 	{
-		elements.add(either);
+		var ret=new ArrayList<>(elements);
+		ret.add(value);
+		return new Array(elementBoundType,ret);
 	}
 
 	public void remove(int index)
@@ -38,7 +47,7 @@ public class Array implements IListable
 	public void setElements(ArrayList<IValuable> elements) throws ArrayStoreException
 	{
 		String type=elements==null||elements.isEmpty()?"Either":elements.get(0).getType();
-		System.out.println(type);
+		//System.out.println(type);
 		this.elements=new ArrayList<>(Objects.requireNonNullElse(elements,new ArrayList<>()));
 	}
 
@@ -51,7 +60,7 @@ public class Array implements IListable
 	@Override
 	public Object getValue()
 	{
-		return elements;
+		return elements.stream().map(IValuable::getValue).toList();
 	}
 
 	@Override
@@ -60,9 +69,33 @@ public class Array implements IListable
 		return "Array";
 	}
 
-	private String getElementType()
+	@Override public String getFullType()
 	{
-		return elements==null||elements.isEmpty()?"Either":elements.get(0).toString();
+		return getType()+"|"+elementBoundType;
+	}
+
+	public String getElementType()
+	{
+		return elementBoundType;
+	}
+
+	@Override public IValuable getAt(int i)
+	{
+		return elements.get(i);
+	}
+
+	@Override public IValuable setAt(IValuable value,int i)
+	{
+		var ret=new ArrayList<>(elements);
+		ret.set(i,value);
+		return new Array(elementBoundType,ret);
+	}
+
+	@Override public IValuable insertAt(IValuable value,int i)
+	{
+		var ret=new ArrayList<>(elements);
+		ret.add(i,value);
+		return new Array(elementBoundType,ret);
 	}
 
 	@Override public String getWrapType()
@@ -78,5 +111,10 @@ public class Array implements IListable
 	@Override public boolean asBoolean()
 	{
 		return elements.isEmpty();
+	}
+
+	public ArrayList<IValuable> getElements()
+	{
+		return new ArrayList<>(elements);
 	}
 }

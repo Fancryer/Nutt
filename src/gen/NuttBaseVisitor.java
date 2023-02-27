@@ -81,6 +81,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitArray_set(NuttParser.Array_setContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitGroup_assignment(NuttParser.Group_assignmentContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -179,6 +186,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitReverse_for_loop(NuttParser.Reverse_for_loopContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitFor_each_loop(NuttParser.For_each_loopContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -186,35 +200,7 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitForLoop(NuttParser.ForLoopContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitReverseForLoop(NuttParser.ReverseForLoopContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitForEachLoop(NuttParser.ForEachLoopContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitWhileDoLoop(NuttParser.WhileDoLoopContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitRepeatUntilLoop(NuttParser.RepeatUntilLoopContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLoop(NuttParser.LoopContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -396,13 +382,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVarExpOrPar(NuttParser.VarExpOrParContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitSet_type(NuttParser.Set_typeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -473,6 +452,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitExplicit_array(NuttParser.Explicit_arrayContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitLogical_exp(NuttParser.Logical_expContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -481,6 +467,20 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitExplicit_variable(NuttParser.Explicit_variableContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitArray_access(NuttParser.Array_accessContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitFull_type_of_exp(NuttParser.Full_type_of_expContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -502,13 +502,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitStr_cat_expression(NuttParser.Str_cat_expressionContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitFold_expression(NuttParser.Fold_expressionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -544,6 +537,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitBitwise_exp(NuttParser.Bitwise_expContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitFold_left_expression(NuttParser.Fold_left_expressionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -586,6 +586,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitFunc_cat_exp(NuttParser.Func_cat_expContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitFold_right_expression(NuttParser.Fold_right_expressionContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -635,20 +642,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitFunctioncall(NuttParser.FunctioncallContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitVarOrExp(NuttParser.VarOrExpContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitParExp(NuttParser.ParExpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -733,41 +726,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitLambda_decl(NuttParser.Lambda_declContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitParlist(NuttParser.ParlistContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitFieldlist(NuttParser.FieldlistContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitField(NuttParser.FieldContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitCommaSep(NuttParser.CommaSepContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitSemicolonSep(NuttParser.SemicolonSepContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -1,13 +1,15 @@
 module main
 
-funct fac(var n:Int=0):Int=
-	if n<=1
-		yield 1
+funct getAt(var arr:Functional,var i:Int=0):Either=
+	if (typeof arr)=="Array"
+		yield arr[i]
 	else
-		yield n*fac(n-1)
+		yield arr
 	end
 return
 
-say(fac(2))
+var a=append({1},{2,4,5})
+
+say(a," is ",fulltypeof a)
 
 end

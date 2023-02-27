@@ -13,21 +13,21 @@ public interface IFunctional extends IValuable
 	default IActionable asActionable()
 	{
 		if(!(this instanceof IActionable))
-			throw new ClassCastException("Function type is not an Action");
+			throw new ClassCastException("Function type is not an Actionable");
 		return (IActionable)this;
 	}
 
 	default IListable asListable()
 	{
 		if(!(this instanceof IListable))
-			throw new ClassCastException("Function type is not a List");
+			throw new ClassCastException("Function type is not a Listable");
 		return (IListable)this;
 	}
 
 	default INumerable asNumerable()
 	{
 		if(!(this instanceof INumerable))
-			throw new ClassCastException("Function type is not a Number");
+			throw new ClassCastException("Function type is not a Numerable");
 		return (INumerable)this;
 	}
 

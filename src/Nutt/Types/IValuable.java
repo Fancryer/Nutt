@@ -10,6 +10,11 @@ public interface IValuable extends Comparable<IValuable>
 
 	String getType();
 
+	default String getFullType()
+	{
+		return getType();
+	}
+
 	default String getWrapType()
 	{
 		return "Either";

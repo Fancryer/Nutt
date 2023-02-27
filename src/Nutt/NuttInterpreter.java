@@ -4,6 +4,7 @@ import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.IValuable;
 
 import java.util.EmptyStackException;
+import java.util.List;
 
 public class NuttInterpreter
 {
@@ -59,6 +60,11 @@ public class NuttInterpreter
 	public void sayFormatted(String format,Object... args)
 	{
 		System.out.printf("%s".formatted(ConsoleColorizer.colorize(format,outputColor)),args);
+	}
+
+	public void sayFormatted(String format,List<Object> args)
+	{
+		sayFormatted(format,args.toArray());
 	}
 
 	public void sayNewLine(Object o)

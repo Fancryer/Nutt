@@ -1,0 +1,22 @@
+module bubble_sort
+
+funct bubbleSort(var arr:Array):Array=
+	var va=0
+	var swapped=true
+	while swapped do
+		swapped=false
+		va=0
+		while va<((#arr)-1)do
+			if arr[va]>(arr[va+1])
+				var swap=arr[va]
+				arr[va]=arr[va+1]
+				arr[va+1]=swap
+				swapped=true
+			end
+			va++
+		done
+	done
+	yield arr
+return
+
+end

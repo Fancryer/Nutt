@@ -35,40 +35,11 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 		return ctx.var_header().NAME().getText();
 	}
 
-	private IValuable getValueFromValueContext(VarExpOrParContext ctx)
-	{
-		try
-		{
-			switch(EByValueDeclaration.fromContext(ctx))
-			{
-				case Var ->
-				{
-					String variableName=ctx.var().NAME().getSymbol().getText();
-					return interpreter.getValuable(variableName);
-				}
-				case Exp ->
-				{
-					//System.out.println(ctx.exp().getText());
-					return new NuttEvalVisitor(parser,interpreter).visit(ctx.exp());
-				}
-				case VarExpOrPar ->
-				{
-					return new NuttEvalVisitor(parser,interpreter).visit(ctx.parExp().exp());
-				}
-				default -> throw new IllegalStateException("Unexpected value: "+EByValueDeclaration.fromContext(ctx));
-			}
-		}
-		catch(Exception e)
-		{
-			throw new RuntimeException("Wrong variable definition!",e);
-		}
-	}
-
 	@Override
 	public String visitFunctiondef_stat(NuttParser.Functiondef_statContext ctx)
 	{
 		var functionName=new NuttFunctionVisitor(parser,interpreter).getFunctionName(ctx.funcname().NAME());
-		var inputParameters=ctx.func_any().funcbody().func_parameters().parlist().var_decl_list().var_decl();
+		var inputParameters=ctx.func_any().funcbody().func_parameters().var_decl_list().var_decl();
 		var block=ctx.func_any().funcbody().block();
 		var output=NuttEnvironment.constructNil("yield",false);
 		Procedure procedure=new Procedure().setParameters(new Parameters(inputParameters))
@@ -112,17 +83,15 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 		var variableName=traceVarName(declContext);
 		if(interpreter.currentScope.definedLocally(variableName))
 			throw new RuntimeException("Variable \"%s\" is already declared!".formatted(variableName));
-		var value=
-				new NuttEvalVisitor(parser,interpreter).visitVarExpOrPar(
-						varDeclContext.assign_right);//getValueFromValueContext(ctx
-		// .assign_right);
+		var value=new NuttEvalVisitor(parser,interpreter).visit(varDeclContext.assign_right);
 		if(debug)
 		{
 			var format="Visited by_value_var_decl%nvariable %s is declared with value %s%n%n";
 			System.out.printf(format,variableName,value);
 		}
 		interpreter.currentScope.addVariable(variableName,value,value.getWrapType(),
-		                                     declaredAsConstant(declContext.var_header().constant_qualifier()),varDeclContext);
+		                                     declaredAsConstant(declContext.var_header().constant_qualifier()),
+		                                     varDeclContext);
 		return variableName;
 	}
 
@@ -140,7 +109,8 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 		var variableInst=NuttEnvironment.constructValuable(getType(varDeclContext.type));
 
 		interpreter.currentScope.addVariable(variableName,variableInst,getType(varDeclContext.type),
-		                                     declaredAsConstant(declContext.var_header().constant_qualifier()),varDeclContext);
+		                                     declaredAsConstant(declContext.var_header().constant_qualifier()),
+		                                     varDeclContext);
 		return variableName;
 	}
 
@@ -150,17 +120,20 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 		var variableName=traceVarName(declContext);
 		if(interpreter.currentScope.definedLocally(variableName))
 			throw new RuntimeException("Variable \"%s\" is already declared!".formatted(variableName));
-		var value=new NuttEvalVisitor(parser,interpreter).visitVarExpOrPar(varDeclContext.assign_right);
+		var value=new NuttEvalVisitor(parser,interpreter).visit(varDeclContext.assign_right);
 		var declaredType=getType(varDeclContext.type);
 		if(debug)
 		{
 			var format="Visited full_var_decl%nvariable %s of type %s is declared as %s with value %s%n%n";
 			System.out.printf(format,variableName,declaredType,value.getType(),value.getValue());
 		}
-		if(new TypeInferencer().verdict(declaredType,value.getType()))
+		var interferencer=new TypeInferencer();
+		if(interferencer.verdict(declaredType,value.getType()))
 		{
+			if(interferencer.verdict(declaredType,value.getType()))
 			interpreter.currentScope.addVariable(variableName,value,declaredType,
-			                                     declaredAsConstant(declContext.var_header().constant_qualifier()),varDeclContext);
+			                                     declaredAsConstant(declContext.var_header().constant_qualifier()),
+			                                     varDeclContext);
 			return variableName;
 		}
 		throw new RuntimeException("Incompatible types: %s cannot store %s!".formatted(declaredType,value.getType()));
@@ -205,36 +178,5 @@ public class NuttDeclarationVisitor extends NuttBaseVisitor<String>
 	private String getType(Type_declContext ctx)
 	{
 		return parser.getVocabulary().getDisplayName(ctx.start.getType()).replaceAll("'","");
-	}
-
-	enum EByValueDeclaration
-	{
-		Var,
-		Exp,
-		VarExpOrPar;
-
-		public static EByValueDeclaration fromContext(VarExpOrParContext ctx)
-		{
-			if(ctx.var()!=null) return Var;
-			if(ctx.exp()!=null) return Exp;
-			return VarExpOrPar;
-		}
-	}
-
-	enum EVariableDeclaration
-	{
-		ShortVariableDeclaration,
-		ByTypeVariableDeclaration,
-		ByValueVariableDeclaration,
-		FullVariableDeclaration;
-
-		public static EVariableDeclaration fromVar_declContext(Var_declContext ctx)
-		{
-			if(ctx.short_var_decl()!=null) return ShortVariableDeclaration;
-			if(ctx.by_type_var_decl()!=null) return ByTypeVariableDeclaration;
-			if(ctx.by_value_var_decl()!=null) return ByValueVariableDeclaration;
-			if(ctx.full_var_decl()!=null) return FullVariableDeclaration;
-			throw new RuntimeException();
-		}
 	}
 }

@@ -61,6 +61,26 @@ public class String implements IListable
 		throw new RuntimeException();
 	}
 
+	@Override public IValuable add(IValuable value)
+	{
+		return new String(content+value.getValue());
+	}
+
+	@Override public IValuable getAt(int i)
+	{
+		return new String(content.substring(i,i));
+	}
+
+	@Override public IValuable setAt(IValuable value,int i)
+	{
+		return new String(new StringBuilder(content).replace(i,i,java.lang.String.valueOf(value)).toString());
+	}
+
+	@Override public IValuable insertAt(IValuable value,int i)
+	{
+		return new String(new StringBuilder(content).insert(i,value).toString());
+	}
+
 	@Override public int getLength()
 	{
 		return content.length();

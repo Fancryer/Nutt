@@ -98,6 +98,16 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitStat(NuttParser.StatContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link NuttParser#array_set}.
+	 * @param ctx the parse tree
+	 */
+	void enterArray_set(NuttParser.Array_setContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link NuttParser#array_set}.
+	 * @param ctx the parse tree
+	 */
+	void exitArray_set(NuttParser.Array_setContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link NuttParser#group_assignment}.
 	 * @param ctx the parse tree
 	 */
@@ -238,6 +248,16 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitFor_loop(NuttParser.For_loopContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link NuttParser#reverse_for_loop}.
+	 * @param ctx the parse tree
+	 */
+	void enterReverse_for_loop(NuttParser.Reverse_for_loopContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link NuttParser#reverse_for_loop}.
+	 * @param ctx the parse tree
+	 */
+	void exitReverse_for_loop(NuttParser.Reverse_for_loopContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link NuttParser#for_each_loop}.
 	 * @param ctx the parse tree
 	 */
@@ -248,65 +268,15 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitFor_each_loop(NuttParser.For_each_loopContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code ForLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
+	 * Enter a parse tree produced by {@link NuttParser#loop}.
 	 * @param ctx the parse tree
 	 */
-	void enterForLoop(NuttParser.ForLoopContext ctx);
+	void enterLoop(NuttParser.LoopContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code ForLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
+	 * Exit a parse tree produced by {@link NuttParser#loop}.
 	 * @param ctx the parse tree
 	 */
-	void exitForLoop(NuttParser.ForLoopContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code ReverseForLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void enterReverseForLoop(NuttParser.ReverseForLoopContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code ReverseForLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void exitReverseForLoop(NuttParser.ReverseForLoopContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code ForEachLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void enterForEachLoop(NuttParser.ForEachLoopContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code ForEachLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void exitForEachLoop(NuttParser.ForEachLoopContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code WhileDoLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void enterWhileDoLoop(NuttParser.WhileDoLoopContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code WhileDoLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void exitWhileDoLoop(NuttParser.WhileDoLoopContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code RepeatUntilLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void enterRepeatUntilLoop(NuttParser.RepeatUntilLoopContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code RepeatUntilLoop}
-	 * labeled alternative in {@link NuttParser#loop}.
-	 * @param ctx the parse tree
-	 */
-	void exitRepeatUntilLoop(NuttParser.RepeatUntilLoopContext ctx);
+	void exitLoop(NuttParser.LoopContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link NuttParser#attnamelist}.
 	 * @param ctx the parse tree
@@ -558,16 +528,6 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitList_length_decl(NuttParser.List_length_declContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link NuttParser#varExpOrPar}.
-	 * @param ctx the parse tree
-	 */
-	void enterVarExpOrPar(NuttParser.VarExpOrParContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link NuttParser#varExpOrPar}.
-	 * @param ctx the parse tree
-	 */
-	void exitVarExpOrPar(NuttParser.VarExpOrParContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link NuttParser#set_type}.
 	 * @param ctx the parse tree
 	 */
@@ -670,6 +630,18 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitPower_expression(NuttParser.Power_expressionContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code explicit_array}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterExplicit_array(NuttParser.Explicit_arrayContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code explicit_array}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitExplicit_array(NuttParser.Explicit_arrayContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code logical_exp}
 	 * labeled alternative in {@link NuttParser#exp}.
 	 * @param ctx the parse tree
@@ -693,6 +665,30 @@ public interface NuttListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitExplicit_variable(NuttParser.Explicit_variableContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code array_access}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterArray_access(NuttParser.Array_accessContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code array_access}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitArray_access(NuttParser.Array_accessContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code full_type_of_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterFull_type_of_exp(NuttParser.Full_type_of_expContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code full_type_of_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitFull_type_of_exp(NuttParser.Full_type_of_expContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code func_call_exp}
 	 * labeled alternative in {@link NuttParser#exp}.
@@ -729,18 +725,6 @@ public interface NuttListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStr_cat_expression(NuttParser.Str_cat_expressionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code fold_expression}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 */
-	void enterFold_expression(NuttParser.Fold_expressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code fold_expression}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 */
-	void exitFold_expression(NuttParser.Fold_expressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code explicit_macro}
 	 * labeled alternative in {@link NuttParser#exp}.
@@ -801,6 +785,18 @@ public interface NuttListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBitwise_exp(NuttParser.Bitwise_expContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code fold_left_expression}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterFold_left_expression(NuttParser.Fold_left_expressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code fold_left_expression}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitFold_left_expression(NuttParser.Fold_left_expressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code math_exp}
 	 * labeled alternative in {@link NuttParser#exp}.
@@ -874,6 +870,18 @@ public interface NuttListener extends ParseTreeListener {
 	 */
 	void exitFunc_cat_exp(NuttParser.Func_cat_expContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code fold_right_expression}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void enterFold_right_expression(NuttParser.Fold_right_expressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code fold_right_expression}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 */
+	void exitFold_right_expression(NuttParser.Fold_right_expressionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link NuttParser#atom}.
 	 * @param ctx the parse tree
 	 */
@@ -943,26 +951,6 @@ public interface NuttListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitFunctioncall(NuttParser.FunctioncallContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link NuttParser#varOrExp}.
-	 * @param ctx the parse tree
-	 */
-	void enterVarOrExp(NuttParser.VarOrExpContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link NuttParser#varOrExp}.
-	 * @param ctx the parse tree
-	 */
-	void exitVarOrExp(NuttParser.VarOrExpContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link NuttParser#parExp}.
-	 * @param ctx the parse tree
-	 */
-	void enterParExp(NuttParser.ParExpContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link NuttParser#parExp}.
-	 * @param ctx the parse tree
-	 */
-	void exitParExp(NuttParser.ParExpContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link NuttParser#var}.
 	 * @param ctx the parse tree
@@ -1083,60 +1071,6 @@ public interface NuttListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitLambda_decl(NuttParser.Lambda_declContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link NuttParser#parlist}.
-	 * @param ctx the parse tree
-	 */
-	void enterParlist(NuttParser.ParlistContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link NuttParser#parlist}.
-	 * @param ctx the parse tree
-	 */
-	void exitParlist(NuttParser.ParlistContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link NuttParser#fieldlist}.
-	 * @param ctx the parse tree
-	 */
-	void enterFieldlist(NuttParser.FieldlistContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link NuttParser#fieldlist}.
-	 * @param ctx the parse tree
-	 */
-	void exitFieldlist(NuttParser.FieldlistContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link NuttParser#field}.
-	 * @param ctx the parse tree
-	 */
-	void enterField(NuttParser.FieldContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link NuttParser#field}.
-	 * @param ctx the parse tree
-	 */
-	void exitField(NuttParser.FieldContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code CommaSep}
-	 * labeled alternative in {@link NuttParser#fieldsep}.
-	 * @param ctx the parse tree
-	 */
-	void enterCommaSep(NuttParser.CommaSepContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code CommaSep}
-	 * labeled alternative in {@link NuttParser#fieldsep}.
-	 * @param ctx the parse tree
-	 */
-	void exitCommaSep(NuttParser.CommaSepContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code SemicolonSep}
-	 * labeled alternative in {@link NuttParser#fieldsep}.
-	 * @param ctx the parse tree
-	 */
-	void enterSemicolonSep(NuttParser.SemicolonSepContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code SemicolonSep}
-	 * labeled alternative in {@link NuttParser#fieldsep}.
-	 * @param ctx the parse tree
-	 */
-	void exitSemicolonSep(NuttParser.SemicolonSepContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code BitShiftLeft}
 	 * labeled alternative in {@link NuttParser#operatorBitwise}.

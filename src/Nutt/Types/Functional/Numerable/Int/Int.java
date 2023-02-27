@@ -32,6 +32,21 @@ public class Int implements INumerable
 		fromString(value);
 	}
 
+	public Int(Integer value)
+	{
+		fromString(String.valueOf(value));
+	}
+
+	public Int(Long value)
+	{
+		fromString(String.valueOf(value));
+	}
+
+	public Int(BigInteger value)
+	{
+		fromString(String.valueOf(value));
+	}
+
 	private boolean isLong(String value)
 	{
 		try

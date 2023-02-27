@@ -31,6 +31,7 @@ OP_Not: '!'
 // ';' #Semicolon
 stat: demand
 	| group_assignment
+	| array_set
     | var_decl
     | forget
     | functiondef_stat
@@ -44,24 +45,20 @@ stat: demand
     | in_place_op_stat
     | self_in_place_op_stat
     | if_then_else_block
-    //| 'if' exp 'then' block ('elseif' exp 'then' block)* ('else' block)? KW_End #IfThenElse
-    //| loop #LoopStatement
     //| 'local' 'funct' NAME funcbody #LocalFunct
-    //| 'local' attnamelist ('=' explist)? #LocalVar
-    //| try_catch #TryCatch
+    //| 'local' attnamelist (OP_Assign explist)? #LocalVar
+    | try_catch
     | OP_Pass
     | laststat
     ;
 
-OP_Pass: '...';
+array_set: arr=var OP_LeftBracket index=exp OP_RightBracket OP_Assign value=exp;
 
-group_assignment: varlist '=' explist;
+group_assignment: varlist OP_Assign explist;
 functiondef_stat: KW_Funct funcname func_any;
 macrodef_stat: KW_Define macro KW_As var;
 do_done_block: KW_Do block KW_Done;
-while_do_loop: KW_While explist do_done_block;
-repeat_until_loop: KW_Repeat block KW_Until explist;
-in_place_op_stat: var in_place_op varExpOrPar;
+in_place_op_stat: var in_place_op exp;
 self_in_place_op_stat: var self_in_place_op;
 if_then_else_block: KW_If exp then_block else_block? KW_End;
 
@@ -78,18 +75,21 @@ forget: KW_Forget (KW_ALL | flat_name_list);
 
 flat_name_list: NAME (',' NAME)*;
 
+
+
+
+loop: for_loop
+	| reverse_for_loop
+    | for_each_loop
+    | while_do_loop
+    | repeat_until_loop;
+
 for_loop: KW_For var_header by_value_var_decl ',' counterBound=exp(',' step=exp)? do_done_block;
+reverse_for_loop: KW_Reverse for_loop;
 for_each_loop: KW_For KW_Every var_decl KW_In explist do_done_block;
+while_do_loop: KW_While explist do_done_block;
+repeat_until_loop: KW_Repeat block KW_Until explist;
 
-loop: for_loop #ForLoop
-	| KW_Reverse for_loop #ReverseForLoop
-    | for_each_loop #ForEachLoop
-    | while_do_loop #WhileDoLoop
-    | repeat_until_loop #RepeatUntilLoop;
-
-attnamelist: NAME attrib (',' NAME attrib)*;
-
-attrib: ('<' NAME '>')?;
 
 laststat: function_yield
     | KW_Break
@@ -97,15 +97,11 @@ laststat: function_yield
 
 function_yield: KW_Yield exp?;
 
-
-
-//label: '::' NAME '::';
-
 funcname: NAME ('.' NAME)*;
 
 varlist: var (',' var)*;
 
-try_catch: KW_Try stat* KW_Catch stat* KW_End;
+try_catch: KW_Try try_branch=block KW_Catch catch_branch=block KW_End;
 demand: KW_Demand exp;
 
 
@@ -128,14 +124,14 @@ constant_qualifier: KW_VAR
 
 var_header: constant_qualifier NAME;
 
-short_var_decl: ('=' nil_type)?;
+short_var_decl: (OP_Assign nil_type)?;
 by_type_var_decl: ':' type=type_decl;
-by_value_var_decl: '=' assign_right=varExpOrPar;
-full_var_decl: ':' type=type_decl '=' assign_right=varExpOrPar;
+by_value_var_decl: OP_Assign assign_right=exp;
+full_var_decl: ':' type=type_decl OP_Assign assign_right=exp;
 
 type_decl: either_type
 	| functional_type
-    | action_type
+    | (action_type | '(' action_type ')')
     | number_type
     | list_type
     | nil_type;
@@ -148,9 +144,9 @@ TW_Actionable: 'Actionable';
 TW_Procedure: 'Procedure';
 TW_Macro: 'Macro';
 
-action_type: action_kind ('|' func_parameters)?;
+action_type: action_kind func_parameters? ('|=>' type_decl)?;
 
-list_initializer: '<' explist '>';
+list_initializer: '{' explist? '}';
 
 //Nutt declarations end
 
@@ -171,11 +167,7 @@ list_type: (generic_type_list
     | string_type
     | array_type) (list_length_decl? '|' type_decl)?;
 
-list_length_decl: OP_Length (number | varExpOrPar);
-
-varExpOrPar: var
-    | exp
-    | parExp;
+list_length_decl: OP_Length exp;
 
 set_type: 'Set';
 map_type: 'Map';
@@ -190,7 +182,7 @@ nil_type: 'Nil';
 
 var_decl_list: var_decl (',' var_decl)*;
 
-explist: (varExpOrPar ',')* varExpOrPar;
+explist: exp (',' exp)*;
 
 //| '...' #ExplicitEpsilon
 //| tableconstructor #TableConstructor
@@ -201,18 +193,22 @@ explist: (varExpOrPar ',')* varExpOrPar;
 exp: var #explicit_variable
 	| atom #explicit_atom
     | macro #explicit_macro
+    | list_initializer #explicit_array
     | functiondef #function_definition_exp
     | funcname '(' arguments=explist? ')' #func_call_exp
     | left=exp operatorBitwise right=exp #bitwise_exp
     | left=exp operator_math right=exp #math_exp
     | left=exp operator_logical right=exp #logical_exp
     | operatorUnary exp #unary_expression
+    | arr=exp OP_LeftBracket index=exp OP_RightBracket #array_access
     | <assoc=right> left=exp op=OP_STRCAT right=exp #str_cat_expression
-    | left=exp OP_LeftFold right=exp #fold_expression
+    | left=exp OP_LeftFold right=exp #fold_left_expression
+    | left=exp OP_RightFold right=exp #fold_right_expression
     | left=exp operatorComparison right=exp #comparison_expression
     | <assoc=right> left=exp OP_Power right=exp #power_expression
     | '(' exp ')' #parenthesis_exp
     | KW_TypeOf exp #type_of_exp
+    | KW_FullTypeOf exp #full_type_of_exp
     | exp KW_As type_decl #type_cast
     | funcname OP_FunctCat funcname #func_cat_exp
     | exp '?' if_true=exp ('@' if_false=exp)? ('@' if_undefined=exp)? #quarternary_exp;
@@ -240,16 +236,12 @@ macro: MACROSTRING;
 
 functioncall: (NAME '.')? NAME '(' explist? ')';
 
-varOrExp: var
-    | parExp;
-
-parExp: '(' exp ')';
-
 var: NAME;// varSuffix) varSuffix*;
 
 
-func_parameters: '(' parlist? ')';
-func_output: (either_output | default_output) '=';
+func_parameters: var_decl
+	| ('(' var_decl_list? ')');
+func_output: (either_output | default_output) OP_Assign;
 
 either_output: (':' either_type)?;
 default_output: ':' (type_decl);
@@ -261,9 +253,9 @@ funcbody: func_parameters func_output block KW_Return;
 
 KW_Return: 'return';
 
-func_ref: OP_FunctRef (varExpOrPar | functiondef);
-func_copy: OP_FunctCopy (varExpOrPar | functiondef);
-func_concat: OP_FunctCat (varExpOrPar | functiondef);
+func_ref: OP_FunctRef (exp | functiondef);
+func_copy: OP_FunctCopy (exp | functiondef);
+func_concat: OP_FunctCat (exp | functiondef);
 
 func_any: lambda_decl
     | func_ref
@@ -272,20 +264,6 @@ func_any: lambda_decl
     | funcbody;
 
 lambda_decl: '\\' (var_decl | func_parameters) OP_LambdaReturn (stat | exp);
-
-parlist: var_decl_list;// (',' '...')?
-    //| '...';
-
-//tableconstructor: '{' fieldlist? '}';
-
-fieldlist: field (fieldsep field)* fieldsep?;
-
-field: '[' exp ']' '=' exp
-    | NAME '=' exp
-    | exp;
-
-fieldsep: ',' #CommaSep
-    | ';' #SemicolonSep;
 
 operatorBitwise: OP_BIT_LSHIFT #BitShiftLeft
     | OP_BIT_RSHIFT #BitShiftRight
@@ -314,8 +292,8 @@ OP_FunctRef: '<==';
 OP_FunctCopy: '<=>';
 OP_FunctCat: '<|';
 
-OP_LeftFold: '<--';
-OP_RightFold: '-->';
+OP_LeftFold: '<-';
+OP_RightFold: '->';
 
 OP_Less: '<';
 OP_Greater: '>';
@@ -327,13 +305,18 @@ OP_Similar: '==';
 OP_Equal: '===';
 
 OP_Tilda: '~';
-OP_BIT_LSHIFT: '<<';
+OP_BIT_LSHIFT: OP_Less OP_Less;
 OP_BIT_RSHIFT: '>>';
 OP_BIT_OR: '|';
 OP_BIT_AND: '&';
 
 OP_Length: '#';
 OP_Power: '^';
+
+OP_Assign: '=' ;
+OP_RightBracket: ']' ;
+OP_LeftBracket: '[' ;
+OP_Pass:'...';
 
 //CategoryEnd: Operators
 
@@ -362,6 +345,7 @@ KW_End: 'end';
 KW_Imports: 'imports';
 
 KW_TypeOf: 'typeof';
+KW_FullTypeOf: 'fulltypeof';
 KW_Nil: 'nil';
 KW_True: 'true';
 KW_False: 'false';

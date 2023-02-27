@@ -1,6 +1,5 @@
 package Nutt;
 
-import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.INumerable;
@@ -8,11 +7,9 @@ import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
 import Nutt.Types.TypeCaster;
+import com.sun.jdi.InvalidTypeException;
 import gen.NuttBaseVisitor;
 import gen.NuttParser;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static Nutt.Types.Functional.Numerable.INumerable.*;
 
@@ -37,7 +34,7 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	@Override
 	public IValuable visitComparison_expression(NuttParser.Comparison_expressionContext ctx)
 	{
-		return 
+		return
 				new String(new NuttCompareVisitor(parser,interpreter).visitComparison_expression(ctx).toString());
 	}
 
@@ -47,15 +44,6 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		var l_val=visit(ctx.left).getValue().toString();
 		var r_val=visit(ctx.right).getValue().toString();
 		return new String(l_val+r_val);
-	}
-
-	@Override
-	public IValuable visitVarExpOrPar(NuttParser.VarExpOrParContext ctx)
-	{
-		if(ctx.var()!=null) return visitVar(ctx.var());
-		if(ctx.exp()!=null) return visit(ctx.exp());
-		if(ctx.parExp()!=null) return visitParExp(ctx.parExp());
-		throw new RuntimeException("Unknown varExpOrPar!");
 	}
 
 	@Override
@@ -149,11 +137,6 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		throw new RuntimeException();
 	}
 
-	@Override
-	public IValuable visitParExp(NuttParser.ParExpContext ctx)
-	{
-		return visit(ctx.exp());
-	}
 
 	@Override
 	public IValuable visitFunctioncall(NuttParser.FunctioncallContext ctx)
@@ -194,10 +177,7 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	@Override
 	public IValuable visitFunc_call_exp(NuttParser.Func_call_expContext ctx)
 	{
-		var procedureInstance=interpreter.getProcedure(ctx.funcname().getText()).setEnvironment(parser,interpreter);
-		List<IValuable> passedParameters=ctx.arguments==null?new ArrayList<>():
-				ctx.arguments.varExpOrPar().stream().map(this::visitVarExpOrPar).toList();
-		return new Procedure(procedureInstance).proceed(passedParameters).yield();
+		return new NuttFunctionVisitor(parser,interpreter).visitFunc_call_exp(ctx);
 	}
 
 	//	@Override
@@ -206,6 +186,11 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	//		return new Nutt.NuttFunctionVisitor(parser,interpreter).visitFunctionCallExp(ctx);
 	//	}
 
+
+	@Override public IValuable visitFull_type_of_exp(NuttParser.Full_type_of_expContext ctx)
+	{
+		return new String(visit(ctx.exp()).getFullType());
+	}
 
 	@Override
 	public IValuable visitFunction_yield(NuttParser.Function_yieldContext ctx)
@@ -221,6 +206,7 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		if(!new TypeInferencer().verdict("Numerable",left.getType()))
 		{
 			var fmt="left operator is %s, not Numerable!".formatted(left.getType());
+			System.out.printf("Math context: "+NuttEnvironment.toSourceCode(ctx));
 			throw new RuntimeException(fmt);
 		}
 		if(!new TypeInferencer().verdict("Numerable",right.getType()))
@@ -237,6 +223,31 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		if(op.OP_Mod()!=null) return mod(l_val,r_val);
 		if(op.OP_IntDiv()!=null) return intDiv(l_val,r_val);
 		throw new UnsupportedOperationException("Unsupported operation: "+op.getText());
+	}
+
+	@Override public IValuable visitExplicit_array(NuttParser.Explicit_arrayContext ctx)
+	{
+		return new NuttArrayVisitor(parser,interpreter).visitExplicit_array(ctx);
+	}
+
+	@Override public IValuable visitArray_access(NuttParser.Array_accessContext ctx)
+	{
+		var evaluator=new NuttEvalVisitor(parser,interpreter);
+		var interferencer=new TypeInferencer();
+		var array=evaluator.visit(ctx.arr);
+		if(!interferencer.verdict("Listable",array.getType()))
+		{
+			throw new RuntimeException(
+					new InvalidTypeException("Cannot access element of "+array.getType()+" by index!"));
+		}
+		var index=evaluator.visit(ctx.index);
+		if(!"Int".equals(index.getType()))
+		{
+			throw new RuntimeException(
+					new InvalidTypeException("Cannot access element of array with index of "+index.getType()+" type" +
+					                         "!"));
+		}
+		return array.asFunctional().asListable().getAt(index.asFunctional().asNumerable().asInt());
 	}
 
 	private boolean isNumber(IValuable valuable)
@@ -287,8 +298,6 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	{
 		return visit(ctx.exp());
 	}
-
-
 
 	@Override
 	public IValuable visitExplicit_variable(NuttParser.Explicit_variableContext ctx)

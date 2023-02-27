@@ -24,8 +24,9 @@ public class NuttAssignmentVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitGroup_assignment(NuttParser.Group_assignmentContext ctx)
 	{
+		var evaluator=new NuttEvalVisitor(parser,interpreter);
 		var variableContexts=ctx.varlist().var();
-		var expContexts=ctx.explist().varExpOrPar();
+		var expContexts=ctx.explist().exp().stream().map(evaluator::visit).toList();
 		assert variableContexts.size()==expContexts.size()&&variableContexts.size()!=0:"Unbalanced assignment!";
 		int i=0;
 		for(var variableContext: variableContexts)
@@ -36,7 +37,7 @@ public class NuttAssignmentVisitor extends NuttBaseVisitor<String>
 				++i;
 				continue;
 			}
-			var valueToAssign=new NuttEvalVisitor(parser,interpreter).visitVarExpOrPar(expContexts.get(i));
+			var valueToAssign=expContexts.get(i);
 			if(debug)
 			{
 				var fmt="Trying to assign value %s of type %s to %s of type %s%n";

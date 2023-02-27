@@ -76,7 +76,8 @@ public class NuttScope
 			var ceilType=variableRef.ceilType;
 			if(!new TypeInferencer().verdict(ceilType,value.getType()))
 			{
-				throw new RuntimeException("Nutt variable store exception!");
+				var fmt="%s cannot store %s!".formatted(ceilType,value.getType());
+				throw new RuntimeException("Nutt variable store exception"+fmt);
 			}
 			return variableRef.setCeilType(ceilType).setValuable(value).setConstant(variableRef.isConstant);
 		}

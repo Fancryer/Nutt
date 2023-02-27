@@ -16,33 +16,9 @@ public class NuttConditionVisitor extends NuttBaseVisitor<Boolean>
 		return visit(ctx.exp());
 	}
 
-	@Override public Boolean visitVarExpOrPar(NuttParser.VarExpOrParContext ctx)
-	{
-		if(ctx.var()!=null)return visitVar(ctx.var());
-		if(ctx.exp()!=null)return visit(ctx.exp());
-		if(ctx.parExp()!=null)return visitParExp(ctx.parExp());
-		if(debug) System.out.println(ctx.toStringTree(parser));
-		throw new RuntimeException();
-	}
-
-	@Override public Boolean visitVarOrExp(NuttParser.VarOrExpContext ctx)
-	{
-		if(ctx.var()!=null) return visitVar(ctx.var());
-		if(ctx.parExp()!=null)return visitParExp(ctx.parExp());
-		if(debug) System.out.println(ctx.toStringTree(parser));
-		throw new RuntimeException();
-	}
-
 	@Override public Boolean visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx)
 	{
 		return visit(ctx.exp());
-	}
-
-	@Override public Boolean visitParExp(NuttParser.ParExpContext ctx)
-	{
-		var exp=new NuttEvalVisitor(parser,interpreter).visit(ctx.exp());
-		System.out.println(exp.getType());
-		return exp.asFunctional().asBoolean();
 	}
 
 	public NuttConditionVisitor(NuttParser parser,NuttInterpreter interpreter)
