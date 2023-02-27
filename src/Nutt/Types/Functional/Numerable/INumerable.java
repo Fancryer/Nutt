@@ -144,7 +144,7 @@ public interface INumerable extends IFunctional
 	{
 		if(!new TypeInferencer().verdict("Numerable",functional.getType()))
 		{
-			throw new RuntimeException("You cannot compare Numerable with %s!".formatted(functional.getType()));
+			throw new RuntimeException("You cannot compare Numerable(%s) with %s!".formatted(functional,functional.getType()));
 		}
 		return this.compareToNumerable(functional.asNumerable());
 	}

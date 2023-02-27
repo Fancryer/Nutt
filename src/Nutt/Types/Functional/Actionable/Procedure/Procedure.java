@@ -1,7 +1,9 @@
 package Nutt.Types.Functional.Actionable.Procedure;
 
-import Nutt.*;
+import Nutt.NuttDeclarationVisitor;
+import Nutt.NuttInterpreter;
 import Nutt.NuttInterpreter.Variable;
+import Nutt.NuttStatementVisitor;
 import Nutt.Types.Functional.Actionable.IActionable;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
@@ -16,39 +18,21 @@ public class Procedure implements IActionable
 	public Variable output;
 	public NuttParser parser;
 	public NuttInterpreter interpreter;
-
+	
 	public Procedure(){}
-
+	
 	public Procedure(Parameters parameters,NuttParser.BlockContext functionBody)
 	{
-		this(parameters,functionBody,new Variable("Either",new Nil(),"yield",false));
+		this(parameters,functionBody,new Variable("Valuable",new Nil(),"yield",false));
 	}
-
+	
 	public Procedure(Parameters parameters,NuttParser.BlockContext functionBody,Variable output)
 	{
 		this.parameters=parameters;
 		this.functionBody=functionBody;
 		this.output=output;
 	}
-
-	public Procedure setFunctionBody(NuttParser.BlockContext functionBody)
-	{
-		this.functionBody=functionBody;
-		return this;
-	}
-
-	public Procedure setOutput(Variable output)
-	{
-		this.output=output;
-		return this;
-	}
-
-	public Procedure setParameters(Parameters parameters)
-	{
-		this.parameters=parameters;
-		return this;
-	}
-
+	
 	public Procedure(Procedure procedure)
 	{
 		this(procedure.parameters,procedure.functionBody);
@@ -56,51 +40,70 @@ public class Procedure implements IActionable
 		interpreter=procedure.interpreter;
 		output=procedure.output;
 	}
-
+	
+	public Procedure setFunctionBody(NuttParser.BlockContext functionBody)
+	{
+		this.functionBody=functionBody;
+		return this;
+	}
+	
+	public Procedure setOutput(Variable output)
+	{
+		this.output=output;
+		return this;
+	}
+	
+	public Procedure setParameters(Parameters parameters)
+	{
+		this.parameters=parameters;
+		return this;
+	}
+	
 	public Procedure setInterpreter(NuttInterpreter interpreter)
 	{
 		this.interpreter=interpreter;
 		return this;
 	}
-
+	
 	public Procedure setParser(NuttParser parser)
 	{
 		this.parser=parser;
 		return this;
 	}
-
+	
 	public Procedure setEnvironment(NuttParser parser,NuttInterpreter interpreter)
 	{
 		return setParser(parser).setInterpreter(interpreter);
 	}
-
+	
 	@Override
 	public String toString()
 	{
-		return "Procedure{functionBody='%s', parameters=%s, output=%s}".formatted(
-				NuttEnvironment.toSourceCode(functionBody),parameters,output);
+		return "Procedure{functionBody='%s', parameters=%s, output=%s}".formatted(functionBody.toStringTree(parser),
+		                                                                          parameters,output);
+		//NuttEnvironment.toSourceCode(functionBody,parser),parameters,output);
 	}
-
+	
 	private void evaluateArguments(List<IValuable> arguments)
 	{
 		if(arguments.isEmpty()) return;
 		validateArguments(arguments);
 		var declarator=new NuttDeclarationVisitor(parser,interpreter);
-
+		
 		//		for(int i=0;i<defaultArgumentDeclarations.size();++i)
 		//		{
 		//			var parameterName=interpreter.currentScope.getVariable(declarator.visitVar_decl(
 		//					defaultArgumentDeclarations.get(i))).name;
 		//			interpreter.currentScope.setVariable(parameterName,arguments.get(i));
 		//		}
-
+		
 		//		System.out.println("Evaluated input arguments: "+defaultArgumentDeclarations.stream()
 		//		                                                                            .map(arg->interpreter
 		//		                                                                            .currentScope.getVariable(
 		//				                                                             arg.name))
 		//		                                                                            .toList());
 	}
-
+	
 	public void validateArguments(List<IValuable> arguments)
 	{
 		if(arguments.size()>parameters.getSize())
@@ -122,7 +125,7 @@ public class Procedure implements IActionable
 		//		(passed,
 		//		                                                                                                    expected));
 	}
-
+	
 	public Procedure proceed(List<IValuable> argumentList)
 	{
 		if(argumentList.size()>parameters.getSize()) throw new RuntimeException("Parameter length is too large!");
@@ -141,49 +144,49 @@ public class Procedure implements IActionable
 		//System.out.println(new NuttCommon.PrettyPrintingMap<>(interpreter.currentScope.variableMap));
 		return this;
 	}
-
+	
 	private void declareYield()
 	{
 		interpreter.currentScope.addVariable("yield",output.valuable,output.ceilType,output.isConstant);
 		//interpreter.currentScope.addVariable(output);
 	}
-
+	
 	private void declareParameters()
 	{
 		var declarator=new NuttDeclarationVisitor(parser,interpreter);
 		for(var decl: parameters.asDeclarationList()) declarator.visitVar_decl(decl);
 	}
-
+	
 	public IValuable yield()
 	{
 		//return interpreter.currentScope.yield.valuable;//forgetVariable("yield").valuable;
 		return interpreter.currentScope.forgetLocally("yield").valuable;
 	}
-
+	
 	@Override
 	public Object getValue()
 	{
 		return output;
 	}
-
+	
 	@Override
 	public String getType()
 	{
 		return "Procedure";
 	}
-
+	
 	@Override
 	public String getWrapType()
 	{
 		return "Actionable";
 	}
-
+	
 	@Override
 	public int getLength()
 	{
 		return parameters.getSize();
 	}
-
+	
 	@Override
 	public boolean asBoolean()
 	{

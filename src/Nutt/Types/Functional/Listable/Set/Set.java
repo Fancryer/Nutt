@@ -70,7 +70,13 @@ public class Set implements IListable
 		list.add(i,value);
 		return new Set(new HashSet<>(list));
 	}
-
+	
+	@Override
+	public List<IValuable> getElements()
+	{
+		return asList();
+	}
+	
 	@Override public String getWrapType()
 	{
 		return "Listable";

@@ -81,7 +81,35 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArray_set(NuttParser.Array_setContext ctx) { return visitChildren(ctx); }
+	@Override public T visitType_def(NuttParser.Type_defContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitType_select(NuttParser.Type_selectContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitType_member(NuttParser.Type_memberContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitEnum_def(NuttParser.Enum_defContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitVar_or_array_access(NuttParser.Var_or_array_accessContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -110,20 +138,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitDo_done_block(NuttParser.Do_done_blockContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitWhile_do_loop(NuttParser.While_do_loopContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -179,6 +193,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitLoop(NuttParser.LoopContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitFor_loop(NuttParser.For_loopContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -200,21 +221,14 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLoop(NuttParser.LoopContext ctx) { return visitChildren(ctx); }
+	@Override public T visitWhile_do_loop(NuttParser.While_do_loopContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAttnamelist(NuttParser.AttnamelistContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitAttrib(NuttParser.AttribContext ctx) { return visitChildren(ctx); }
+	@Override public T visitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -319,6 +333,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitValuable_type(NuttParser.Valuable_typeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitAction_kind(NuttParser.Action_kindContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -327,6 +348,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitAction_type(NuttParser.Action_typeContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitEnumeration_initializer(NuttParser.Enumeration_initializerContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -410,13 +438,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEither_type(NuttParser.Either_typeContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitFunctional_type(NuttParser.Functional_typeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -438,6 +459,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitEnum_list(NuttParser.Enum_listContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitExplist(NuttParser.ExplistContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -445,7 +473,7 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPower_expression(NuttParser.Power_expressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitEnum_case(NuttParser.Enum_caseContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -480,20 +508,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFull_type_of_exp(NuttParser.Full_type_of_expContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitFunc_call_exp(NuttParser.Func_call_expContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
 	@Override public T visitType_cast(NuttParser.Type_castContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -502,27 +516,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitStr_cat_expression(NuttParser.Str_cat_expressionContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitExplicit_macro(NuttParser.Explicit_macroContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitComparison_expression(NuttParser.Comparison_expressionContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitQuarternary_exp(NuttParser.Quarternary_expContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -550,6 +543,13 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitInstance_of_exp(NuttParser.Instance_of_expContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitMath_exp(NuttParser.Math_expContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -558,13 +558,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitExplicit_atom(NuttParser.Explicit_atomContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -585,6 +578,62 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitFold_right_expression(NuttParser.Fold_right_expressionContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitPower_expression(NuttParser.Power_expressionContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitFunc_call_exp(NuttParser.Func_call_expContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitExplicit_macro(NuttParser.Explicit_macroContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitComparison_expression(NuttParser.Comparison_expressionContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitQuarternary_exp(NuttParser.Quarternary_expContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitExplicit_enum_case(NuttParser.Explicit_enum_caseContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitFunc_cat_exp(NuttParser.Func_cat_expContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
@@ -592,7 +641,35 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFold_right_expression(NuttParser.Fold_right_expressionContext ctx) { return visitChildren(ctx); }
+	@Override public T visitExplicit_enumeration(NuttParser.Explicit_enumerationContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitMatch_to_exp(NuttParser.Match_to_expContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitMatch_branch(NuttParser.Match_branchContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitMatch_branch_qualifier(NuttParser.Match_branch_qualifierContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
+	@Override public T visitMatch_case(NuttParser.Match_caseContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -669,7 +746,7 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitEither_output(NuttParser.Either_outputContext ctx) { return visitChildren(ctx); }
+	@Override public T visitValuable_output(NuttParser.Valuable_outputContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

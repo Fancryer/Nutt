@@ -1,23 +1,31 @@
 package Nutt;
 
+import Nutt.Common.TypeRelation;
+import Nutt.Exceptions.NuttVariableNotDefinedException;
+import Nutt.Exceptions.NuttVariableStoreException;
 import Nutt.NuttInterpreter.Variable;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import java.util.EmptyStackException;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
 
 public class NuttScope
 {
 	public final TreeMap<String,Variable> variableMap;
-	NuttScope parent=null;
 	public Variable yield=NuttEnvironment.constructNil("yield",false);
+	public final ArrayList<TypeRelation> typeRelationList;
+	NuttScope parent=null;
 
+	public NuttScope(TreeMap<String,Variable> parentMap,ArrayList<TypeRelation> parentRelations)
+	{
+		this.variableMap=parentMap;
+		this.typeRelationList=parentRelations;
+	}
 	public NuttScope(TreeMap<String,Variable> parentMap)
 	{
 		this.variableMap=parentMap;
+		this.typeRelationList=TypeInferencer.getDefaultRelations();
 	}
 
 	public NuttScope()
@@ -76,14 +84,14 @@ public class NuttScope
 			var ceilType=variableRef.ceilType;
 			if(!new TypeInferencer().verdict(ceilType,value.getType()))
 			{
-				var fmt="%s cannot store %s!".formatted(ceilType,value.getType());
-				throw new RuntimeException("Nutt variable store exception"+fmt);
+				throw new NuttVariableStoreException(ceilType,value.getType());
 			}
-			return variableRef.setCeilType(ceilType).setValuable(value).setConstant(variableRef.isConstant);
+			return variableRef.isConstant?variableRef:variableRef.setCeilType(ceilType).setValuable(value).setConstant(
+					variableRef.isConstant);
 		}
 		catch(IllegalAccessException e)
 		{
-			throw new RuntimeException("Interpreter doesn't know the \"%s\" variable".formatted(variableName),e);
+			throw new NuttVariableNotDefinedException(e,variableName);
 		}
 	}
 
@@ -94,7 +102,7 @@ public class NuttScope
 
 	public Variable addVariable(String variableName)
 	{
-		return addVariable(variableName,new Nil(),"Either");
+		return addVariable(variableName,new Nil(),"Valuable");
 	}
 
 	public Variable addVariable(String variableName,IValuable variable,String ceilType,boolean isConstant,
@@ -111,7 +119,8 @@ public class NuttScope
 		if(definedLocally(variableName))
 		{
 			//System.out.println(this);
-			throw new RuntimeException("Variable %s is already defined at line %s!".formatted(variableName,tree.start.getLine()));
+			throw new RuntimeException(
+					"Variable %s is already defined at line %s!".formatted(variableName,tree.start.getLine()));
 		}
 		return variableMap.put(variableName,new Variable(ceilType,variable,variableName,isConstant));
 	}
@@ -129,6 +138,17 @@ public class NuttScope
 	public Variable addVariable(String variableName,IValuable variable)
 	{
 		return addVariable(variableName,variable,variable.getType());
+	}
+
+	public NuttScope addTypeRelation(String type,Set<String> members)
+	{
+		return addTypeRelation(new TypeRelation(type,members));
+	}
+
+	public NuttScope addTypeRelation(TypeRelation relation)
+	{
+		this.typeRelationList.add(relation);
+		return this;
 	}
 
 	@Override

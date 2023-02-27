@@ -1,0 +1,13 @@
+module slice
+
+funct slice(var arr:Array,var start_index:Int,var end_index:Int):Array=
+    var i=start_index
+    var ret={}
+    while i<end_index do
+        ret=append(ret,{arr[i]})
+        i++
+    done
+    yield ret
+return
+
+end

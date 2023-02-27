@@ -27,21 +27,22 @@ public class NuttCompareVisitor extends NuttBaseVisitor<Boolean>
 	{
 		var evaluator=new NuttEvalVisitor(parser,interpreter);
 		IValuable left=evaluator.visit(ctx.left), right=evaluator.visit(ctx.right);
-		String leftAsString=left.getValue().toString(), rightAsString=right.getValue().toString();
-		var operator=ctx.operatorComparison();
-		var compareResult=leftAsString.compareTo(rightAsString);
-		boolean verdict=false;
-		if(operator.OP_Less()!=null) verdict=compareResult<0;
-		if(operator.OP_LessEqual()!=null) verdict=compareResult<=0;
-		if(operator.OP_Similar()!=null) verdict=compareResult==0;
-		if(operator.OP_Equal()!=null)
-			verdict=new TypeInferencer().verdict(left.getType(),right.getType())&&compareResult==0;
-		if(operator.OP_NotSimilar()!=null) verdict=compareResult!=0;
-		if(operator.OP_NotEqual()!=null)
-			verdict=new TypeInferencer().verdict(left.getType(),right.getType())&&compareResult!=0;
-		if(operator.OP_Greater()!=null) verdict=compareResult>0;
-		if(operator.OP_GreaterEqual()!=null) verdict=compareResult>=0;
-		//System.out.printf("%s %s %s -> %s: %s",leftAsString,operator.getText(),rightAsString,compareResult,verdict);
+		var operator=ctx.operatorComparison().getText();
+		var compareResult=left.compareTo(right);
+		var typesAreSame=new TypeInferencer().verdict(left.getType(),right.getType());
+		boolean verdict=switch(operator)
+				{
+					case "<" -> compareResult<0;
+					case "<=" -> compareResult<=0;
+					case "==" -> compareResult==0;
+					case "===" -> typesAreSame&&compareResult==0;
+					case "!=" -> compareResult!=0;
+					case "!==" -> typesAreSame&&compareResult!=0;
+					case ">" -> compareResult>0;
+					case ">=" -> compareResult>=0;
+					default -> false;
+				};
+		if(debug) System.out.printf("%s %s %s -> %s: %s%n",left.getValue(),operator,right.getValue(),compareResult,verdict);
 		return verdict;
 	}
 }

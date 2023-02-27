@@ -25,26 +25,30 @@ public class NuttAssignmentVisitor extends NuttBaseVisitor<String>
 	public String visitGroup_assignment(NuttParser.Group_assignmentContext ctx)
 	{
 		var evaluator=new NuttEvalVisitor(parser,interpreter);
-		var variableContexts=ctx.varlist().var();
-		var expContexts=ctx.explist().exp().stream().map(evaluator::visit).toList();
+		var variableContexts=ctx.var_or_array_access();
+		var expContexts=ctx.exp().stream().map(evaluator::visit).toList();
 		assert variableContexts.size()==expContexts.size()&&variableContexts.size()!=0:"Unbalanced assignment!";
 		int i=0;
 		for(var variableContext: variableContexts)
 		{
-			var variableName=variableContext.NAME().getText();
-			if(interpreter.getVariable(variableName).isConstant)
-			{
-				++i;
-				continue;
-			}
+			var variableName=NuttEnvironment.toSourceCode(variableContext);
 			var valueToAssign=expContexts.get(i);
-			if(debug)
+			if(variableContext.var()!=null) interpreter.currentScope.setVariable(variableName,valueToAssign);
+			else//Assign to Listable element
 			{
-				var fmt="Trying to assign value %s of type %s to %s of type %s%n";
-				System.out.printf(fmt,valueToAssign,valueToAssign.getType(),variableName,
-				                  interpreter.getValuable(variableName).getType());
+				var listable=evaluator.visit(variableContext.arr);
+				if(!new TypeInferencer().verdict("Listable",listable.getType()))
+				{
+					throw new RuntimeException();
+				}
+				var index=evaluator.visit(variableContext.index);
+				if(!new TypeInferencer().verdict("Int",index.getType()))
+				{
+					throw new RuntimeException();
+				}
+				interpreter.currentScope.setVariable(NuttEnvironment.toSourceCode(variableContext.arr).trim(),
+				                                     listable.asFunctional().asListable().setAt(valueToAssign,index.asFunctional().asNumerable().asInt()));
 			}
-			interpreter.currentScope.setVariable(variableName,valueToAssign);
 			++i;
 		}
 		return "";

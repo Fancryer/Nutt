@@ -1,19 +1,13 @@
 package Nutt;
 
-import Nutt.Types.Functional.Numerable.INumerable;
 import gen.NuttBaseVisitor;
-import gen.NuttLexer;
 import gen.NuttParser;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class NuttStatementVisitor extends NuttBaseVisitor<String>
 {
@@ -35,7 +29,8 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		this.debug=debug;
 	}
 
-	@Override public String visitMacro(NuttParser.MacroContext ctx)
+	@Override
+	public String visitMacro(NuttParser.MacroContext ctx)
 	{
 		return super.visitMacro(ctx);
 	}
@@ -47,84 +42,17 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		return super.visit(tree);
 	}
 
-	@Override public String visitIn_place_op_stat(NuttParser.In_place_op_statContext ctx)
-	{
-		//		var evaluator=new NuttEvalVisitor(parser,interpreter);
-		//		var variableName=new NuttVariableVisitor(parser,interpreter).visitVar(ctx.var());
-		//		var valuable=evaluator.visit(ctx.exp());
-		//		var op=ctx.in_place_op();
-		//		var typeInferencer=new TypeInferencer();
-		//		var varType=interpreter.getValuable(variableName).getType();
-		//		var valType=valuable.getType();
-		//		if(!typeInferencer.verdict(interpreter.getValuable(variableName).getWrapType(),valuable.getType()))
-		//		{
-		//			throw new UnsupportedOperationException(
-		//					"Cannot perform %s on %s and %s".formatted(NuttEnvironment.toSourceCode(op),
-		//					                                           varType,valType));
-		//		}
-		//		Supplier<String> normalize=
-		//				()->variableName+op.getText().substring(0,op.getText().length()-1)+valuable.getValue();
-		//
-		//		String valueToAssign="";
-		//		String requiredType=null;
-		//
-		//		var isNumerableRequired=
-		//				Stream.of(op.OP_AddAssign(),op.OP_SubAssign(),op.OP_MultAssign(),op.OP_DivAssign(),op
-		//				.OP_ModAssign(),
-		//				          op.OP_IntDivAssign()).anyMatch(Objects::nonNull);
-		//
-		//		if(op.OP_CatAssign()!=null) requiredType="String";
-		//		else if(isNumerableRequired) requiredType="Numerable";
-		//		if(requiredType==null) throw new UnsupportedOperationException();
-		//		if(!typeInferencer.verdict(requiredType,interpreter.getValuable(variableName).getType()))
-		//		{
-		//			throw new UnsupportedOperationException("Cannot perform %s on %s and %s".formatted(op.getText(),
-		//			                                                                                   varType,
-		//			                                                                                   valType));
-		//		}
-
-		var evaluator=new NuttEvalVisitor(parser,interpreter);
-		var valuable=evaluator.visit(ctx.exp());
-		var op=ctx.in_place_op();
-		String variableName=new NuttVariableVisitor(parser,interpreter).visitVar(ctx.var());
-		Supplier<String> normalize=()->"%s=%s%s%s".formatted(variableName,variableName,
-		                                                     op.getText().substring(0,op.getText().length()-1),
-		                                                     valuable.getValue());
-
-		var normalizedOp=normalize.get();
-		var l_lexer=new NuttLexer(CharStreams.fromString(normalizedOp));
-		var l_tokens=new CommonTokenStream(l_lexer);
-		var l_parser=new NuttParser(l_tokens);
-		System.out.println(normalizedOp);
-		interpreter.getVariable(variableName).valuable=evaluator.visit(l_parser.explist());
-		return variableName;
-	}
-
 	@Override
-	public String visitModule(NuttParser.ModuleContext ctx)
+	public String visitIn_place_op_stat(NuttParser.In_place_op_statContext ctx)
 	{
-		return super.visitModule(ctx);
-	}
+		var variableName=new NuttVariableVisitor(parser,interpreter).visitVar(ctx.var());
+		Function<ParseTree,String> operator=(t)->t.getText().substring(0,t.getText().length()-1);
+		Supplier<String> normalize=()->"%s=%s%s%s".formatted(variableName,variableName,operator.apply(ctx.in_place_op()),
+		                                                     NuttEnvironment.toSourceCode(ctx.exp()));
 
-	@Override public String visitArray_set(NuttParser.Array_setContext ctx)
-	{
-		var variableName=ctx.arr.NAME().getText();
-		var variable=new NuttEvalVisitor(parser,interpreter).visitVar(ctx.arr);
-		if(!new TypeInferencer().verdict("Listable",variable.getType()))
-		{
-			throw new RuntimeException("Cannot access element of "+variable.getType()+"!");
-		}
-		var evaluator=new NuttEvalVisitor(parser,interpreter);
-		var index=evaluator.visit(ctx.index);
-		if(!Objects.equals(index.getType(),"Int"))
-		{
-			throw new RuntimeException("Index is not Int!");
-		}
-		interpreter.currentScope.setVariable(variableName,variable.asFunctional()
-		                                                          .asListable()
-		                                                          .setAt(evaluator.visit(ctx.value),
-		                                                                 index.asFunctional().asNumerable().asInt()));
-		return super.visitArray_set(ctx);
+		//System.out.println(normalize.get());
+		visitGroup_assignment(NuttEnvironment.getTempParser(normalize.get()).group_assignment());
+		return variableName;
 	}
 
 	@Override
@@ -142,58 +70,53 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitModule_name(NuttParser.Module_nameContext ctx)
 	{
-		return String.join("",ctx.NAME().stream().map(term->term.getSymbol().getText()).toList());
+		return String.join("\\\\",ctx.NAME().stream().map(term->term.getSymbol().getText()).toList());
 	}
 
 	@Override
 	public String visitSelf_in_place_op_stat(NuttParser.Self_in_place_op_statContext ctx)
 	{
 		var variableName=new NuttVariableVisitor(parser,interpreter).visitVar(ctx.var());
-		var variableRef=interpreter.getVariable(variableName);
-		var op=ctx.self_in_place_op();
-		if(op.OP_IncrAssign()!=null)
-		{
-			if(new TypeInferencer().verdict("Numerable",variableRef.valuable.getType()))
-			{
-				variableRef.valuable=INumerable.incr(variableRef.valuable.asFunctional().asNumerable());
-				return "";
-			}
-		}
-		if(op.OP_DecrAssign()!=null)
-		{
-			if(new TypeInferencer().verdict("Numerable",variableRef.valuable.getType()))
-			{
-				variableRef.valuable=INumerable.decr(variableRef.valuable.asFunctional().asNumerable());
-				return "";
-			}
-		}
-		return "";
+		var stepIsOne=ctx.self_in_place_op().OP_IncrAssign()!=null||ctx.self_in_place_op().OP_DecrAssign()!=null;
+		Function<ParseTree,String> operator=(t)->t.getText().substring(0,t.getText().length()/2);
+		Supplier<String> normalize=()->"%s=%s%s%s".formatted(variableName,variableName,operator.apply(ctx.self_in_place_op()),
+		                                                     stepIsOne?"1":variableName);
+
+		//System.out.println(normalize.get());
+		visitGroup_assignment(NuttEnvironment.getTempParser(normalize.get()).group_assignment());
+		//interpreter.getVariable(variableName).valuable=evaluator.visit(l_parser.explist());
+		return variableName;
 	}
 
 	@Override
 	public String visitModule_import(NuttParser.Module_importContext ctx)
 	{
-		String modulesCompact;
-		if(ctx.module_name()!=null) modulesCompact=Set.of(visitModule_name(ctx.module_name())).toString();
+		if(ctx.module_name()!=null)
+		{
+			interpreter.importModule(ctx.module_name(),this);
+		}
 		else
 		{
-			if(ctx.module_list()!=null) modulesCompact=visitModule_list(ctx.module_list());
-			else
+			if(ctx.module_list()!=null)
 			{
-				if(ctx.KW_ALL()!=null) modulesCompact="all";
-				else throw new RuntimeException();
+				var moduleNames=ctx.module_list().module_name().stream().map(this::visitModule_name).distinct().toList();
+				System.out.println("moduleNames = "+moduleNames);
+				for(var name:moduleNames)
+				{
+					interpreter.importModule(name,this);
+				}
 			}
+			else throw new RuntimeException();
 		}
-		if(debug) System.out.printf("\"Imported\" modules: %s%n",modulesCompact);
-		return super.visitModule_import(ctx);
+		return "";
 	}
 
 	@Override
 	public String visitModule_list(NuttParser.Module_listContext ctx)
 	{
-		var modules=ctx.module_name().stream().map(this::visitModule_name).toList();
-		return new HashSet<>(modules).toString();
+		return ctx.module_name().stream().map(this::visitModule_name).collect(Collectors.joining("."));
 	}
+
 
 	@Override
 	public String visitGroup_assignment(NuttParser.Group_assignmentContext ctx)
@@ -201,7 +124,8 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		return new NuttAssignmentVisitor(parser,interpreter,debug).visitGroup_assignment(ctx);
 	}
 
-	@Override public String visitVar_decl(NuttParser.Var_declContext ctx)
+	@Override
+	public String visitVar_decl(NuttParser.Var_declContext ctx)
 	{
 		if(debug) System.out.printf("Variable declaration: %s%n",ctx.var_header().NAME().getText());
 		return new NuttDeclarationVisitor(parser,interpreter,debug).visitVar_decl(ctx);
@@ -218,7 +142,7 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	@Override
 	public String visitFlat_name_list(NuttParser.Flat_name_listContext ctx)
 	{
-		for(var toForget: ctx.NAME()) interpreter.currentScope.forgetVariable(toForget.getSymbol().getText());
+		ctx.NAME().forEach(toForget->interpreter.currentScope.forgetVariable(toForget.getSymbol().getText()));
 		return "";
 	}
 
@@ -228,7 +152,8 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		return new NuttFunctionVisitor(parser,interpreter).visitFunctioncall(ctx).getValue().toString();
 	}
 
-	@Override public String visitLoop(NuttParser.LoopContext ctx)
+	@Override
+	public String visitLoop(NuttParser.LoopContext ctx)
 	{
 		if(ctx.for_loop()!=null) return visitFor_loop(ctx.for_loop());
 		if(ctx.for_each_loop()!=null) return visitFor_each_loop(ctx.for_each_loop());
@@ -238,12 +163,15 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		return super.visitLoop(ctx);
 	}
 
-	@Override public String visitFor_loop(NuttParser.For_loopContext ctx)
+	@Override
+	public String visitFor_loop(NuttParser.For_loopContext ctx)
 	{
-		return super.visitFor_loop(ctx);
+		System.out.println("NuttEnvironment.toSourceCode(for_loop) = "+NuttEnvironment.toSourceCode(ctx));
+		return "";
 	}
 
-	@Override public String visitReverse_for_loop(NuttParser.Reverse_for_loopContext ctx)
+	@Override
+	public String visitReverse_for_loop(NuttParser.Reverse_for_loopContext ctx)
 	{
 		//for var i=init,boundary,step do
 		//  block
@@ -266,7 +194,8 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		return "";
 	}
 
-	@Override public String visitTry_catch(NuttParser.Try_catchContext ctx)
+	@Override
+	public String visitTry_catch(NuttParser.Try_catchContext ctx)
 	{
 		var tryBranch=ctx.try_branch;
 		var catchBranch=ctx.catch_branch;
@@ -293,10 +222,10 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 	{
 		Function<NuttParser.ExpContext,Boolean> visitExp=
 				exp->new NuttConditionVisitor(parser,interpreter).visit(exp);
-		Function<List<Boolean>,Boolean> allIsTrue=(list)->list.stream().allMatch(Boolean::valueOf);
-		Function<List<NuttParser.ExpContext>,List<Boolean>> evalAsBoolList=(expList)->expList.stream()
-		                                                                                     .map(visitExp)
-		                                                                                     .toList();
+		Function<List<Boolean>,Boolean> allIsTrue=list->list.stream().allMatch(b->b);
+		Function<List<NuttParser.ExpContext>,List<Boolean>> evalAsBoolList=expList->expList.stream()
+		                                                                                   .map(visitExp)
+		                                                                                   .toList();
 		while(allIsTrue.apply(evalAsBoolList.apply(ctx.explist().exp())))
 		{
 			visitBlock(ctx.do_done_block().block());
@@ -304,11 +233,15 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		return "";
 	}
 
-	@Override public String visitDemand(NuttParser.DemandContext ctx)
+	@Override
+	public String visitDemand(NuttParser.DemandContext ctx)
 	{
 		if(!new NuttConditionVisitor(parser,interpreter).visitDemand(ctx))
 		{
-			throw new RuntimeException("Fail on demand: "+NuttEnvironment.toSourceCode(ctx.exp()));
+			throw new RuntimeException("Fail on demand: "+ctx.exp().toStringTree(parser));//NuttEnvironment
+			// .toSourceCode(ctx
+			// .exp()
+			// ,parser));
 		}
 		return "";
 	}
@@ -327,7 +260,8 @@ public class NuttStatementVisitor extends NuttBaseVisitor<String>
 		return "";
 	}
 
-	@Override public String visitFunction_yield(NuttParser.Function_yieldContext ctx)
+	@Override
+	public String visitFunction_yield(NuttParser.Function_yieldContext ctx)
 	{
 		//interpreter.currentScope.yield.valuable=new NuttEvalVisitor(parser,interpreter).visit(ctx.exp());
 		interpreter.currentScope.setVariable("yield",new NuttEvalVisitor(parser,interpreter).visit(ctx.exp()));

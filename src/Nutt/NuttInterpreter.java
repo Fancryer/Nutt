@@ -2,9 +2,11 @@ package Nutt;
 
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.IValuable;
+import gen.NuttParser;
 
 import java.util.EmptyStackException;
 import java.util.List;
+import java.util.Objects;
 
 public class NuttInterpreter
 {
@@ -70,6 +72,12 @@ public class NuttInterpreter
 	public void sayNewLine(Object o)
 	{
 		System.out.println(ConsoleColorizer.colorize(o.toString(),outputColor));
+	}
+
+	public void clear()
+	{
+		forgetAll();
+		currentScope=new NuttScope();
 	}
 
 	public static class Variable
@@ -143,5 +151,31 @@ public class NuttInterpreter
 		var old=currentScope;
 		currentScope=currentScope.parent;
 		return old;
+	}
+
+	public void importModule(String moduleContent,NuttStatementVisitor statementVisitor)
+	{
+		var importedChunk=NuttEnvironment.getTempParser(moduleContent).chunk();
+		if(importedChunk.module()!=null)
+		{
+			if(importedChunk.module().block()!=null)
+			{
+				importedChunk.module()
+				             .block()
+				             .stat()
+				             .stream()
+				             .map(NuttParser.StatContext::functiondef_stat)
+				             .filter(Objects::nonNull)
+				             .toList()
+				             .forEach(statementVisitor::visitFunctiondef_stat);
+			}
+		}
+		statementVisitor.visit(importedChunk);
+	}
+
+	public void importModule(NuttParser.Module_nameContext ctx,NuttStatementVisitor statementVisitor)
+	{
+		if(ctx==null) return;
+		importModule(NuttCommon.readFile("modules\\"+statementVisitor.visitModule_name(ctx)+".nutt"),statementVisitor);
 	}
 }

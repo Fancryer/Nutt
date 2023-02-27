@@ -7,11 +7,8 @@ import java.util.*;
 
 public class NuttCommon
 {
-	private static final List<String> nuttTypes=List.of
-			(
-					"Either","Valuable","Nil","Functional","Actionable","Procedure","Macro","Numerable","Int","Float",
-					"Listable","Array","Map","String","Set","Enumeration"
-			);
+	private static final List<String> nuttTypes=List.of("Valuable","Nil","Functional","Actionable","Procedure","Macro","Numerable","Int","Float","Listable",
+	                                                    "Array","Map","String","Set","Enumeration");
 
 	public static boolean isTypeValid(String type)
 	{
@@ -49,24 +46,35 @@ public class NuttCommon
 
 		public java.lang.String toString()
 		{
-			StringBuilder sb=new StringBuilder();
-			Iterator<Map.Entry<K,V>> iter=map.entrySet().iterator();
+			var sb=new StringBuilder();
+			var iter=map.entrySet().iterator();
 			while(iter.hasNext())
 			{
-				Map.Entry<K,V> entry=iter.next();
-				sb.append(entry.getKey());
-				sb.append('=').append('"');
-				sb.append(entry.getValue());
-				sb.append('"');
+				var entry=iter.next();
+				sb.append(entry.getKey()).append('=').append('"').append(entry.getValue()).append('"');
 				if(iter.hasNext()) sb.append(',').append(' ');
 			}
 			return sb.toString();
-
 		}
 	}
 
-	public static<T> List<T> getOrEmpty(List<T> collection)
+	public static <T> List<T> getOrEmpty(List<T> collection)
 	{
 		return Objects.requireNonNullElse(collection,new ArrayList<>());
+	}
+
+	public static String getSubstring(String str,int start,int length)
+	{
+		return str.substring(start,Math.min(start+length,str.length()));
+	}
+
+	public static String removeFirstChar(String str)
+	{
+		return str.substring(1);
+	}
+
+	public static String removeLastChar(String str)
+	{
+		return str.substring(0,str.length()-1);
 	}
 }

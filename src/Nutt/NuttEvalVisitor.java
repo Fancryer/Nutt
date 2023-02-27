@@ -49,11 +49,12 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	@Override
 	public IValuable visitString(NuttParser.StringContext ctx)
 	{
-		var stringContent=new java.lang.StringBuilder(ctx.getText());
-		stringContent.deleteCharAt(0).deleteCharAt(stringContent.length()-1);
-		var inferred=new String(stringContent.toString());
-		if(debug) System.out.println(inferred);
-		return inferred;
+		java.lang.String str;
+		if(ctx.NORMALSTRING()!=null) str=ctx.NORMALSTRING().getSymbol().getText();
+		else if(ctx.CHARSTRING()!=null) str=ctx.CHARSTRING().getSymbol().getText();
+		else if(ctx.LONGSTRING()!=null) str=ctx.LONGSTRING().getSymbol().getText();
+		else throw new RuntimeException();
+		return new String(NuttCommon.removeLastChar(NuttCommon.removeFirstChar(str)));
 	}
 
 	@Override
@@ -145,9 +146,9 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	}
 
 	@Override
-	public IValuable visitEither_output(NuttParser.Either_outputContext ctx)
+	public IValuable visitValuable_output(NuttParser.Valuable_outputContext ctx)
 	{
-		if(ctx.either_type()!=null) return new Nil();
+		if(ctx.valuable_type()!=null) return new Nil();
 		throw new RuntimeException();
 	}
 
@@ -162,7 +163,7 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	@Override
 	public IValuable visitFunc_output(NuttParser.Func_outputContext ctx)
 	{
-		if(ctx.either_output()!=null) return visitEither_output(ctx.either_output());
+		if(ctx.valuable_output()!=null) return visitValuable_output(ctx.valuable_output());
 		if(ctx.default_output()!=null) return visitDefault_output(ctx.default_output());
 		throw new RuntimeException();
 	}
@@ -186,10 +187,11 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	//		return new Nutt.NuttFunctionVisitor(parser,interpreter).visitFunctionCallExp(ctx);
 	//	}
 
-
-	@Override public IValuable visitFull_type_of_exp(NuttParser.Full_type_of_expContext ctx)
+	@Override
+	public IValuable visitInstance_of_exp(NuttParser.Instance_of_expContext ctx)
 	{
-		return new String(visit(ctx.exp()).getFullType());
+		var ceilType=ctx.type_exp!=null?visit(ctx.type_exp).getType():ctx.type_decl().getText();
+		return new String(new TypeInferencer().verdict(ceilType,visit(ctx.to_check).getType()).toString());
 	}
 
 	@Override
@@ -201,36 +203,39 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 	@Override
 	public IValuable visitMath_exp(NuttParser.Math_expContext ctx)
 	{
-		var op=ctx.operator_math();
+		var op=ctx.operator_math().getText();
 		IValuable left=visit(ctx.left), right=visit(ctx.right);
+
 		if(!new TypeInferencer().verdict("Numerable",left.getType()))
 		{
-			var fmt="left operator is %s, not Numerable!".formatted(left.getType());
-			System.out.printf("Math context: "+NuttEnvironment.toSourceCode(ctx));
-			throw new RuntimeException(fmt);
+			throw new ArithmeticException("Cannot perform '"+op+"': left operand is "+left.getType()+", not Numerable!");
 		}
 		if(!new TypeInferencer().verdict("Numerable",right.getType()))
 		{
-			var fmt="right operator is %s, not Numerable!".formatted(right.getType());
-			throw new RuntimeException(fmt);
+			throw new ArithmeticException("Cannot perform '"+op+"': right operand is "+right.getType()+", not Numerable!");
 		}
 		var l_val=left.asFunctional().asNumerable();
 		var r_val=right.asFunctional().asNumerable();
-		if(op.OP_Add()!=null) return add(l_val,r_val);
-		if(op.OP_Sub()!=null) return sub(l_val,r_val);
-		if(op.OP_Mult()!=null) return mult(l_val,r_val);
-		if(op.OP_Div()!=null) return div(l_val,r_val);
-		if(op.OP_Mod()!=null) return mod(l_val,r_val);
-		if(op.OP_IntDiv()!=null) return intDiv(l_val,r_val);
-		throw new UnsupportedOperationException("Unsupported operation: "+op.getText());
+		return switch(op)
+				{
+					case "+" -> add(l_val,r_val);
+					case "-" -> sub(l_val,r_val);
+					case "*" -> mult(l_val,r_val);
+					case "/" -> div(l_val,r_val);
+					case "%" -> mod(l_val,r_val);
+					case "//" -> intDiv(l_val,r_val);
+					default -> throw new UnsupportedOperationException("Unsupported operation: "+op);
+				};
 	}
 
-	@Override public IValuable visitExplicit_array(NuttParser.Explicit_arrayContext ctx)
+	@Override
+	public IValuable visitExplicit_array(NuttParser.Explicit_arrayContext ctx)
 	{
 		return new NuttArrayVisitor(parser,interpreter).visitExplicit_array(ctx);
 	}
 
-	@Override public IValuable visitArray_access(NuttParser.Array_accessContext ctx)
+	@Override
+	public IValuable visitArray_access(NuttParser.Array_accessContext ctx)
 	{
 		var evaluator=new NuttEvalVisitor(parser,interpreter);
 		var interferencer=new TypeInferencer();
@@ -244,7 +249,7 @@ public class NuttEvalVisitor extends NuttBaseVisitor<IValuable>
 		if(!"Int".equals(index.getType()))
 		{
 			throw new RuntimeException(
-					new InvalidTypeException("Cannot access element of array with index of "+index.getType()+" type" +
+					new InvalidTypeException("Cannot access element of array with index of "+index.getType()+" type"+
 					                         "!"));
 		}
 		return array.asFunctional().asListable().getAt(index.asFunctional().asNumerable().asInt());

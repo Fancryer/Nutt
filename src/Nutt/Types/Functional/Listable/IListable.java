@@ -7,6 +7,8 @@ import Nutt.Types.Functional.Listable.Set.Set;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.IValuable;
 
+import java.util.List;
+
 public interface IListable extends IFunctional
 {
 	default Array asArray()
@@ -69,6 +71,8 @@ public interface IListable extends IFunctional
 		return insertAt(value,i.asLong().intValue());
 	}
 
+	List<IValuable> getElements();
+	
 	@Override default String getWrapType()
 	{
 		return "Functional";

@@ -1,0 +1,22 @@
+module comb_sort
+
+funct comb_sort(var arr:Array):Array=
+	var gap=#arr var swapped=true
+	while gap>1||swapped do
+		if gap>1 then gap//=1.247330950103979 end
+		var i=0
+		swapped=false
+		while (i+gap)<#arr do
+			if arr[i]>arr[i+gap]
+				var tmp=arr[i]
+				arr[i]=arr[i+gap]
+				arr[i+gap]=tmp
+				swapped=true
+			end
+			i++
+		done
+	done
+	yield arr
+return
+
+end

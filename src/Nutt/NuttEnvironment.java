@@ -17,6 +17,10 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Tree;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.IntStream;
+
 public class NuttEnvironment
 {
 	NuttLexer lexer;
@@ -29,16 +33,6 @@ public class NuttEnvironment
 	public NuttEnvironment()
 	{
 
-	}
-
-	public NuttEnvironment(java.lang.String source)
-	{
-		this(source,false);
-	}
-
-	public NuttEnvironment(java.lang.String source,boolean debug)
-	{
-		this(source,debug,false);
 	}
 
 	public NuttEnvironment(java.lang.String source,boolean debug,boolean drawEnvironment)
@@ -57,6 +51,12 @@ public class NuttEnvironment
 			var map_header=ConsoleColorizer.colorize("Variables: %n".formatted(),"blue");
 			System.out.println(map_header+ConsoleColorizer.colorize(interpreter.currentScope.toString(),"yellow"));
 		}
+		clearInterpreter();
+	}
+
+	private void clearInterpreter()
+	{
+		interpreter.clear();
 	}
 
 	public static IValuable constructValuable(java.lang.String type)
@@ -76,22 +76,31 @@ public class NuttEnvironment
 
 	public static NuttInterpreter.Variable constructNil(java.lang.String name,boolean isConstant)
 	{
-		return new NuttInterpreter.Variable("Either",new Nil(),name,isConstant);
+		return new NuttInterpreter.Variable("Valuable",new Nil(),name,isConstant);
 	}
 
-	public NuttEnvironment visit(java.lang.String source)
+	public static List<Tree> getChildren(Tree tree)
 	{
-		return visit(source,false);
+		var count=tree.getChildCount();
+		List<Tree> children=new ArrayList<>();
+		if(count==0) return children;
+		IntStream.range(0,count).forEach(i->children.add(tree.getChild(i)));
+		return children;
+	}
+
+	public static NuttParser getTempParser(java.lang.String source)
+	{
+		return new NuttParser(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
 	}
 
 	public NuttEnvironment visit(java.lang.String source,boolean debug)
 	{
-		setup(source,debug);
+		var parser=setup(source,debug);
 		interpreter.statementVisitor.visit(tree);
 		return this;
 	}
 
-	private void setup(java.lang.String source,boolean debug)
+	private NuttParser setup(java.lang.String source,boolean debug)
 	{
 		this.debug=debug;
 		lexer=new NuttLexer(CharStreams.fromString(source));
@@ -100,6 +109,7 @@ public class NuttEnvironment
 		tree=parser.chunk();
 		interpreter=new NuttInterpreter();
 		interpreter.statementVisitor=new NuttStatementVisitor(parser,interpreter,debug);
+		return parser;
 	}
 
 	public static java.lang.String toSourceCode(Tree tree,StringBuilder stringBuilder)
@@ -107,16 +117,11 @@ public class NuttEnvironment
 		int childCount=tree.getChildCount();
 		for(int childIndex=0;childIndex<childCount;childIndex++)
 		{
-			Tree child=tree.getChild(childIndex);
-			if(child instanceof TerminalNode parserRuleContext)
-			{
-				java.lang.String text=parserRuleContext+" ";
-				stringBuilder.append(text);
-			}
+			var child=tree.getChild(childIndex);
+			if(child instanceof TerminalNode parserRuleContext) stringBuilder.append(parserRuleContext).append(" ");
 			toSourceCode(child,stringBuilder);
 		}
-		java.lang.String recoveredSourceCode=stringBuilder.toString().trim();
-		return recoveredSourceCode.replace("<EOF>","");
+		return stringBuilder.toString().trim().replace("<EOF>","");
 	}
 
 	public static java.lang.String toSourceCode(Tree tree)

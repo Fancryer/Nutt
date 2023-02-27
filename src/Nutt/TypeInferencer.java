@@ -1,31 +1,36 @@
 package Nutt;
 
+import Nutt.Common.TypeRelation;
+
 import java.util.*;
+import java.util.function.BiFunction;
 
 public class TypeInferencer
 {
-	private final HashMap<String,Set<String>> typeRelations;
 	private final HashMap<String,Set<String>> typeCorrections;
+	private final ArrayList<TypeRelation> typeRelations;
 
 	public TypeInferencer()
 	{
 		this(getDefaultRelations());
 	}
 
-	private static HashMap<String,Set<String>> getDefaultRelations()
+	public TypeInferencer(ArrayList<TypeRelation> typeRelations)
 	{
-		HashMap<String,Set<String>> relations=new HashMap<>();
-		relations.put("Either",Set.of("Valuable"));
-		relations.put("Valuable",Set.of("Functional","Nil"));
-		relations.put("Functional",Set.of("Actionable","Numerable","Listable"));
-		relations.put("Actionable",Set.of("Procedure","Macro"));
-		relations.put("Numerable",Set.of("Int","Float"));
-		relations.put("Listable",Set.of("Array","Map","String","Set"));
-		relations.put("Set",Set.of("Enumeration"));
-		return relations;
+		this.typeCorrections=getDefaultCorrections();
+		this.typeRelations=new ArrayList<>(getDefaultRelations());
+		this.typeRelations.addAll(typeRelations);
 	}
 
-	private static HashMap<String,Set<String>> getDefaultCorrections()
+	static ArrayList<TypeRelation> getDefaultRelations()
+	{
+		BiFunction<String,Set<String>,TypeRelation> rel=TypeRelation::new;
+		return new ArrayList<>(List.of(rel.apply("Valuable",Set.of("Functional","Nil")),rel.apply("Functional",Set.of("Actionable","Numerable","Listable")),
+		                               rel.apply("Actionable",Set.of("Procedure","Macro")),rel.apply("Numerable",Set.of("Int","Float")),
+		                               rel.apply("Listable",Set.of("Array","Map","String","Set")),rel.apply("Set",Set.of("Enumeration"))));
+	}
+
+	static HashMap<String,Set<String>> getDefaultCorrections()
 	{
 		HashMap<String,Set<String>> corrections=new HashMap<>();
 		corrections.put("Functional",Set.of("Function","IFunctional"));
@@ -35,10 +40,14 @@ public class TypeInferencer
 		return corrections;
 	}
 
-	public TypeInferencer addTypeRelation(String type,Set<String> members)
+	private static TypeRelation mapEntryToRelation(Map<String,Set<String>> map,String key)
 	{
-		typeRelations.put(type,members);
-		return this;
+		return new TypeRelation(key,map.get(key));
+	}
+
+	private static TypeRelation mapEntryToRelation(Map.Entry<String,Set<String>> entry)
+	{
+		return new TypeRelation(entry.getKey(),entry.getValue());
 	}
 
 	public TypeInferencer addTypeCorrection(Set<String> toCorrect,String type)
@@ -47,41 +56,31 @@ public class TypeInferencer
 		return this;
 	}
 
-	public TypeInferencer(HashMap<String,Set<String>> typeRelations)
-	{
-		this.typeRelations=typeRelations;
-		this.typeCorrections=getDefaultCorrections();
-	}
-
-	public boolean extendsOrEqual(String typeA,String typeB)
+	public Boolean extendsOrEqual(String typeA,String typeB)
 	{
 		var types=compressTypes(typeA);
 		//System.out.println(types);
 		return types.contains(typeB);
 	}
 
-	public boolean isContainer(String type)
+	public Boolean isContainer(String type)
 	{
 		var qualifyingTypes=type.split("\\|");
 		return switch(qualifyingTypes.length)
 				{
 					case 0 -> false;
 					case 1 -> !Objects.equals(qualifyingTypes[0],"String")&&verdict("Listable",qualifyingTypes[0]);
-					default ->
-					{
-						if(verdict("Listable",qualifyingTypes[0])) yield isContainer(qualifyingTypes[0]);
-						yield false;
-					}
+					default -> verdict("Listable",qualifyingTypes[0])?isContainer(qualifyingTypes[0]):Boolean.valueOf(false);
 				};
 	}
 
-	public boolean verdict(String typeA,String typeB)
+	public Boolean verdict(String typeA,String typeB)
 	{
-		//boolean aIsContainer=isContainer(typeA);
+		//Boolean aIsContainer=isContainer(typeA);
 		return extendsOrEqual(typeA,typeB)||canStore(typeA,typeB);
 	}
 
-	public boolean verdict(boolean extendsOrEqual,boolean canStore)
+	public Boolean verdict(Boolean extendsOrEqual,Boolean canStore)
 	{
 		return extendsOrEqual||canStore;
 	}
@@ -96,7 +95,7 @@ public class TypeInferencer
 		return intersect(compressTypes(correctType(ceilType)),compressTypes(correctType(floorType)));
 	}
 
-	public boolean canStore(String ceilType,String floorType)
+	public Boolean canStore(String ceilType,String floorType)
 	{
 		var intersection=intersectTypes(ceilType,floorType);
 		return !intersection.isEmpty()&&!intersection.contains(ceilType);
@@ -145,60 +144,31 @@ public class TypeInferencer
 
 	private Set<String> getMembers(String type)
 	{
-		var memberSet=typeRelations.get(type);
+		var memberSet=typeRelations.stream().filter(t->Objects.equals(t.typeName(),type)).findFirst().orElse(null);
 		if(memberSet==null) return new HashSet<>();
-		if(memberSet.size()==1) return compressTypes(memberSet.stream().findFirst().get());
-		return compressedUnion(memberSet);
+		if(memberSet.members().size()==1) return compressTypes(memberSet.members().stream().findFirst().get());
+		return compressedUnion(memberSet.members());
 	}
 
 	public String getWrapType(String type)
 	{
-		return typeRelations.entrySet()
-		                    .stream()
-		                    .filter(rel->rel.getValue().contains(type))
-		                    .findFirst()
-		                    .map(Map.Entry::getKey)
-		                    .orElse("");
+		var rel=typeRelations.stream().filter(r->r.members().contains(type)).findFirst().orElse(null);
+		return rel!=null?rel.typeName():"";
 	}
 
 	public String getCommonWrapperType(String typeA,String typeB)
 	{
 		Map<String,Set<String>> commonTypes=new HashMap<>();
-		for(var rel: typeRelations.entrySet())
+		for(var rel: typeRelations)
 		{
-			var members=getMembers(rel.getKey());
+			var members=getMembers(rel.typeName());
 			if(!members.containsAll(List.of(typeA,typeB))) continue;
-			commonTypes.put(rel.getKey(),members);
+			commonTypes.put(rel.typeName(),members);
+			//System.out.println(rel.typeName()+" "+commonTypes.entrySet());
 		}
-		return commonTypes.entrySet().stream().min(Comparator.comparingInt(e->e.getValue().size())).orElse(
-				new AbstractMap.SimpleEntry<>("Either",getDefaultRelations().get("Either"))).getKey();
+		//System.out.println();
+		var commonType=commonTypes.entrySet().stream().min(Comparator.comparingInt(e->e.getValue().size()));
+		if(commonType.isPresent())return commonType.get().getKey();
+		return "Valuable";
 	}
-
-	/*
-	def find_common_type(array_types, scalar_types):
-    array_types = [dtype(x) for x in array_types]
-    scalar_types = [dtype(x) for x in scalar_types]
-
-    maxa = _can_coerce_all(array_types)
-    maxsc = _can_coerce_all(scalar_types)
-
-    if maxa is None:
-        return maxsc
-
-    if maxsc is None:
-        return maxa
-
-    try:
-        index_a = _kind_list.index(maxa.kind)
-        index_sc = _kind_list.index(maxsc.kind)
-    except ValueError:
-        return None
-
-    if index_sc > index_a:
-        return _find_common_coerce(maxsc, maxa)
-    else:
-        return maxa
-
-
-	*/
 }

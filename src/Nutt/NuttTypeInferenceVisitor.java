@@ -30,14 +30,14 @@ public class NuttTypeInferenceVisitor extends NuttBaseVisitor<String>
 	public String visitFunc_output(NuttParser.Func_outputContext ctx)
 	{
 		if(ctx.default_output()!=null) return visitType_decl(ctx.default_output().type_decl());
-		if(ctx.either_output()!=null) return "Either";
+		if(ctx.valuable_output()!=null) return "Valuable";
 		throw new RuntimeException();
 	}
 	
 	@Override
 	public String visitType_decl(NuttParser.Type_declContext ctx)
 	{
-		if(ctx.either_type()!=null) return "Either";
+		if(ctx.valuable_type()!=null) return "Valuable";
 		if(ctx.number_type()!=null)
 		{
 			return ctx.number_type().int_type()!=null?"Int":"Float";

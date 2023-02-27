@@ -65,11 +65,35 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitStat(NuttParser.StatContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#array_set}.
+	 * Visit a parse tree produced by {@link NuttParser#type_def}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArray_set(NuttParser.Array_setContext ctx);
+	T visitType_def(NuttParser.Type_defContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#type_select}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitType_select(NuttParser.Type_selectContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#type_member}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitType_member(NuttParser.Type_memberContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#enum_def}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEnum_def(NuttParser.Enum_defContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#var_or_array_access}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVar_or_array_access(NuttParser.Var_or_array_accessContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link NuttParser#group_assignment}.
 	 * @param ctx the parse tree
@@ -94,18 +118,6 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitDo_done_block(NuttParser.Do_done_blockContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#while_do_loop}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitWhile_do_loop(NuttParser.While_do_loopContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#repeat_until_loop}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link NuttParser#in_place_op_stat}.
 	 * @param ctx the parse tree
@@ -149,6 +161,12 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFlat_name_list(NuttParser.Flat_name_listContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link NuttParser#loop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLoop(NuttParser.LoopContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link NuttParser#for_loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -167,23 +185,17 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFor_each_loop(NuttParser.For_each_loopContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#loop}.
+	 * Visit a parse tree produced by {@link NuttParser#while_do_loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitLoop(NuttParser.LoopContext ctx);
+	T visitWhile_do_loop(NuttParser.While_do_loopContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#attnamelist}.
+	 * Visit a parse tree produced by {@link NuttParser#repeat_until_loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAttnamelist(NuttParser.AttnamelistContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#attrib}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAttrib(NuttParser.AttribContext ctx);
+	T visitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link NuttParser#laststat}.
 	 * @param ctx the parse tree
@@ -269,6 +281,12 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitType_decl(NuttParser.Type_declContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link NuttParser#valuable_type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitValuable_type(NuttParser.Valuable_typeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link NuttParser#action_kind}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -280,6 +298,12 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAction_type(NuttParser.Action_typeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#enumeration_initializer}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEnumeration_initializer(NuttParser.Enumeration_initializerContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link NuttParser#list_initializer}.
 	 * @param ctx the parse tree
@@ -347,12 +371,6 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitString_type(NuttParser.String_typeContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#either_type}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEither_type(NuttParser.Either_typeContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link NuttParser#functional_type}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -371,18 +389,23 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitVar_decl_list(NuttParser.Var_decl_listContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link NuttParser#enum_list}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEnum_list(NuttParser.Enum_listContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link NuttParser#explist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExplist(NuttParser.ExplistContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code power_expression}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * Visit a parse tree produced by {@link NuttParser#enum_case}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPower_expression(NuttParser.Power_expressionContext ctx);
+	T visitEnum_case(NuttParser.Enum_caseContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code explicit_array}
 	 * labeled alternative in {@link NuttParser#exp}.
@@ -412,20 +435,6 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitArray_access(NuttParser.Array_accessContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code full_type_of_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFull_type_of_exp(NuttParser.Full_type_of_expContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code func_call_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFunc_call_exp(NuttParser.Func_call_expContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code type_cast}
 	 * labeled alternative in {@link NuttParser#exp}.
 	 * @param ctx the parse tree
@@ -439,27 +448,6 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStr_cat_expression(NuttParser.Str_cat_expressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code explicit_macro}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExplicit_macro(NuttParser.Explicit_macroContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code comparison_expression}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitComparison_expression(NuttParser.Comparison_expressionContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code quarternary_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitQuarternary_exp(NuttParser.Quarternary_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code unary_expression}
 	 * labeled alternative in {@link NuttParser#exp}.
@@ -482,6 +470,13 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFold_left_expression(NuttParser.Fold_left_expressionContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code instance_of_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInstance_of_exp(NuttParser.Instance_of_expContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code math_exp}
 	 * labeled alternative in {@link NuttParser#exp}.
 	 * @param ctx the parse tree
@@ -495,13 +490,6 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitExplicit_atom(NuttParser.Explicit_atomContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code parenthesis_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code function_definition_exp}
 	 * labeled alternative in {@link NuttParser#exp}.
@@ -517,6 +505,62 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitType_of_exp(NuttParser.Type_of_expContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code fold_right_expression}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFold_right_expression(NuttParser.Fold_right_expressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code power_expression}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPower_expression(NuttParser.Power_expressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code func_call_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunc_call_exp(NuttParser.Func_call_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code explicit_macro}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExplicit_macro(NuttParser.Explicit_macroContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code comparison_expression}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitComparison_expression(NuttParser.Comparison_expressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code quarternary_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitQuarternary_exp(NuttParser.Quarternary_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code parenthesis_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code explicit_enum_case}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExplicit_enum_case(NuttParser.Explicit_enum_caseContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code func_cat_exp}
 	 * labeled alternative in {@link NuttParser#exp}.
 	 * @param ctx the parse tree
@@ -524,12 +568,37 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunc_cat_exp(NuttParser.Func_cat_expContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code fold_right_expression}
+	 * Visit a parse tree produced by the {@code explicit_enumeration}
 	 * labeled alternative in {@link NuttParser#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFold_right_expression(NuttParser.Fold_right_expressionContext ctx);
+	T visitExplicit_enumeration(NuttParser.Explicit_enumerationContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code match_to_exp}
+	 * labeled alternative in {@link NuttParser#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMatch_to_exp(NuttParser.Match_to_expContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#match_branch}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMatch_branch(NuttParser.Match_branchContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#match_branch_qualifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMatch_branch_qualifier(NuttParser.Match_branch_qualifierContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NuttParser#match_case}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMatch_case(NuttParser.Match_caseContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link NuttParser#atom}.
 	 * @param ctx the parse tree
@@ -591,11 +660,11 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitFunc_output(NuttParser.Func_outputContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#either_output}.
+	 * Visit a parse tree produced by {@link NuttParser#valuable_output}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitEither_output(NuttParser.Either_outputContext ctx);
+	T visitValuable_output(NuttParser.Valuable_outputContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link NuttParser#default_output}.
 	 * @param ctx the parse tree

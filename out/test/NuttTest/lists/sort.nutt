@@ -1,0 +1,20 @@
+module sort
+
+funct sort(var array:Array):Array=
+	var i=0
+	while i<#array-1 do
+		var minPos=i
+		var j=i+1
+		while j<#array do
+			if array[j]<array[minPos] minPos=j end
+			j++
+		done
+		var saveValue=array[minPos]
+        array[minPos]=array[i]
+        array[i]=saveValue
+		i++
+	done
+	yield array
+return
+
+end

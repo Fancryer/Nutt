@@ -125,13 +125,61 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArray_set(NuttParser.Array_setContext ctx) { }
+	@Override public void enterType_def(NuttParser.Type_defContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArray_set(NuttParser.Array_setContext ctx) { }
+	@Override public void exitType_def(NuttParser.Type_defContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterType_select(NuttParser.Type_selectContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitType_select(NuttParser.Type_selectContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterType_member(NuttParser.Type_memberContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitType_member(NuttParser.Type_memberContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterEnum_def(NuttParser.Enum_defContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitEnum_def(NuttParser.Enum_defContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterVar_or_array_access(NuttParser.Var_or_array_accessContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVar_or_array_access(NuttParser.Var_or_array_accessContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -180,30 +228,6 @@ public class NuttBaseListener implements NuttListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitDo_done_block(NuttParser.Do_done_blockContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterWhile_do_loop(NuttParser.While_do_loopContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitWhile_do_loop(NuttParser.While_do_loopContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -293,6 +317,18 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterLoop(NuttParser.LoopContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLoop(NuttParser.LoopContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterFor_loop(NuttParser.For_loopContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -329,37 +365,25 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterLoop(NuttParser.LoopContext ctx) { }
+	@Override public void enterWhile_do_loop(NuttParser.While_do_loopContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitLoop(NuttParser.LoopContext ctx) { }
+	@Override public void exitWhile_do_loop(NuttParser.While_do_loopContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAttnamelist(NuttParser.AttnamelistContext ctx) { }
+	@Override public void enterRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitAttnamelist(NuttParser.AttnamelistContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAttrib(NuttParser.AttribContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAttrib(NuttParser.AttribContext ctx) { }
+	@Override public void exitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -533,6 +557,18 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterValuable_type(NuttParser.Valuable_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitValuable_type(NuttParser.Valuable_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAction_kind(NuttParser.Action_kindContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -552,6 +588,18 @@ public class NuttBaseListener implements NuttListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAction_type(NuttParser.Action_typeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterEnumeration_initializer(NuttParser.Enumeration_initializerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitEnumeration_initializer(NuttParser.Enumeration_initializerContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -689,18 +737,6 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEither_type(NuttParser.Either_typeContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitEither_type(NuttParser.Either_typeContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterFunctional_type(NuttParser.Functional_typeContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -737,6 +773,18 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterEnum_list(NuttParser.Enum_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitEnum_list(NuttParser.Enum_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterExplist(NuttParser.ExplistContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -749,13 +797,13 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPower_expression(NuttParser.Power_expressionContext ctx) { }
+	@Override public void enterEnum_case(NuttParser.Enum_caseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitPower_expression(NuttParser.Power_expressionContext ctx) { }
+	@Override public void exitEnum_case(NuttParser.Enum_caseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -809,30 +857,6 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFull_type_of_exp(NuttParser.Full_type_of_expContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFull_type_of_exp(NuttParser.Full_type_of_expContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterFunc_call_exp(NuttParser.Func_call_expContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFunc_call_exp(NuttParser.Func_call_expContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterType_cast(NuttParser.Type_castContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -852,42 +876,6 @@ public class NuttBaseListener implements NuttListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStr_cat_expression(NuttParser.Str_cat_expressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterExplicit_macro(NuttParser.Explicit_macroContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExplicit_macro(NuttParser.Explicit_macroContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterComparison_expression(NuttParser.Comparison_expressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitComparison_expression(NuttParser.Comparison_expressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterQuarternary_exp(NuttParser.Quarternary_expContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitQuarternary_exp(NuttParser.Quarternary_expContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -929,6 +917,18 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterInstance_of_exp(NuttParser.Instance_of_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInstance_of_exp(NuttParser.Instance_of_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterMath_exp(NuttParser.Math_expContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -948,18 +948,6 @@ public class NuttBaseListener implements NuttListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitExplicit_atom(NuttParser.Explicit_atomContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterParenthesis_exp(NuttParser.Parenthesis_expContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitParenthesis_exp(NuttParser.Parenthesis_expContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -989,6 +977,102 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterFold_right_expression(NuttParser.Fold_right_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFold_right_expression(NuttParser.Fold_right_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPower_expression(NuttParser.Power_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPower_expression(NuttParser.Power_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFunc_call_exp(NuttParser.Func_call_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunc_call_exp(NuttParser.Func_call_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExplicit_macro(NuttParser.Explicit_macroContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExplicit_macro(NuttParser.Explicit_macroContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterComparison_expression(NuttParser.Comparison_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitComparison_expression(NuttParser.Comparison_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterQuarternary_exp(NuttParser.Quarternary_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitQuarternary_exp(NuttParser.Quarternary_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterParenthesis_exp(NuttParser.Parenthesis_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParenthesis_exp(NuttParser.Parenthesis_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExplicit_enum_case(NuttParser.Explicit_enum_caseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExplicit_enum_case(NuttParser.Explicit_enum_caseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterFunc_cat_exp(NuttParser.Func_cat_expContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1001,13 +1085,61 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterFold_right_expression(NuttParser.Fold_right_expressionContext ctx) { }
+	@Override public void enterExplicit_enumeration(NuttParser.Explicit_enumerationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitFold_right_expression(NuttParser.Fold_right_expressionContext ctx) { }
+	@Override public void exitExplicit_enumeration(NuttParser.Explicit_enumerationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMatch_to_exp(NuttParser.Match_to_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMatch_to_exp(NuttParser.Match_to_expContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMatch_branch(NuttParser.Match_branchContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMatch_branch(NuttParser.Match_branchContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMatch_branch_qualifier(NuttParser.Match_branch_qualifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMatch_branch_qualifier(NuttParser.Match_branch_qualifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterMatch_case(NuttParser.Match_caseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMatch_case(NuttParser.Match_caseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1133,13 +1265,13 @@ public class NuttBaseListener implements NuttListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterEither_output(NuttParser.Either_outputContext ctx) { }
+	@Override public void enterValuable_output(NuttParser.Valuable_outputContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitEither_output(NuttParser.Either_outputContext ctx) { }
+	@Override public void exitValuable_output(NuttParser.Valuable_outputContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

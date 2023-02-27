@@ -1,45 +1,15 @@
 module main
 
 /|
-funct swap(var a,var b):Array=
-	a,b=b,a
-	yield{a,b}
-return
+imports lists.{slice,from_string},strings.from_array
 
-funct combSort(var arr:Array):Array=
-	var gap=#arr
-	var swapped=true
-	while (gap>1)||swapped do
-		if gap>1 then gap//=1.247330950103979 end
-		var i=0
-		swapped=false
-		while (i+gap)<#arr do
-			if arr[i]>arr[i+gap]
-				var t=arr[i]
-				arr[i]=arr[i+gap]
-				arr[i+gap]=t
-				swapped=true
-			end
-			i++
-		done
-	done
-	yield arr
-return
+var str_slice=slice(from_string("Hello, world!"),3,10)
+say(str_slice)
 
-var arr=
-{
-	4512,7108,-516,7222,8510,3400,-8803,7270,-3379,2455,2303,-9723,325,-8525,6155,-4215,776,4396,-5795,-4538,8904,8246,
-	-8971,-1865,-4030,-625,-7076,-9600,-4254,3749,5580,-2049,8043,8433,6186,6991,-8343,-7830,-2507,7764,-6811,-5887,
-	-6279,1383,-3753,-6111,-8480,-8006,-4476,7225,-9385,691,-2559,-7572,2400,7063,2422,-9762,8467,-3653,6587,-3598,
-	-8200,-3803,1720,-6143,-1022,-7249,3210,-8028,2064,-5255,-4613,8430,-2416,-7563,7189,4843,-7079,-382,9884,-5144,
-	-9061,6990,-3504,3316,-6453,259,194,4467,480,-8508,9987,5737,4016,-2165,9307,-3243,4761,9286
-}
-
-say(combSort(arr))
+say(from_array(str_slice))
 |\
 
-var i=0
-i..=90
+say((10.0+4)/4)
 
 end
 

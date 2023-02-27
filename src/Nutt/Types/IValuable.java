@@ -17,7 +17,7 @@ public interface IValuable extends Comparable<IValuable>
 
 	default String getWrapType()
 	{
-		return "Either";
+		return null;
 	}
 
 	default IFunctional asFunctional()

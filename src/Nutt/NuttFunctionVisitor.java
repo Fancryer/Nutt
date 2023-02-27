@@ -9,10 +9,7 @@ import gen.NuttParser;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
-import java.util.EmptyStackException;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -69,7 +66,7 @@ public class NuttFunctionVisitor extends NuttBaseVisitor<IValuable>
 	private Supplier<Array> getAppend(List<IValuable> args)
 	{
 		Function<IValuable,Array> asArray=v->v.asFunctional().asListable().asArray();
-		System.out.println(args.stream().map(IValuable::getValue).toList());
+		//System.out.println(args.stream().map(IValuable::getValue).toList());
 		var arrays=new ArrayList<IValuable>();
 		return ()->
 		{
@@ -88,7 +85,7 @@ public class NuttFunctionVisitor extends NuttBaseVisitor<IValuable>
 					old.addAll(asArray.apply(args.get(i)).getElements());
 					arr.setElements(old);
 				}
-				System.out.println(arrays);
+				//System.out.println(arrays);
 				return arr;
 			}
 			catch(Exception e)

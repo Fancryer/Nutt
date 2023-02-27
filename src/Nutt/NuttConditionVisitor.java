@@ -59,16 +59,22 @@ public class NuttConditionVisitor extends NuttBaseVisitor<Boolean>
 		return interpreter.getVariable(ctx.NAME().getText()).valuable.asFunctional().asBoolean();
 	}
 
+	@Override public Boolean visitArray_access(NuttParser.Array_accessContext ctx)
+	{
+		return new NuttEvalVisitor(parser,interpreter).visitArray_access(ctx).asFunctional().asBoolean();
+	}
+
 	@Override public Boolean visitLogical_exp(NuttParser.Logical_expContext ctx)
 	{
-		var evaluator=new NuttEvalVisitor(parser,interpreter);
 		var left=visit(ctx.left);
 		var right=visit(ctx.right);
-		var op=ctx.operator_logical();
-		//if(debug)
-			System.out.printf("%s, %s%n",left,right);
-		if(op.OP_And()!=null) return left&&right;
-		if(op.OP_Or()!=null) return left||right;
-		throw new UnsupportedOperationException();
+		var op=ctx.operator_logical().getText();
+		//System.out.println("ctx = "+NuttEnvironment.toSourceCode(ctx));
+		return switch(op)
+				{
+					case "&&","and" -> left&&right;
+					case "||","or" -> left||right;
+					default -> throw new UnsupportedOperationException();
+				};
 	}
 }

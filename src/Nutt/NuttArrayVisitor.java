@@ -31,12 +31,8 @@ public class NuttArrayVisitor extends NuttBaseVisitor<Array>
 		if(expList==null) return new Array();
 		var evaluator=new NuttEvalVisitor(parser,interpreter);
 		var firstElement=evaluator.visit(expList.exp(0));
-		String initialType=firstElement.getType();
-		String boundType=initialType;
+		var boundType=firstElement.getType();
 
-		if(debug) System.out.printf("Found array initializer:%n%s%ninitialType = %s%n",
-		                            NuttEnvironment.toSourceCode(ctx),
-		                            initialType);
 		ArrayList<IValuable> arrayElements=new ArrayList<>();
 		arrayElements.add(firstElement);
 		var interferencer=new TypeInferencer();

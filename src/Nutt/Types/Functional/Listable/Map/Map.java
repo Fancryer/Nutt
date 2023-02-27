@@ -4,6 +4,8 @@ import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.IValuable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 public class Map implements IListable
@@ -44,7 +46,18 @@ public class Map implements IListable
 	{
 		return null;
 	}
-
+	
+	@Override
+	public List<IValuable> getElements()
+	{
+		return asList();
+	}
+	
+	private List<IValuable> asList()
+	{
+		return new ArrayList<>(elements.values());
+	}
+	
 	@Override public String getWrapType()
 	{
 		return "Listable";

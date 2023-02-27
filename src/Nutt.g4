@@ -15,8 +15,7 @@ module_list: module_name (',' module_name)*;
 block: stat*;
 
 operator_logical: OP_And
-	| OP_Or
-	| OP_Not;
+	| OP_Or;
 
 OP_And: '&&'
 	| 'and';
@@ -31,7 +30,6 @@ OP_Not: '!'
 // ';' #Semicolon
 stat: demand
 	| group_assignment
-	| array_set
     | var_decl
     | forget
     | functiondef_stat
@@ -50,11 +48,24 @@ stat: demand
     | try_catch
     | OP_Pass
     | laststat
+    | type_def
+    | enum_def
     ;
 
-array_set: arr=var OP_LeftBracket index=exp OP_RightBracket OP_Assign value=exp;
+type_def: KW_Type NAME KW_Is OP_LeftCurly type_select (',' type_select)* OP_RightCurly;
+type_select: type_decl | NAME;
 
-group_assignment: varlist OP_Assign explist;
+type_member: enum_case | type_decl | NAME;
+
+enum_def: KW_Enum NAME KW_Is OP_LeftBracket enum_case (',' enum_case)* OP_RightBracket;
+
+KW_Type: 'type';
+KW_Enum: 'enum';
+KW_Is: 'is';
+
+var_or_array_access: var | arr=exp OP_LeftBracket index=exp OP_RightBracket;
+
+group_assignment: var_or_array_access (',' var_or_array_access)* OP_Assign exp (',' exp)*;
 functiondef_stat: KW_Funct funcname func_any;
 macrodef_stat: KW_Define macro KW_As var;
 do_done_block: KW_Do block KW_Done;
@@ -74,9 +85,6 @@ else_block: KW_Else block;
 forget: KW_Forget (KW_ALL | flat_name_list);
 
 flat_name_list: NAME (',' NAME)*;
-
-
-
 
 loop: for_loop
 	| reverse_for_loop
@@ -129,12 +137,14 @@ by_type_var_decl: ':' type=type_decl;
 by_value_var_decl: OP_Assign assign_right=exp;
 full_var_decl: ':' type=type_decl OP_Assign assign_right=exp;
 
-type_decl: either_type
+type_decl: valuable_type
 	| functional_type
     | (action_type | '(' action_type ')')
     | number_type
     | list_type
     | nil_type;
+
+valuable_type: 'Valuable';
 
 action_kind: TW_Actionable
 	| TW_Procedure
@@ -145,6 +155,8 @@ TW_Procedure: 'Procedure';
 TW_Macro: 'Macro';
 
 action_type: action_kind func_parameters? ('|=>' type_decl)?;
+
+enumeration_initializer: '{' enum_list '}';
 
 list_initializer: '{' explist? '}';
 
@@ -169,12 +181,11 @@ list_type: (generic_type_list
 
 list_length_decl: OP_Length exp;
 
-set_type: 'Set';
+set_type: 'Set' | 'Enumeration';
 map_type: 'Map';
 array_type: 'Array';
 string_type: 'String';
 
-either_type: 'Either';
 functional_type: 'Functional';
 nil_type: 'Nil';
 
@@ -182,6 +193,8 @@ nil_type: 'Nil';
 
 var_decl_list: var_decl (',' var_decl)*;
 
+
+enum_list: enum_case (',' enum_case)*;
 explist: exp (',' exp)*;
 
 //| '...' #ExplicitEpsilon
@@ -190,28 +203,43 @@ explist: exp (',' exp)*;
 //| exp operatorAnd exp #AndExpression
 //| exp operatorOr exp #OrExpression
 
+enum_case: '.' NAME;
+
 exp: var #explicit_variable
 	| atom #explicit_atom
     | macro #explicit_macro
+    | enum_case #explicit_enum_case
+    | enumeration_initializer #explicit_enumeration
     | list_initializer #explicit_array
     | functiondef #function_definition_exp
     | funcname '(' arguments=explist? ')' #func_call_exp
     | left=exp operatorBitwise right=exp #bitwise_exp
-    | left=exp operator_math right=exp #math_exp
-    | left=exp operator_logical right=exp #logical_exp
     | operatorUnary exp #unary_expression
+    | left=exp operator_math right=exp #math_exp
+    | left=exp operatorComparison right=exp #comparison_expression
+    | left=exp operator_logical right=exp #logical_exp
     | arr=exp OP_LeftBracket index=exp OP_RightBracket #array_access
     | <assoc=right> left=exp op=OP_STRCAT right=exp #str_cat_expression
     | left=exp OP_LeftFold right=exp #fold_left_expression
     | left=exp OP_RightFold right=exp #fold_right_expression
-    | left=exp operatorComparison right=exp #comparison_expression
     | <assoc=right> left=exp OP_Power right=exp #power_expression
     | '(' exp ')' #parenthesis_exp
     | KW_TypeOf exp #type_of_exp
-    | KW_FullTypeOf exp #full_type_of_exp
+    | to_check=exp KW_InstanceOf (type_decl | type_exp=exp) #instance_of_exp
     | exp KW_As type_decl #type_cast
     | funcname OP_FunctCat funcname #func_cat_exp
-    | exp '?' if_true=exp ('@' if_false=exp)? ('@' if_undefined=exp)? #quarternary_exp;
+    | exp '?' if_true=exp ('@' if_false=exp)? ('@' if_undefined=exp)? #quarternary_exp
+    | 'match' exp 'to' match_branch (',' match_branch)* 'matched' #match_to_exp
+    ;
+
+match_branch: match_branch_qualifier? match_case (',' match_case)? '->' exp;
+match_branch_qualifier: 'final';
+
+match_case: enum_case
+	| explicit_bool
+	| number
+	| string
+	| exp;
 
 atom: explicit_nil
 	| explicit_bool
@@ -241,9 +269,9 @@ var: NAME;// varSuffix) varSuffix*;
 
 func_parameters: var_decl
 	| ('(' var_decl_list? ')');
-func_output: (either_output | default_output) OP_Assign;
+func_output: (valuable_output | default_output) OP_Assign;
 
-either_output: (':' either_type)?;
+valuable_output: (':' valuable_type)?;
 default_output: ':' (type_decl);
 
 functiondef: lambda_decl
@@ -316,6 +344,8 @@ OP_Power: '^';
 OP_Assign: '=' ;
 OP_RightBracket: ']' ;
 OP_LeftBracket: '[' ;
+OP_RightCurly: '}' ;
+OP_LeftCurly: '{' ;
 OP_Pass:'...';
 
 //CategoryEnd: Operators
@@ -345,7 +375,7 @@ KW_End: 'end';
 KW_Imports: 'imports';
 
 KW_TypeOf: 'typeof';
-KW_FullTypeOf: 'fulltypeof';
+KW_InstanceOf: 'instanceof';
 KW_Nil: 'nil';
 KW_True: 'true';
 KW_False: 'false';
