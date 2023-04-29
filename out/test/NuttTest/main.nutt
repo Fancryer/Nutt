@@ -1,12 +1,16 @@
 module main
 
-var a:Numerable=90
+//|record Point
+//|{
+//|	x:Numerable,
+//|	y:Numerable
+//|}
+//|
+//|var p1:Point={'x':1,'y':7}
+//|var p2:Point={'x':-90,'y':4}
 
-funct add(var number:Numerable,var toAdd:Numerable):Numerable=
-	yield number+toAdd
-return
+//|say(p1-p2)
 
-a=add(a,a)
-say(a)
+say('Hello, my name is \'Aboba\'')
 
 end

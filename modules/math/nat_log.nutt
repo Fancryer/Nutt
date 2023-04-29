@@ -1,0 +1,9 @@
+module nat_log
+imports math.constants
+imports math.log
+
+funct nat_log(n:Numerable):Numerable=
+	yield log(n,e)
+return
+
+end

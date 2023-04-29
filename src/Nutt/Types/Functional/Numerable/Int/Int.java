@@ -1,91 +1,107 @@
 package Nutt.Types.Functional.Numerable.Int;
 
+import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.INumerable;
+import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.IValuable;
+import ch.obermuhlner.math.big.BigDecimalMath;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 public class Int implements INumerable
 {
-	@Override public String getWrapType()
-	{
-		return "Numerable";
-	}
-
-	@Override public int getLength()
-	{
-		return getValue().toString().length();
-	}
-
-	private java.lang.Number value;
-
 	EIntType intType;
+	private Long longValue;
+	private BigInteger bigIntegerValue;
 
 	public Int()
 	{
 		this("0");
 	}
 
-	public Int(String value)
+	public Int(java.lang.String value)
 	{
 		fromString(value);
 	}
 
-	private boolean isLong(String value)
+	public Int(Integer value)
+	{
+		fromString(java.lang.String.valueOf(value));
+	}
+
+	public Int(Long value)
+	{
+		fromString(java.lang.String.valueOf(value));
+	}
+
+	public Int(BigInteger value)
+	{
+		fromString(java.lang.String.valueOf(value));
+	}
+
+	public Int(Int other)
+	{
+		this(other.asBigInteger());
+	}
+
+	public void fromString(java.lang.String str)
+	{
+		if(!isValidInt(str))
+		{
+			throw new IllegalArgumentException("Value is not a valid NuttInt value");
+		}
+		if(fitsInLong(str))
+			setAsLong(str);
+		else
+			setAsBigInteger(str);
+	}
+
+	//	@Override public Array asElementsArray()
+	//	{
+	//		List<IValuable> valuables=new ArrayList<>();
+	//		for(var digit: toString().toCharArray())
+	//		{
+	//			if(!Character.isDigit(digit)) continue;
+	//			valuables.add(new String(java.lang.String.valueOf(digit)));
+	//		}
+	//		return new Array("String",valuables);
+	//	}
+
+	private boolean isValidInt(java.lang.String value)
 	{
 		try
 		{
 			new BigInteger(value);
+			return true;
 		}
 		catch(NumberFormatException e)
 		{
 			return false;
 		}
-		return true;
 	}
 
-	private String fixValue(String probablyDouble)
+	private boolean fitsInLong(java.lang.String n)
 	{
-		return new BigDecimal(probablyDouble).toBigIntegerExact().toString();
+		var bigInteger=new BigInteger(n);
+		var result=bigInteger.longValue();
+		return new BigInteger(java.lang.String.valueOf(result)).compareTo(bigInteger)==0;
 	}
 
-	private boolean fitsInLong(String n)
+	private void setAsLong(java.lang.String value)
 	{
-		return new BigInteger(n).abs().compareTo(BigInteger.valueOf(Long.MAX_VALUE))<=0;
+		longValue=Long.valueOf(value);
+		bigIntegerValue=null;
+		intType=EIntType.Long;
 	}
 
-	@Override public String toString()
+	private void setAsBigInteger(java.lang.String value)
 	{
-		return "Int|%s: %s".formatted(intType,value);
-	}
-
-	@Override public INumerable add(INumerable numerable)
-	{
-		if(numerable.isFloat()) throw new RuntimeException();
-		try
-		{
-			BigInteger a=asBigInteger(), b=numerable.asInt().asBigInteger();
-			return new Int(a.add(b).toString());
-		}
-		catch(Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	public INumerable sub(INumerable numerable)
-	{
-		if(numerable.isFloat()) throw new RuntimeException();
-		try
-		{
-			BigInteger a=asBigInteger(), b=numerable.asInt().asBigInteger();
-			return new Int(a.subtract(b).toString());
-		}
-		catch(Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		bigIntegerValue=new BigInteger(value);
+		longValue=null;
+		intType=EIntType.BigInteger;
 	}
 
 	@Override
@@ -94,72 +110,135 @@ public class Int implements INumerable
 		return true;
 	}
 
-	private void setAsLong(String value)
+	@Override public boolean isFloat()
 	{
-		this.value=Long.valueOf(value);
-		intType=EIntType.Long;
+		return false;
 	}
 
-	private void setAsBigInteger(String value)
+	@Override
+	public Number getValue()
 	{
-		this.value=new BigInteger(value);
-		intType=EIntType.BigInteger;
+		return isLong()?longValue:bigIntegerValue;
 	}
 
-	public Long asLong()
+	public boolean isLong()
 	{
-		if(intType==EIntType.Long) return value.longValue();
-		else throw new RuntimeException("Int type is not a Long");
+		return intType==EIntType.Long;
 	}
 
-	public BigInteger asBigInteger()
-	{
-		return intType==EIntType.BigInteger?(BigInteger)value:new BigInteger(String.valueOf(value));
-	}
-
-	@Override public Number getValue()
-	{
-		return value;
-	}
-
-	public void fromString(String str)
-	{
-		if(!isLong(str)) throw new IllegalArgumentException("Value is not a valid NuttInt value");
-		if(fitsInLong(str))
-			setAsLong(str);
-		else
-			setAsBigInteger(str);
-	}
-
-	@Override public Int asInt()
+	@Override
+	public Int asInt()
 	{
 		return this;
 	}
 
-	@Override public Float asFloat()
+	@Override
+	public Float asFloat()
 	{
-		throw new RuntimeException("Int is not a Float!");
+		return new Float(toString());
 	}
 
-	@Override public boolean asBoolean()
+	@Override
+	public java.lang.String toString()
 	{
-		return (intType==EIntType.Long?asLong():asBigInteger().compareTo(BigInteger.ZERO))!=0;
+		return (intType==EIntType.Long?longValue:bigIntegerValue).toString();
+	}
+
+	@Override
+	public boolean canConsumeParameters(List<IValuable> iValuables)
+	{
+		return false;
+	}
+
+	@Override
+	public IType getType()
+	{
+		return TypeInferencer.findType("Int");
+	}
+
+	@Override
+	public int getLength()
+	{
+		return toString().length();
+	}
+
+	@Override public Int replicate()
+	{
+		return new Int(this);
+	}
+
+	@Override
+	public Boolean asBoolean()
+	{
+		return new Boolean((intType==EIntType.Long?asLong():asBigInteger().compareTo(BigInteger.ZERO))!=0);
+	}
+
+	public Long asLong()
+	{
+		return intType==EIntType.Long?longValue:Long.valueOf(bigIntegerValue.longValue());
+	}
+
+	public BigInteger asBigInteger()
+	{
+		return isBigInteger()?bigIntegerValue:BigInteger.valueOf(longValue);
+	}
+
+	public boolean isBigInteger()
+	{
+		return intType==EIntType.BigInteger;
+	}
+
+	private int compare(IValuable valuable)
+	{
+		var left=BigDecimalMath.toBigDecimal(toString());
+		var right=BigDecimalMath.toBigDecimal(valuable.toString());
+		return left.compareTo(right);
+	}
+
+	@Override public boolean lessThan(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<0;
+	}
+
+	@Override public boolean greaterTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>0;
+	}
+
+	@Override public boolean lessEqalTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<=0;
+	}
+
+	@Override public boolean greaterEqualTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>=0;
+	}
+
+	@Override public boolean similarTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)==0;
+	}
+
+	@Override public boolean notSimilarTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)!=0;
+	}
+
+	@Override public boolean equalTo(IValuable value)
+	{
+		return TypeInferencer.typesEquals(getType(),value.getType())&&similarTo(value);
+	}
+
+	@Override public boolean notEqualTo(IValuable value)
+	{
+		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
 	}
 
 	enum EIntType
 	{
 		Long,
 		BigInteger
-	}
-
-	public EIntType getIntType()
-	{
-		return intType;
-	}
-
-	@Override public String getType()
-	{
-		return "Int";
 	}
 
 }

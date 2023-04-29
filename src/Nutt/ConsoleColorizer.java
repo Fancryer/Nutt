@@ -14,12 +14,20 @@ public class ConsoleColorizer
 	private static final String Black="\u001b[30m";
 	private static final String White="\u001b[37m";
 	private static final String Reset="\u001b[0m";
-	
+
 	public static String colorize(String content,String color)
 	{
-		return "%s%s%s".formatted(getColorMap().get(color.toLowerCase()),content,Reset);
+		return getColorMap().get(color.toLowerCase())+content+Reset;
+		//		return doesConsoleSupportAnsi()
+		//		       ?getColorMap().get(color.toLowerCase())+content+Reset
+		//		       :content;
 	}
-	
+
+	private static boolean doesConsoleSupportAnsi()
+	{
+		return System.console()!=null&&System.getenv().get("TERM")!=null;
+	}
+
 	public static Map<String,String> getColorMap()
 	{
 		var colorMap=new TreeMap<String,String>();
@@ -33,5 +41,5 @@ public class ConsoleColorizer
 		colorMap.put("cyan",Cyan);
 		return colorMap;
 	}
-	
+
 }

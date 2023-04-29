@@ -1,0 +1,9 @@
+module log imports math.two_log
+
+funct log(a:Numerable,b:Numerable):Numerable=
+	val a_log=two_log(a)
+	val b_log=two_log(b)
+	yield a_log/b_log
+return
+
+end

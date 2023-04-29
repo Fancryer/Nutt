@@ -1,46 +1,48 @@
 package Nutt.Types.Functional.Numerable;
 
-import Nutt.TypeInferencer;
+import Nutt.Runtime.TriFunction;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.Int.Int;
+import ch.obermuhlner.math.big.BigDecimalMath;
+import ch.obermuhlner.math.big.BigRational;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
+import java.math.MathContext;
 
 public interface INumerable extends IFunctional
 {
+	MathContext longMathContext=new MathContext(2_147_483_647);
+
 	static INumerable sub(INumerable left,INumerable right)
 	{
-		var l=new BigDecimal(left.getValue().toString());
-		var r=new BigDecimal(right.getValue().toString());
-		return fromString(String.valueOf(l.add(r)));
+		var l=BigDecimalMath.toBigDecimal(left.toString());
+		var r=BigDecimalMath.toBigDecimal(right.toString());
+		return fromString(String.valueOf(l.subtract(r)));
 	}
 
 	static INumerable fromString(String value)
 	{
 		try
 		{
-			new BigInteger(value);
 			return new Int(value);
 		}
-		catch(NumberFormatException e)
+		catch(IllegalArgumentException e)
 		{
 			return new Float(value);
 		}
 	}
 
-	static INumerable add(INumerable left,INumerable right)
-	{
-		var l=new BigDecimal(left.getValue().toString());
-		var r=new BigDecimal(right.getValue().toString());
-		return fromString(String.valueOf(l.add(r)));
-	}
-
 	static INumerable incr(INumerable a)
 	{
 		return add(a,new Int("1"));
+	}
+
+	static INumerable add(INumerable left,INumerable right)
+	{
+		var l=BigDecimalMath.toBigDecimal(left.toString());
+		var r=BigDecimalMath.toBigDecimal(right.toString());
+		return fromString(String.valueOf(l.add(r)));
 	}
 
 	static INumerable decr(INumerable a)
@@ -50,109 +52,86 @@ public interface INumerable extends IFunctional
 
 	static INumerable mult(INumerable left,INumerable right)
 	{
-		var l=new BigDecimal(left.getValue().toString());
-		var r=new BigDecimal(right.getValue().toString());
+		var l=BigDecimalMath.toBigDecimal(left.toString());
+		var r=BigDecimalMath.toBigDecimal(right.toString());
 		return fromString(l.multiply(r).toString());
 	}
 
 	static INumerable div(INumerable left,INumerable right)
 	{
-		var l=new BigDecimal(left.getValue().toString());
-		var r=new BigDecimal(right.getValue().toString());
-		return fromString(l.divide(r,RoundingMode.HALF_UP).toString());
+		try
+		{
+			return applyTriFunction(left,BigDecimal::divide,right);
+		}
+		catch(ArithmeticException e)
+		{
+			return fromString(BigRational
+					                  .valueOf(toBigDecimal(left))
+					                  .divide(BigRational.valueOf(toBigDecimal(right)))
+					                  .toString());
+		}
+	}
+
+	private static BigDecimal toBigDecimal(INumerable numerable)
+	{
+		return BigDecimalMath.toBigDecimal(numerable.toString());
 	}
 
 	static INumerable mod(INumerable left,INumerable right)
 	{
-		var l=new BigDecimal(left.getValue().toString());
-		var r=new BigDecimal(right.getValue().toString());
-		return fromString(l.remainder(r).toString());
+		return applyTriFunction(left,BigDecimal::remainder,right);
 	}
 
 	static INumerable intDiv(INumerable left,INumerable right)
 	{
-		var l=new BigDecimal(left.getValue().toString());
-		var r=new BigDecimal(right.getValue().toString());
-		return fromString(l.divideToIntegralValue(r).toBigInteger().toString());
+		return applyTriFunction(left,(l,r,ctx)->l.divideToIntegralValue(r).toBigInteger(),right);
 	}
 
 	static INumerable negate(INumerable numerable)
 	{
-		return fromString(new BigDecimal(numerable.getValue().toString()).negate().toString());
+		return fromString(toBigDecimal(numerable).negate().toString());
 	}
 
 	static INumerable abs(INumerable numerable)
 	{
-		return fromString(new BigDecimal(numerable.getValue().toString()).abs().toString());
+		return fromString(BigDecimalMath.toBigDecimal(numerable.toString()).abs().toString());
 	}
 
 	static INumerable bitSwap(INumerable numerable)
 	{
-		var bd=new BigDecimal(numerable.getValue().toString());
-		byte[] bytes=bd.toBigInteger().toByteArray();
-		for(int i=0;i<bytes.length;++i) bytes[i]=(byte)~bytes[i];
-		return fromString(new BigDecimal(new String(bytes)).toString());
+		var bd=BigDecimalMath.toBigDecimal(numerable.toString()).toBigInteger();
+		byte[] bytes=new byte[bd.bitLength()];
+		for(int i=bytes.length-1;i>=0;--i) bd=bd.flipBit(i);
+		return fromString(BigDecimalMath.toBigDecimal(new String(bd.toByteArray())).toString());
 	}
 
-	@Override
-	default String getWrapType()
+	static INumerable pow(INumerable left,INumerable right)
 	{
-		return "Functional";
+		return applyTriFunction(left,BigDecimalMath::pow,right);
 	}
 
-	INumerable add(INumerable number);
+	static INumerable applyTriFunction(INumerable l,
+	                                   TriFunction<BigDecimal,BigDecimal,MathContext,Number> infixFunction,
+	                                   INumerable r)
+	{
+		return fromString(infixFunction.apply(toBigDecimal(l),toBigDecimal(r),longMathContext).toString());
+	}
+
+	default boolean isBoolean()
+	{
+		return !isInt()&&!isFloat();
+	}
 
 	boolean isInt();
 
-	default boolean isFloat()
-	{
-		return !isInt();
-	}
+	boolean isFloat();
 
 	@Override
 	Number getValue();
 
-	default Int asInt()
-	{
-		if(this.isFloat()) throw new ClassCastException("Number type is not an Int");
-		return (Int)this;
-	}
+	Int asInt();
 
-	default Float asFloat()
-	{
-		if(this.isInt()) throw new ClassCastException("Number type is not a Float");
-		return (Float)this;
-	}
+	Float asFloat();
 
-	default Boolean less(INumerable numerable)
-	{
-		return this.compareTo(numerable)<0;
-	}
-
-	default Boolean equal(INumerable numerable)
-	{
-		return this.compareTo(numerable)==0;
-	}
-
-	default Boolean greater(INumerable numerable)
-	{
-		return this.compareTo(numerable)>0;
-	}
-
-	@Override
-	default int compareToFunctional(IFunctional functional)
-	{
-		if(!new TypeInferencer().verdict("Numerable",functional.getType()))
-		{
-			throw new RuntimeException("You cannot compare Numerable with %s!".formatted(functional.getType()));
-		}
-		return this.compareToNumerable(functional.asNumerable());
-	}
-
-	default int compareToNumerable(INumerable numerable)
-	{
-		var left=new BigDecimal(this.getValue().toString());
-		var right=new BigDecimal(numerable.getValue().toString());
-		return left.compareTo(right);
-	}
+	@Override INumerable replicate();
 }

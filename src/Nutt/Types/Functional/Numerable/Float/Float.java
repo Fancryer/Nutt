@@ -1,35 +1,19 @@
 package Nutt.Types.Functional.Numerable.Float;
 
-import Nutt.Types.Functional.Numerable.Int.Int;
+import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.INumerable;
+import Nutt.Types.Functional.Numerable.Int.Int;
+import Nutt.Types.Functional.Type.IType;
 import Nutt.Types.IValuable;
+import ch.obermuhlner.math.big.BigDecimalMath;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.util.List;
 
 public class Float implements INumerable
 {
-	@Override public String getWrapType()
-	{
-		return "Numerable";
-	}
-
-	@Override public boolean asBoolean()
-	{
-		return (floatType==EFloatType.Double?asDouble():asBigDecimal().compareTo(BigDecimal.ZERO))!=0;
-	}
-
-	@Override public int compareTo(IValuable valuable)
-	{
-		return 0;
-	}
-
-	@Override public int getLength()
-	{
-		return getValue().toString().length();
-	}
-
-	EFloatType floatType;
+	private boolean isBigDecimal;
 	private Double doubleValue;
 	private BigDecimal bigDecimalValue;
 
@@ -42,89 +26,81 @@ public class Float implements INumerable
 	{
 		fromString(value);
 	}
+	
+	public Float(Float other)
+	{
+		this(other.toString());
+	}
 
-	private boolean isDouble(String value)
+	public void fromString(String value)
+	{
+		if(!isValidFloat(value)) throw new IllegalArgumentException("Value is not a valid NuttFloat value");
+		if(fitsInDouble(value))
+			setAsDouble(value);
+		else
+			setAsBigDecimal(value);
+	}
+
+	private boolean isValidFloat(String value)
 	{
 		try
 		{
 			new BigDecimal(value);
+			return true;
 		}
 		catch(NumberFormatException e)
 		{
 			return false;
 		}
-		return true;
-	}
-
-	private String fixValue(String probablyLong)
-	{
-		return new BigDecimal(new BigInteger(probablyLong)).toPlainString();
 	}
 
 	private boolean fitsInDouble(String n)
 	{
-		return new BigDecimal(n).abs().compareTo(new BigDecimal(Double.MAX_VALUE))<=0;
+		var bigDecimal=BigDecimalMath.toBigDecimal(n);
+		var result=bigDecimal.doubleValue();
+		boolean isDoubleValueValid=!(Double.isNaN(result)||Double.isInfinite(result));
+		var wrappedValue=BigDecimalMath.toBigDecimal(String.valueOf(result));
+		return isDoubleValueValid&&wrappedValue.compareTo(bigDecimal)==0;
 	}
 
 	private void setAsDouble(String value)
 	{
 		doubleValue=Double.valueOf(value);
 		bigDecimalValue=null;
-		floatType=EFloatType.Double;
+		isBigDecimal=false;
 	}
 
 	private void setAsBigDecimal(String value)
 	{
-		bigDecimalValue=new BigDecimal(value);
+		bigDecimalValue=BigDecimalMath.toBigDecimal(value);
 		doubleValue=null;
-		floatType=EFloatType.BigDecimal;
+		isBigDecimal=true;
+	}
+
+	@Override
+	public Boolean asBoolean()
+	{
+		return new Boolean((isBigDecimal?asBigDecimal().compareTo(BigDecimal.ZERO):asDouble())!=0);
 	}
 
 	public Double asDouble()
 	{
-		if(floatType==EFloatType.Double) return doubleValue;
-		return bigDecimalValue.doubleValue();
+		return isDouble()?doubleValue:Double.valueOf(bigDecimalValue.doubleValue());
 	}
 
 	public BigDecimal asBigDecimal()
 	{
-		if(floatType==EFloatType.BigDecimal) return bigDecimalValue;
-		return BigDecimal.valueOf(doubleValue);
+		return isBigDecimal()?bigDecimalValue:BigDecimal.valueOf(doubleValue);
 	}
 
-	@Override
-	public String toString()
+	public boolean isDouble()
 	{
-		return "Float|%s: %s".formatted(floatType,floatType==EFloatType.Double?doubleValue:bigDecimalValue);
+		return !isBigDecimal;
 	}
 
-	@Override
-	public INumerable add(INumerable numerable)
+	public boolean isBigDecimal()
 	{
-		if(numerable.isInt()) throw new RuntimeException();
-		try
-		{
-			BigDecimal a=asBigDecimal(), b=numerable.asFloat().asBigDecimal();
-			return new Float(a.subtract(b).toString());
-		}
-		catch(Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	public INumerable sub(INumerable numerable)
-	{
-		if(numerable.isInt()) throw new RuntimeException();
-		try
-		{
-			BigDecimal a=asBigDecimal(), b=numerable.asFloat().asBigDecimal();
-			return new Float(a.subtract(b).toString());
-		}
-		catch(Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return isBigDecimal;
 	}
 
 	@Override
@@ -133,25 +109,23 @@ public class Float implements INumerable
 		return false;
 	}
 
+	@Override public boolean isFloat()
+	{
+		return true;
+	}
+
 	@Override
 	public Number getValue()
 	{
-		return floatType==EFloatType.Double?doubleValue:bigDecimalValue;
-	}
-
-	public void fromString(String value)
-	{
-		String fixed=isDouble(value)?value:fixValue(value);
-		if(fitsInDouble(value))
-			setAsDouble(value);
-		else
-			setAsBigDecimal(value);
+		return isDouble()?doubleValue:bigDecimalValue;
 	}
 
 	@Override
 	public Int asInt()
 	{
-		throw new RuntimeException("Float is not a Int!");
+		var asStr=toString();
+		var dotIndex=asStr.indexOf('.');
+		return new Int(asStr.substring(Math.max(dotIndex,0)));
 	}
 
 	@Override
@@ -160,20 +134,79 @@ public class Float implements INumerable
 		return this;
 	}
 
-	public EFloatType getFloatType()
+	@Override
+	public String toString()
 	{
-		return floatType;
+		return isDouble()?doubleValue.toString():bigDecimalValue.toPlainString();
 	}
 
 	@Override
-	public String getType()
+	public boolean canConsumeParameters(List<IValuable> iValuables)
 	{
-		return "Float";
+		return false;
 	}
 
-	enum EFloatType
+	@Override
+	public IType getType()
 	{
-		Double,
-		BigDecimal
+		return TypeInferencer.findType("Float");
+	}
+
+	@Override
+	public int getLength()
+	{
+		return toString().length();
+	}
+
+	@Override public Float replicate()
+	{
+		return new Float(this);
+	}
+
+	@Override public boolean lessThan(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<0;
+	}
+
+	private int compare(IValuable valuable)
+	{
+		var left=BigDecimalMath.toBigDecimal(toString());
+		var right=BigDecimalMath.toBigDecimal(valuable.toString());
+		return left.compareTo(right);
+	}
+
+	@Override public boolean greaterTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>0;
+	}
+
+	@Override public boolean lessEqalTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<=0;
+	}
+
+	@Override public boolean greaterEqualTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>=0;
+	}
+
+	@Override public boolean similarTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)==0;
+	}
+
+	@Override public boolean notSimilarTo(IValuable value)
+	{
+		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)!=0;
+	}
+
+	@Override public boolean equalTo(IValuable value)
+	{
+		return TypeInferencer.typesEquals(getType(),value.getType())&&similarTo(value);
+	}
+
+	@Override public boolean notEqualTo(IValuable value)
+	{
+		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
 	}
 }

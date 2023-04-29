@@ -1,12 +1,12 @@
 package Nutt.Types;
 
-import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Type.IType;
 
 public class TypeCaster
 {
-	public static IValuable cast(IValuable valuable,String type)
+	public static IValuable cast(IValuable valuable,IType type)
 	{
-		var inferencer=new TypeInferencer();
+		//var inferencer=new TypeInferencer();
 		return new Nil();
 	}
 }

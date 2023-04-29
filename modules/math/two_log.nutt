@@ -1,0 +1,13 @@
+module two_log
+
+funct two_log(n:Numerable):Numerable=
+	demand n!==0
+	var log_value=-1
+	while n>0 do
+		log_value++
+		n//=2
+	done
+	yield log_value
+return
+
+end

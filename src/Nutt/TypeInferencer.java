@@ -1,139 +1,181 @@
 package Nutt;
 
-import java.util.HashSet;
+import Nutt.Exceptions.NuttTypeIsDeclaredException;
+import Nutt.Types.Functional.Type.CustomType;
+import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.IValuable;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
 
 public class TypeInferencer
 {
-	public boolean extendsOrEqual(String typeA,String typeB)
+	public final static IType typeTree;
+
+	static
 	{
-		var types=compressTypes(typeA);
-		//System.out.println(types);
-		return types.contains(typeB);
+		typeTree=new CustomType("Valuable")
+				.addChildrenByNames(List.of("Nil","Functional"));
+		var functional=typeTree.findChild("Functional");
+		functional
+				.addChildrenByNames(List.of("Listable","Numerable","Actionable","Record","Type"))
+				.findChild("Numerable")
+				.addChildrenByNames(List.of("Int","Float"))
+				.findChild("Int")
+				.addChild("Boolean");
+
+		functional
+				.findChild("Listable")
+				.addChildrenByNames(List.of("String","Array","Map","Set"))
+				.findChild("Set")
+				.addChild("Enumeration");
+
+		functional
+				.findChild("Actionable")
+				.addChild("Procedure");
+	}
+
+	public static IType removeCustomType(String typeName)
+	{
+		return typeTree.removeChild(typeName);
+	}
+
+	public static IType addCustomType(String typeName)
+	{
+		return addCustomType(typeName,new ArrayList<>());
+	}
+
+	public static IType addCustomType(String typeName,List<String> children)
+	{
+		return addCustomType(typeName,"Type",children);
+	}
+
+	public static IType addCustomType(String typeName,String parentName,List<String> children)
+	{
+		if(!canTypeBeAdded(typeName,parentName)) throw new NuttTypeIsDeclaredException(typeName);
+		return findType(parentName).addChild("").addChildrenByNames(children);
+	}
+
+	public static IType addCustomType(String typeName,IType parent,List<String> children)
+	{
+		return addCustomType(typeName,parent.getDisplayName(),children);
+	}
+
+	public static boolean canTypeBeAdded(String typeName,String parentName)
+	{
+		return !hasType(typeName);//||verdict("Type",parentName);
+	}
+
+	public static IType findTypeElse(String typeName,String otherTypeName)
+	{
+		return Objects.requireNonNullElse(findType(typeName),findType(otherTypeName));
+	}
+
+	public static IType findType(String typeName)
+	{
+		return typeTree.findChild(typeName);
+	}
+
+	public static boolean hasType(String typeName)
+	{
+		return findType(typeName)!=null;
+	}
+
+	public static Boolean verdict(String typeA,String typeB)
+	{
+		return verdict(findType(typeA),findType(typeB));
+	}
+
+	public static Boolean verdict(IType typeA,IType typeB)
+	{
+		return typeA!=null
+		       &&typeB!=null
+		       &&typeA.findChild(typeB)!=null
+		       &&typeA.getTypeParameters().equals(typeB.getTypeParameters());
+	}
+
+	public static Boolean verdict(String typeA,IType typeB)
+	{
+		return verdict(typeA,typeB.getDisplayName());
+	}
+
+	public static IType findTypeElse(IType type,IType otherType)
+	{
+		return findTypeElse(type.getDisplayName(),otherType.getDisplayName());
 	}
 	
-	public boolean isContainer(String type)
+	public static IType findType(IType type)
 	{
-		var qualifyingTypes=type.split("\\|");
-		return switch(qualifyingTypes.length)
-				{
-					case 0 -> false;
-					case 1 -> !Objects.equals(qualifyingTypes[0],"String")&&verdict("Listable",qualifyingTypes[0]);
-					default ->
-					{
-						if(verdict("Listable",qualifyingTypes[0])) yield isContainer(qualifyingTypes[0]);
-						yield false;
-					}
-				};
+		return findType(type.getDisplayName());
 	}
-	
-	public boolean verdict(String typeA,String typeB)
+
+	private static void prettyPrintTypeTree(IType tree,int depth,int offset)
 	{
-		//boolean aIsContainer=isContainer(typeA);
-		return extendsOrEqual(typeA,typeB)||canStore(typeA,typeB);
+		if(tree!=null)
+		{
+			System.out.printf("%s[%d:%d] -> %s[%s]%n",
+			                  " ".repeat(4*depth),
+			                  depth,
+			                  offset,
+			                  tree.getDisplayName(),
+			                  tree.hashCode());
+			int i=0;
+			for(var child: tree.getChildren()) prettyPrintTypeTree(child,depth+1,i++);
+		}
 	}
-	
-	public boolean verdict(boolean extendsOrEqual,boolean canStore)
+
+	public static void prettyPrintTypeTree()
 	{
-		return extendsOrEqual||canStore;
+		prettyPrintTypeTree(typeTree);
 	}
-	
-	private String correctType(String type)
+
+	public static void prettyPrintTypeTree(IType tree)
 	{
-		return switch(type)
-				{
-					case "Function","IFunctional" -> "Functional";
-					case "Action","IActionable" -> "Actionable";
-					case "Number","INumerable" -> "Numerable";
-					case "List","IListable" -> "Listable";
-					default -> type;
-				};
+		prettyPrintTypeTree(tree,0,0);
 	}
-	
-	public Set<String> intersectTypes(String ceilType,String floorType)
+
+	public static Boolean verdictAll(String ceilType,List<IType> types)
 	{
-		return intersect(compressTypes(correctType(ceilType)),compressTypes(correctType(floorType)));
+		return verdictAll(findType(ceilType),types);
 	}
-	
-	public boolean canStore(String ceilType,String floorType)
+
+	public static Boolean verdictAll(IType ceilType,List<IType> types)
 	{
-		//System.out.printf("Store check: %s:>%s?%n",ceilType,floorType);
-		var intersection=intersectTypes(ceilType,floorType);
-		//System.out.println("Intersection: "+intersection);
-		return !intersection.isEmpty()&&!intersection.contains(ceilType);
+		return types.stream().allMatch(t->verdict(ceilType,t));
 	}
-	
-	private Set<String> compressTypes(String type,Set<String> typeMembers)
+
+	public static IType getCommonIValuableWrapperType(List<IValuable> valuables)
 	{
-		var res=new HashSet<>(List.of(type));
-		res.addAll(typeMembers);
-		return res;
+		return getCommonWrapperType(valuables.stream().map(IValuable::getType).toList());
 	}
-	
-	private Set<String> compressTypes(String type)
+
+	public static IType getCommonWrapperType(IType typeA,IType typeB)
 	{
-		return compressTypes(type,getMembers(type));
+		return IType.LowestCommonAncestor(typeA,typeB);
 	}
-	
-	private Set<String> union(Set<String> a,Set<String> b)
+
+	public static IType getCommonWrapperType(List<IType> types)
 	{
-		var host=new HashSet<>(a);
-		host.addAll(b);
-		return host;
+		if(types.isEmpty()) return findType("Nil");
+		var commonType=types.get(0);
+		if(types.size()==1) return commonType;
+		for(var i=1;i<types.size();++i) commonType=getCommonWrapperType(commonType,types.get(i));
+		return commonType;
 	}
-	
-	private Set<String> intersect(Set<String> a,Set<String> b)
+
+	public static IType getTypeTreeRoot()
 	{
-		var host=new HashSet<>(a);
-		host.retainAll(b);
-		return host;
+		return typeTree;
 	}
-	
-	private Set<String> union(List<Set<String>> sets)
+
+	public static boolean typesEquals(IType typeA,IType typeB)
 	{
-		if(sets==null||sets.size()==0) return new HashSet<>();
-		Set<String> host=new HashSet<>(sets.get(0));
-		for(var i=1;i<sets.size();++i) host=union(host,sets.get(i));
-		return host;
+		return typeA.equals(typeB);
 	}
-	
-	private Set<String> compressedUnion(String... types)
+
+	public static boolean typesEquals(String typeA,String typeB)
 	{
-		return types==null||types.length==0?new HashSet<>():
-		       types.length==1?compressTypes(types[0]):
-		       union(Stream.of(types).map(this::compressTypes).toList());
-	}
-	
-	private Set<String> getMembers(String type)
-	{
-		return switch(type)
-				{
-					case "Either" -> compressTypes("Valuable");
-					case "Valuable" -> compressedUnion("Functional","Nil");
-					case "Functional" -> compressedUnion("Actionable","Numerable","Listable");
-					case "Actionable" -> compressedUnion("Procedure","Macro");
-					case "Numerable" -> compressedUnion("Int","Float");
-					case "Listable" -> compressedUnion("Array","Map","String","Set");
-					case "Set" -> compressTypes("Enumeration");
-					default -> new HashSet<>();
-				};
-	}
-	
-	public String getWrapType(String type)
-	{
-		return switch(type)
-				{
-					case "Valuable" -> "Either";
-					case "Functional","Nil" -> "Valuable";
-					case "Actionable","Numerable","Listable" -> "Functional";
-					case "Procedure","Macro" -> "Actionable";
-					case "Int","Float" -> "Numerable";
-					case "Array","Map","String","Set" -> "Listable";
-					case "Enumeration" -> "Set";
-					default -> "";
-				};
+		return typesEquals(findType(typeA),findType(typeB));
 	}
 }

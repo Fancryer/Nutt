@@ -6,13 +6,28 @@
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/modules" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/out/production/NuttTest/gen" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
+    <orderEntry type="library" exported="" name="javassist" level="project" />
+    <orderEntry type="library" exported="" name="big-math-2.3.2" level="project" />
+    <orderEntry type="library" exported="" name="guava-31.1-jre" level="project" />
+    <orderEntry type="library" exported="" name="scala-sdk-3.2.2" level="application" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../antlr-4.11.1-complete.jar!/" />
+          <root url="jar://$MODULE_DIR$/../antlr-4.12.0-complete.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.26/lombok-1.18.26.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -1,51 +1,54 @@
 package Nutt;
 
+import Nutt.Exceptions.NuttVariableNotDefinedException;
+import Nutt.Exceptions.NuttVariableStoreException;
+import Nutt.NuttInterpreter.Variable;
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
+import Nutt.Types.Functional.Type.IType;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.EmptyStackException;
+import java.util.List;
 import java.util.Objects;
 import java.util.TreeMap;
 
 public class NuttScope
 {
-	public final TreeMap<String,NuttInterpreter.Variable> variableMap;
+	public final TreeMap<String,Variable> variableMap;
 	NuttScope parent=null;
-	
-	public NuttScope(TreeMap<String,NuttInterpreter.Variable> parentMap)
+
+	public NuttScope(TreeMap<String,Variable> parentMap)
 	{
-		this.variableMap=parentMap;
+		variableMap=parentMap;
 	}
-	
+
 	public NuttScope()
 	{
 		this(new TreeMap<>());
 	}
-	
-	public boolean definedLocally(String variableName)
-	{
-		return variableMap.containsKey(variableName);
-	}
-	
+
 	public boolean defined(String variableName)
 	{
 		return definedLocally(variableName)||parent!=null&&parent.defined(variableName);
 	}
-	
-	public NuttInterpreter.Variable forgetLocally(String variableName)
+
+	public Variable forgetLocally(String variableName)
 	{
 		return variableMap.remove(variableName);
 	}
-	
-	public NuttInterpreter.Variable forgetVariable(String variableName)
+
+	public Variable forgetVariable(String variableName)
 	{
-		NuttInterpreter.Variable returnVar=null;
+		Variable returnVar=null;
+		if(!defined(variableName)) return null;
 		if(definedLocally(variableName)) returnVar=forgetLocally(variableName);
 		if(parent!=null) returnVar=Objects.requireNonNullElse(returnVar,parent.forgetVariable(variableName));
 		return returnVar;
 	}
-	
-	public NuttInterpreter.Variable getVariable(String variableName) throws EmptyStackException
+
+	public Variable getVariable(String variableName) throws EmptyStackException
 	{
 		if(definedLocally(variableName)) return variableMap.get(variableName);
 		if(parent!=null) return parent.getVariable(variableName);
@@ -56,71 +59,129 @@ public class NuttScope
 	{
 		return getVariable(variableName).valuable;
 	}
-	
-	public NuttInterpreter.Variable setVariable(String variableName,IValuable value)
+
+	public Variable setVariable(String variableName,IValuable value)
 	{
 		try
 		{
 			if(!defined(variableName)) throw new IllegalAccessException();
 			var variableRef=getVariable(variableName);
 			var ceilType=variableRef.ceilType;
-			if(!new TypeInferencer().verdict(ceilType,value.getType()))
+			if(ceilType.findChild(value.getType())==null&&!ceilType.equals(value.getType()))
 			{
-				throw new RuntimeException("Nutt variable store exception!");
+				throw new NuttVariableStoreException(ceilType.getDisplayName(),value.getType().getDisplayName());
 			}
-			variableRef.rebase(new NuttInterpreter.Variable(ceilType,value,variableRef.isConstant));
-			return variableRef;
+			if(variableRef.isConstant) throw new RuntimeException();
+			return variableRef.setCeilType(ceilType).setValuable(value).setConstant(variableRef.isConstant);
 		}
 		catch(IllegalAccessException e)
 		{
-			throw new RuntimeException("Interpreter doesn't know the \"%s\" variable".formatted(variableName),e);
+			throw new NuttVariableNotDefinedException(e,variableName);
 		}
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName)
+
+	public Variable addVariable(Variable variable)
 	{
-		return addVariable(variableName,new Nil(),"Either");
+		return addVariable(variable.name,variable.valuable,variable.ceilType,variable.isConstant);
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName,IValuable variable,String ceilType,
-	                                            boolean isConstant)
+
+	public Variable addVariable(String variableName,IValuable valuable,IType ceilType,boolean isConstant)
 	{
-		if(!NuttCommon.isTypeValid(variable.getType()))
+		return addVariable(variableName,valuable,ceilType,isConstant,null);
+	}
+
+	public Variable addVariable(String variableName,IValuable valuable,IType ceilType,boolean isConstant,ParserRuleContext tree)
+	{
+		if(!NuttCommon.isTypeValid(valuable.getType().getDisplayName()))
 		{
 			throw new RuntimeException("Unknown variable type: %s!".formatted(ceilType));
 		}
-		if(!NuttCommon.isTypeValid(ceilType))
+		if(!NuttCommon.isTypeValid(ceilType.getDisplayName()))
 		{
 			throw new RuntimeException("Unknown ceil type: %s!".formatted(ceilType));
 		}
 		if(definedLocally(variableName))
 		{
-			throw new RuntimeException("Variable %s is already defined!".formatted(variableName));
+			throw new RuntimeException
+					(
+							tree!=null
+							?"Variable %s is already defined at line %s!".formatted(variableName,tree.start.getLine())
+							:"Variable %s is already defined!".formatted(variableName)
+					);
 		}
-		return variableMap.put(variableName,new NuttInterpreter.Variable(ceilType,variable,isConstant));
+		System.out.println("variableName = "+variableName);
+		var putted=new Variable(ceilType,valuable,variableName,isConstant);
+		variableMap.put(variableName,putted);
+		return putted;
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName,IValuable variable,String ceilType)
+
+	public boolean definedLocally(String variableName)
+	{
+		return has(variableName)||variableMap.containsKey(variableName);
+		//return variableMap.containsKey(variableName);
+	}
+
+	private boolean has(String name)
+	{
+		return !variableMap
+				.values()
+				.stream()
+				.filter(v->Objects.equals(v.name,name))
+				.toList()
+				.isEmpty();
+	}
+
+	public Variable addVariable(String variableName)
+	{
+		return addVariable(variableName,new Nil(),"Valuable");
+	}
+
+	public Variable addVariable(String variableName,IValuable variable,IType ceilType)
 	{
 		return addVariable(variableName,variable,ceilType,false);
 	}
-	
-	public NuttInterpreter.Variable addVariable(String variableName,IValuable variable)
+
+	public Variable addVariable(String variableName,IValuable variable)
 	{
 		return addVariable(variableName,variable,variable.getType());
 	}
-	
-	NuttScope createScope()
+
+	public NuttScope addLocalType(String typeName,IType parent,List<String> children)
 	{
-		var scope=new NuttScope();
-		scope.parent=this;
-		return scope;
-		
+		return addLocalType(typeName,parent.getDisplayName(),children);
 	}
-	
+
+	public NuttScope addLocalType(String typeName,String parentName,List<String> children)
+	{
+		addVariable(typeName,TypeInferencer.addCustomType(typeName,parentName,children),parentName);
+		return this;
+	}
+
+	public NuttScope clear()
+	{
+		for(var entry: variableMap.entrySet())
+		{
+			switch(entry.getValue().getValuable())
+			{
+				case Procedure procedure when procedure.getName().startsWith("\\") -> --Procedure.lambdaCount;
+				case IType type -> TypeInferencer.removeCustomType(type.getDisplayName());
+				default -> {}
+			}
+			variableMap.remove(entry.getKey());
+		}
+		return this;
+	}
+
+
 	@Override
 	public String toString()
 	{
-		return variableMap.toString();
+		if(parent==null) return variableMap.toString();
+		return variableMap+parent.toString();
+	}
+
+	public Variable addVariable(String name,IValuable variable,String ceilType)
+	{
+		return addVariable(name,variable,TypeInferencer.findType(ceilType));
 	}
 }

@@ -1,37 +1,92 @@
 package Nutt.Types.Functional.Listable;
 
-import Nutt.TypeInferencer;
 import Nutt.Types.Functional.IFunctional;
+import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.Map.Map;
+import Nutt.Types.Functional.Listable.Set.Set;
+import Nutt.Types.Functional.Listable.String.String;
+import Nutt.Types.Functional.Type.IType;
 import Nutt.Types.IValuable;
 
-public interface IListable extends IFunctional
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+public interface IListable extends IFunctional, Iterable<IValuable>
 {
-	@Override default int compareTo(IValuable valuable)
+	default Array asArray()
 	{
-		if(!new TypeInferencer().verdict("Listable",valuable.getType()))
-		{
-			throw new RuntimeException("You cannot compare Listable with %s!".formatted(valuable.getType()));
-		}
-		return compareToFunctional(valuable.asFunctional());
+		if(!(this instanceof Array))
+			throw new ClassCastException("Listable type is not an Array");
+		return (Array)this;
 	}
 
-	@Override default int compareToFunctional(IFunctional functional)
+	default Set asSet()
 	{
-		if(!new TypeInferencer().verdict("Listable",functional.getType()))
-		{
-			throw new RuntimeException("You cannot compare Listable with %s!".formatted(functional.getType()));
-		}
-		return compareToListable(functional.asListable());
+		if(!(this instanceof Set))
+			throw new ClassCastException("Listable type is not a Set");
+		return (Set)this;
 	}
 
-	default int compareToListable(IListable listable)
+	default String asString()
 	{
-		return !new TypeInferencer().isContainer(listable.getType())?this.compareTo(listable):-1;
+		if(!(this instanceof String))
+			throw new ClassCastException("Listable type is not a String");
+		return (String)this;
 	}
 
-
-	@Override default String getWrapType()
+	default Map asMap()
 	{
-		return "Functional";
+		if(!(this instanceof Map))
+			throw new ClassCastException("Listable type is not a Map");
+		return (Map)this;
+	}
+
+	IValuable add(IValuable value);
+
+	IValuable getAt(IValuable index);
+
+	IValuable setAt(IValuable value,IValuable index);
+
+	//	default IValuable insertAt(IValuable value,Int i)
+	//	{
+	//		return insertAt(value,i.asLong().intValue());
+	//	}
+
+	//IValuable insertAt(IValuable value,int i);
+
+	List<IValuable> getElements();
+
+	IListable setElements(List<IValuable> elements);
+
+	default Stream<IValuable> stream()
+	{
+		return getElements().stream();
+	}
+
+	default <T> Stream<T> map(java.util.function.Function<? super IValuable,? extends T> mapper)
+	{
+		return stream().map(mapper);
+	}
+
+	IType getElementType();
+
+	Array asElementsArray();
+
+	@Override default void forEach(Consumer<? super IValuable> action)
+	{
+		getElements().forEach(action);
+	}
+
+	@Override default Iterator<IValuable> iterator()
+	{
+		return getElements().iterator();
+	}
+
+	@Override default Spliterator<IValuable> spliterator()
+	{
+		return getElements().spliterator();
 	}
 }

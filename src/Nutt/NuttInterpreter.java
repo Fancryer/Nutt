@@ -1,31 +1,56 @@
 package Nutt;
 
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
+import Nutt.Types.Functional.Record.Record;
+import Nutt.Types.Functional.Type.IType;
 import Nutt.Types.IValuable;
 
+import java.util.ArrayList;
 import java.util.EmptyStackException;
+import java.util.List;
+import java.util.function.Supplier;
 
-public class NuttInterpreter
+public final class NuttInterpreter
 {
-	private final String outputColor="green";
-	public NuttScope currentScope;
+	private final static java.lang.String outputColor="green";
+	public static NuttScope currentScope=new NuttScope();
+	public static List<java.lang.String> moduleNames=new ArrayList<>();
 
-	NuttStatementVisitor statementVisitor;
+	public static Context context;
 
-	public NuttInterpreter()
+	public static IValuable executeBlockAsScope(Supplier<IValuable> valuableSupplier)
 	{
-		currentScope=new NuttScope();
+		var oldScope=currentScope;
+		setScope(createScope());
+		var value=valuableSupplier.get();
+		setScope(oldScope);
+		return value;
 	}
 
-	public void forgetAll()
+	public static NuttScope setScope(NuttScope scope)
 	{
-		currentScope.variableMap.clear();
+		currentScope=scope;
+		return currentScope;
 	}
 
-	public IValuable getValuable(String valuableName)
+	public static NuttScope createScope()
+	{
+		var scope=new NuttScope();
+		scope.parent=currentScope;
+		return scope;
+	}
+
+	public static void forgetAll()
+	{
+		currentScope.clear();
+	}
+
+	public static IValuable getValuable(java.lang.String valuableName)
 	{
 		try
 		{
-			return getVariable(valuableName).valuable;
+			var variable=getVariable(valuableName);
+			return variable!=null?variable.valuable:null;
 		}
 		catch(EmptyStackException e)
 		{
@@ -33,7 +58,7 @@ public class NuttInterpreter
 		}
 	}
 
-	public Variable getVariable(String variableName)
+	public static Variable getVariable(java.lang.String variableName)
 	{
 		try
 		{
@@ -45,67 +70,128 @@ public class NuttInterpreter
 		}
 	}
 
-	public void say(Object o)
+	public static java.lang.String getColorizedFormat(List<IValuable> valuables)
 	{
-		System.out.print(ConsoleColorizer.colorize(o.toString(),outputColor));
+		return getColorizedFormat("%s".repeat(valuables.size()));
 	}
 
-	public void sayFormatted(String format,Object... args)
+	public static java.lang.String getColorizedFormat(java.lang.String format)
 	{
-		System.out.printf("%s".formatted(ConsoleColorizer.colorize(format,outputColor)),args);
+		return "%s".formatted(ConsoleColorizer.colorize(format,outputColor));
 	}
 
-	public void sayNewLine(Object o)
+	public static void sayFormatted(List<IValuable> args)
 	{
-		System.out.println(ConsoleColorizer.colorize(o.toString(),outputColor));
+		System.out.printf(getColorizedFormat("%s".repeat(args.size())),args.toArray());
+	}
+
+	public static void say(IValuable valuable)
+	{
+		System.out.printf(getColorizedFormat("%s"),valuable);
+	}
+
+	public static void sayNewLine(IValuable valuable)
+	{
+		System.out.printf(getColorizedFormat("%s")+"%n",valuable);
+	}
+
+	public static void clear()
+	{
+		forgetAll();
+		currentScope=new NuttScope();
+	}
+
+	public static void forget(String name)
+	{
+		currentScope.forgetVariable(name);
+	}
+
+	public static void forgetList(List<String> names)
+	{
+		for(var name: names) forget(name);
+	}
+
+	public static Procedure getProcedure(java.lang.String name)
+	{
+		return getVariable(name).valuable
+				.asFunctional()
+				.asActionable()
+				.asProcedure();
+	}
+
+	public static Record getRecord(java.lang.String name)
+	{
+		return getVariable(name).valuable
+				.asFunctional()
+				.asRecord();
+	}
+
+	public NuttScope removeScope()
+	{
+		//if(currentScope.parent==null) return currentScope;
+		var old=currentScope.clear();
+		currentScope=currentScope.parent;
+		return old;
 	}
 
 	public static class Variable
 	{
-		public String ceilType;
+		public IType ceilType;
 		public IValuable valuable;
 		public boolean isConstant;
+		public java.lang.String name;
 
-		public Variable(IValuable valuable,String ceilType)
+		public Variable(IType ceilType,IValuable valuable,java.lang.String name,boolean isConstant)
 		{
-			this(ceilType,valuable);
+			setCeilType(ceilType)
+					.setValuable(valuable)
+					.setName(name)
+					.setConstant(isConstant);
 		}
 
-		public Variable(IValuable valuable,String ceilType,boolean isConstant)
+		public Variable setConstant(boolean constant)
 		{
-			this(ceilType,valuable);
+			isConstant=constant;
+			return this;
 		}
 
-		public Variable(String ceilType,IValuable valuable,boolean isConstant)
+		public Variable setName(java.lang.String name)
+		{
+			this.name=name;
+			return this;
+		}
+
+		public Variable setCeilType(IType ceilType)
 		{
 			this.ceilType=ceilType;
-			this.valuable=valuable;
-			this.isConstant=isConstant;
-		}
-
-		public Variable(String ceilType,IValuable valuable)
-		{
-			this(ceilType,valuable,false);
-		}
-
-		public Variable(IValuable valuable)
-		{
-			this(valuable.getType(),valuable);
+			return this;
 		}
 
 		public Variable rebase(Variable variable)
 		{
-			ceilType=variable.ceilType;
-			valuable=variable.valuable;
-			isConstant=variable.isConstant;
-			return this;
+			return this
+					.setCeilType(variable.ceilType)
+					.setValuable(variable.valuable)
+					.setName(variable.name)
+					.setConstant(variable.isConstant);
 		}
 
 		@Override
-		public String toString()
+		public java.lang.String toString()
 		{
-			return "Variable{ceilType='%s', value='%s', isConstant='%s'}".formatted(ceilType,valuable,isConstant);
+			return "Variable{name='%s' ceilType='%s', value='%s', isConstant='%s'}".formatted(name,ceilType,valuable,
+			                                                                                  isConstant);
+		}
+
+		public IValuable getValuable()
+		{
+			return valuable;
+		}
+
+		public Variable setValuable(IValuable valuable)
+		{
+			this.valuable=valuable;
+			return this;
 		}
 	}
-	
 }
