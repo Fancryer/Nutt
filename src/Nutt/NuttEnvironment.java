@@ -44,7 +44,7 @@ public class NuttEnvironment
 	{
 		return constructValuable(TypeInferencer.findType(type));
 	}
-	
+
 	public static IValuable constructValuable(Type type)
 	{
 		if(type==null) return null;
@@ -120,7 +120,7 @@ public class NuttEnvironment
 
 	public static InterpolParser getTempInterpolator(java.lang.String source)
 	{
-		return new InterpolParser(new CommonTokenStream(new Interpol.InterpolLexer(CharStreams.fromString(source))));
+		return new InterpolParser(new CommonTokenStream(new gen.Interpol.InterpolLexer(CharStreams.fromString(source))));
 	}
 
 	public static Nutt parseAsSource(ParseTree ctx,boolean removeTrailing)

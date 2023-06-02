@@ -3,7 +3,6 @@ package Nutt;
 import Nutt.Exceptions.NuttVariableNotDefinedException;
 import Nutt.Exceptions.NuttVariableStoreException;
 import Nutt.NuttInterpreter.Variable;
-import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
@@ -158,12 +157,9 @@ public class Scope
 	{
 		for(var entry: variableMap.entrySet())
 		{
-			switch(entry.getValue().getValuable())
-			{
-				case Procedure procedure when procedure.getName().startsWith("\\") -> --Procedure.lambdaCount;
-				case Type type -> TypeInferencer.removeCustomType(type.getDisplayName());
-				default -> {}
-			}
+			//case Procedure procedure when procedure.getName().startsWith("\\") -> --Procedure.lambdaCount;
+			if(Objects.requireNonNull(entry.getValue().getValuable()) instanceof Type type)
+				TypeInferencer.removeCustomType(type.getDisplayName());
 			variableMap.remove(entry.getKey());
 		}
 		return this;
