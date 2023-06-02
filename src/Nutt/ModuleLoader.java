@@ -1,7 +1,7 @@
 package Nutt;
 
+import gen.Nutt;
 import Nutt.Visitors.NuttStatementVisitor;
-import gen.NuttParser;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
@@ -22,19 +22,19 @@ public class ModuleLoader
 		if(block==null) return;
 		block.stat()
 		     .stream()
-		     .filter(st->(st instanceof NuttParser.Functiondef_statContext)
-		                 ||(st instanceof NuttParser.Var_decl_statContext))
+		     .filter(st->(st instanceof Nutt.Functiondef_statContext)
+		                 ||(st instanceof Nutt.Var_decl_statContext))
 		     .forEach(statementVisitor::visit);
-		//		statStream.map(NuttParser.StatContext::functiondef_stat)
+		//		statStream.map(Nutt.StatContext::functiondef_stat)
 		//		          .filter(Objects::nonNull)
 		//		          .forEach(statementVisitor::visitFunctiondef_stat);
-		//		statStream.map(NuttParser.StatContext::var_decl).filter(Objects::nonNull).forEach
+		//		statStream.map(Nutt.StatContext::var_decl).filter(Objects::nonNull).forEach
 		//		(statementVisitor::visitVar_decl);
 		//statementVisitor.visit(chunk);
 	}
 
 
-	public List<String> parseModuleNameOrGroup(NuttParser.Module_name_or_groupContext ctx)
+	public List<String> parseModuleNameOrGroup(Nutt.Module_name_or_groupContext ctx)
 	{
 		if(ctx.module_name()!=null) return List.of(getFullModuleName(ctx.module_name()));
 		var groupPrefix=getFullModuleName(ctx.module_group().module_name())+".";
@@ -47,13 +47,13 @@ public class ModuleLoader
 		return nameList;
 	}
 
-	public void importModuleList(List<NuttParser.Module_importContext> importContexts,
+	public void importModuleList(List<Nutt.Module_importContext> importContexts,
 	                             NuttStatementVisitor statementVisitor)
 	{
 		for(var i: importContexts) importModuleContext(i,statementVisitor);
 	}
 
-	public void importModuleContext(NuttParser.Module_importContext importContext,
+	public void importModuleContext(Nutt.Module_importContext importContext,
 	                                NuttStatementVisitor statementVisitor)
 	{
 		if(importContext.module_list()==null) return;
@@ -61,14 +61,14 @@ public class ModuleLoader
 				m->importModuleGroup(m,statementVisitor));
 	}
 
-	private void importModuleGroup(NuttParser.Module_name_or_groupContext ctx,NuttStatementVisitor statementVisitor)
+	private void importModuleGroup(Nutt.Module_name_or_groupContext ctx,NuttStatementVisitor statementVisitor)
 	{
 		var names=parseModuleNameOrGroup(ctx);
 		System.out.println("names = "+names);
 		names.forEach(module->importModule(module,statementVisitor));
 	}
 
-	public String getFullModuleName(NuttParser.Module_nameContext ctx)
+	public String getFullModuleName(Nutt.Module_nameContext ctx)
 	{
 		return ctx.NAME().stream().map(TerminalNode::getText).collect(Collectors.joining("\\\\"));
 	}

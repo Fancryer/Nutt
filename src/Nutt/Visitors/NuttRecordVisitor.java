@@ -1,5 +1,7 @@
 package Nutt.Visitors;
 
-public class NuttRecordVisitor extends NuttGenericVisitor
+import Nutt.Types.Functional.Record.Record;
+
+public class NuttRecordVisitor extends NuttGenericVisitor<Record>
 {
 }

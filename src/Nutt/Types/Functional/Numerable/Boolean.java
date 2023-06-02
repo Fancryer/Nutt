@@ -2,7 +2,7 @@ package Nutt.Types.Functional.Numerable;
 
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class Boolean extends Int
 		return this;
 	}
 
-	@Override public IType getType()
+	@Override public Type getType()
 	{
 		return TypeInferencer.findType("Boolean");
 	}

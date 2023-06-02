@@ -2,7 +2,8 @@ package Nutt.Types;
 
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.IFunctional;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Type.Type;
 
 import java.util.List;
 import java.util.Objects;
@@ -20,6 +21,11 @@ public interface IValuable extends IComparable<IValuable>
 		return (IFunctional)this;
 	}
 
+	default IValuable asValuable()
+	{
+		return this;
+	}
+
 	default Nil asNil()
 	{
 		if(!(this instanceof Nil))
@@ -32,9 +38,11 @@ public interface IValuable extends IComparable<IValuable>
 		return Objects.equals(getType(),TypeInferencer.findType("Nil"));
 	}
 
-	IType getType();
+	Type getType();
 
 	int getLength();
 
 	IValuable replicate();
+
+	Array asElementsArray();
 }

@@ -1,19 +1,19 @@
 package Nutt.Visitors;
 
+import gen.Nutt;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.IValuable;
-import gen.NuttParser;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-public class NuttMapperExtractVisitor extends NuttGenericVisitor
+public class NuttMapperExtractVisitor extends NuttGenericVisitor<IValuable>
 {
-	@Override public Boolean visitExplicit_variable(NuttParser.Explicit_variableContext ctx)
+	@Override public Boolean visitExplicit_variable(Nutt.Explicit_variableContext ctx)
 	{
 		return new Boolean(!NuttFunctionVisitor.isNativeFunction(ctx.NAME().getText()));
 	}
 
-	@Override public Boolean visitFunction_definition_exp(NuttParser.Function_definition_expContext ctx)
+	@Override public Boolean visitFunction_definition_exp(Nutt.Function_definition_expContext ctx)
 	{
 		return new Boolean(true);
 	}

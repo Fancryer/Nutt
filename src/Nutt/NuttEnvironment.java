@@ -10,12 +10,13 @@ import Nutt.Types.Functional.Listable.Set.Set;
 import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
 import Nutt.Visitors.NuttStatementVisitor;
+import gen.Interpol.InterpolParser;
+import gen.Nutt;
 import gen.NuttLexer;
-import gen.NuttParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -43,8 +44,8 @@ public class NuttEnvironment
 	{
 		return constructValuable(TypeInferencer.findType(type));
 	}
-
-	public static IValuable constructValuable(IType type)
+	
+	public static IValuable constructValuable(Type type)
 	{
 		if(type==null) return null;
 		if(!TypeInferencer.hasType(type.getDisplayName())) throw new RuntimeException();
@@ -61,7 +62,7 @@ public class NuttEnvironment
 		};
 	}
 
-	public static IValuable constructGenericValuable(IType type,List<IType> typeParameters)
+	public static IValuable constructGenericValuable(Type type,List<Type> typeParameters)
 	{
 		if(type==null||!TypeInferencer.hasType(type.getDisplayName())) throw new RuntimeException();
 		var typeParametersAmount=typeParameters.size();
@@ -112,17 +113,32 @@ public class NuttEnvironment
 		return children;
 	}
 
-	public static NuttParser getTempParser(java.lang.String source)
+	public static Nutt getTempParser(java.lang.String source)
 	{
-		return new NuttParser(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
+		return new Nutt(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
 	}
 
-	public static NuttParser parseAsSource(ParseTree ctx,boolean removeTrailing)
+	public static InterpolParser getTempInterpolator(java.lang.String source)
+	{
+		return new InterpolParser(new CommonTokenStream(new Interpol.InterpolLexer(CharStreams.fromString(source))));
+	}
+
+	public static Nutt parseAsSource(ParseTree ctx,boolean removeTrailing)
 	{
 		return getTempParser(removeTrailing?NuttCommon.removeFirstAndLastChars(toSourceCode(ctx)):toSourceCode(ctx));
 	}
 
-	public static NuttParser parseAsSource(ParseTree ctx)
+	public static Nutt parseWithPrefix(java.lang.String prefix,ParseTree ctx)
+	{
+		return getTempParser(prefix+toSourceCode(ctx));
+	}
+
+	public static Nutt parseWithBound(java.lang.String prefix,ParseTree ctx,java.lang.String postfix)
+	{
+		return getTempParser(prefix+toSourceCode(ctx)+postfix);
+	}
+
+	public static Nutt parseAsSource(ParseTree ctx)
 	{
 		return parseAsSource(ctx,false);
 	}
@@ -144,6 +160,11 @@ public class NuttEnvironment
 		return stringBuilder.toString().trim().replace("<EOF>","");
 	}
 
+	public static List<java.lang.String> toSourceList(List<Tree> trees)
+	{
+		return trees.stream().map(NuttEnvironment::toSourceCode).toList();
+	}
+
 	public static java.lang.String toSourceCode(Tree tree)
 	{
 		return toSourceCode(tree,new StringBuilder());
@@ -161,8 +182,8 @@ public class NuttEnvironment
 		NuttInterpreter.clear();
 	}
 
-	private NuttParser setup(java.lang.String source)
+	private Nutt setup(java.lang.String source)
 	{
-		return new NuttParser(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
+		return new Nutt(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
 	}
 }

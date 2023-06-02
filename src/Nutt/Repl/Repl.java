@@ -5,8 +5,7 @@ import Nutt.NuttEnvironment;
 import Nutt.NuttInterpreter;
 import Nutt.Types.IValuable;
 import Nutt.Visitors.NuttStatementVisitor;
-import gen.NuttParser;
-import gen.NuttParser.StatContext;
+import gen.Nutt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,13 +94,13 @@ public class Repl
 		input.forEach(System.out::println);
 	}
 
-	private List<IValuable> eval(List<StatContext> input)
+	private List<IValuable> eval(List<Nutt.StatContext> input)
 	{
 		var visitor=new NuttStatementVisitor();
 		return input.stream().map(visitor::visit).toList();
 	}
 
-	private List<NuttParser.StatContext> read(List<String> input)
+	private List<Nutt.StatContext> read(List<String> input)
 	{
 		return NuttEnvironment.getTempParser(String.join("",input)).block().stat();
 	}

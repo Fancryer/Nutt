@@ -18,11 +18,11 @@ import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.INumerable;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Record.Record;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
 import com.sun.jdi.InvalidTypeException;
-import gen.NuttParser;
+import gen.Nutt;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.ArrayList;
@@ -31,30 +31,29 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class NuttEvalVisitor extends NuttGenericVisitor
+public class NuttEvalVisitor extends NuttGenericVisitor<IValuable>
 {
 	@Override
-	public IValuable visitIf_then_else_block(NuttParser.If_then_else_blockContext ctx)
+	public IValuable visitIf_then_else_block(Nutt.If_then_else_blockContext ctx)
 	{
 		///return new NuttStatementVisitor(interpreter);
 		return new Nil();
 	}
 
 	@Override
-	public IValuable visitFunction_yield(NuttParser.Function_yieldContext ctx)
+	public IValuable visitFunction_yield(Nutt.Function_yieldContext ctx)
 	{
 		return visit(ctx.exp());
 	}
 
 	@Override
-	public IValuable visitExplicit_array(NuttParser.Explicit_arrayContext ctx)
+	public IValuable visitExplicit_array(Nutt.Explicit_arrayContext ctx)
 	{
 		return new NuttArrayVisitor().visitExplicit_array(ctx);
 	}
 
-
 	@Override
-	public IValuable visitExplicit_variable(NuttParser.Explicit_variableContext ctx)
+	public IValuable visitExplicit_variable(Nutt.Explicit_variableContext ctx)
 	{
 		var name=ctx.NAME().getSymbol().getText();
 		var asType=TypeInferencer.findType(name);
@@ -62,9 +61,9 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 		return NuttInterpreter.getValuable(name);
 	}
 
-	@Override public IValuable visitRange_array_initializer_exp(NuttParser.Range_array_initializer_expContext ctx)
+	@Override public IValuable visitRange_array_initializer_exp(Nutt.Range_array_initializer_expContext ctx)
 	{
-		NuttParser.Range_array_initializerContext arrayInitializer=ctx.range_array_initializer();
+		Nutt.Range_array_initializerContext arrayInitializer=ctx.range_array_initializer();
 		var start=visit(arrayInitializer.start);
 		var next=visit(arrayInitializer.next);
 		var range=INumerable.sub((INumerable)next,(INumerable)start);
@@ -81,7 +80,7 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	}
 
 	@Override
-	public IValuable visitArray_access(NuttParser.Array_accessContext ctx)
+	public IValuable visitArray_access(Nutt.Array_accessContext ctx)
 	{
 		var evaluator=new NuttEvalVisitor();
 		var array=evaluator.visit(ctx.arr);
@@ -94,14 +93,14 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 		if(!TypeInferencer.findType("Int").equals(index.getType()))
 		{
 			throw new RuntimeException(
-					new InvalidTypeException("Cannot access element of array with index of "+index.getType()+" type"+
-					                         "!"));
+					new InvalidTypeException("Cannot access element of %s with index of %s type!".formatted(array.getType(),
+					                                                                                        index.getType())));
 		}
 		return array.asFunctional().asListable().getAt(index.asFunctional().asNumerable().asInt());
 	}
 
 	@Override
-	public IValuable visitFunc_call_exp(NuttParser.Func_call_expContext ctx)
+	public IValuable visitFunc_call_exp(Nutt.Func_call_expContext ctx)
 	{
 		try
 		{
@@ -114,104 +113,122 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	}
 
 	@Override
-	public IValuable visitQuarternary_exp(NuttParser.Quarternary_expContext ctx)
+	public IValuable visitQuarternary_exp(Nutt.Quarternary_expContext ctx)
 	{
 		return visit(new NuttConditionVisitor().visit(ctx.cond).asFunctional().asBoolean().isTrue()
 		             ?ctx.if_true:ctx.if_false);
 	}
 
 	@Override
-	public IValuable visitInfix_exp(NuttParser.Infix_expContext ctx)
+	public IValuable visitInfix_exp(Nutt.Infix_expContext ctx)
 	{
-		if(ctx.operator_infix().operator_logical()!=null) return new NuttConditionVisitor().visit(ctx);
-		if(ctx.operator_infix().operator_comparison()!=null) return new NuttCompareVisitor().visitInfix_exp(ctx);
+		var defaultOperator=ctx.operator_infix().default_infix_operator();
 		var left=visit(ctx.left);
 		var right=visit(ctx.right);
-		var op=NuttEnvironment.toSourceCode(ctx.operator_infix());
-		return switch(left)
+		if(defaultOperator!=null)
 		{
-			case INumerable leftAsNumerable ->
+			if(defaultOperator.operator_logical()!=null) return new NuttConditionVisitor().visit(ctx);
+			if(defaultOperator.operator_comparison()!=null) return new NuttCompareVisitor().visitInfix_exp(ctx);
+			var op=NuttEnvironment.toSourceCode(defaultOperator);
+			return switch(left)
 			{
-				var rightAsNumerable=right.asFunctional().asNumerable();
-				yield switch(op)
+				case INumerable leftAsNumerable ->
 				{
-					case "+" -> INumerable.add(leftAsNumerable,rightAsNumerable);
-					case "-" -> INumerable.sub(leftAsNumerable,rightAsNumerable);
-					case "*" -> INumerable.mult(leftAsNumerable,rightAsNumerable);
-					case "/" -> INumerable.div(leftAsNumerable,rightAsNumerable);
-					case "//" -> INumerable.intDiv(leftAsNumerable,rightAsNumerable);
-					case "%" -> INumerable.mod(leftAsNumerable,rightAsNumerable);
-					case "^" -> INumerable.pow(leftAsNumerable,rightAsNumerable);
-					default -> new Nil();
-				};
-			}
-			case IListable leftAsListable ->
+					var rightAsNumerable=right.asFunctional().asNumerable();
+					yield switch(op)
+					{
+						case "+" -> INumerable.add(leftAsNumerable,rightAsNumerable);
+						case "-" -> INumerable.sub(leftAsNumerable,rightAsNumerable);
+						case "*" -> INumerable.mult(leftAsNumerable,rightAsNumerable);
+						case "/" -> INumerable.div(leftAsNumerable,rightAsNumerable);
+						case "//" -> INumerable.intDiv(leftAsNumerable,rightAsNumerable);
+						case "%" -> INumerable.mod(leftAsNumerable,rightAsNumerable);
+						case "^" -> INumerable.pow(leftAsNumerable,rightAsNumerable);
+						default -> new Nil();
+					};
+				}
+				case String str -> Objects.equals("+",op)?str.add(right):new Nil();
+				case IListable leftAsListable ->
+				{
+					var rightAsListable=right.asFunctional().asListable();
+					var resArr=new Array(leftAsListable.getElementType());
+					var i=0;
+					for(var leftEl: leftAsListable)
+					{
+						var rightEl=rightAsListable.getAt(new Int(i));
+						resArr.add(visit(NuttEnvironment.getTempParser(leftEl+op+rightEl).exp()));
+					}
+					yield resArr;
+				}
+				case Record leftAsRecord ->
+				{
+					var rightAsRecord=right.asFunctional().asFunctional().asRecord();
+					try
+					{
+						new NuttFunctionVisitor().invokeProcedure(leftAsRecord.getOperators().get(op),List.of(leftAsRecord,rightAsRecord));
+					}
+					catch(NuttSuccessReturnException e)
+					{
+						yield e.getValue();
+					}
+					throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
+				}
+				case null -> throw new RuntimeException("Left operand is corrupted!");
+				default -> throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
+			};
+		}
+		else
+		{
+			var op=ctx.operator_infix().Op_Custom().getText();
+			return switch(left)
 			{
-				var rightAsListable=right.asFunctional().asListable();
-				var resArr=new Array(leftAsListable.getElementType());
-				var i=0;
-				for(var leftEl: leftAsListable)
+				case Record leftAsRecord ->
 				{
-					var rightEl=rightAsListable.getAt(new Int(i));
-					resArr.add(visit(NuttEnvironment.getTempParser(leftEl+op+rightEl).exp()));
+					var rightAsRecord=right.asFunctional().asFunctional().asRecord();
+					try
+					{
+						new NuttFunctionVisitor().invokeProcedure(leftAsRecord.getOperators().get(op),List.of(leftAsRecord,rightAsRecord));
+					}
+					catch(NuttSuccessReturnException e)
+					{
+						yield e.getValue();
+					}
+					throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
 				}
-				yield resArr;
-			}
-			case Record leftAsRecord ->
-			{
-				var rightAsRecord=right.asFunctional().asFunctional().asRecord();
-				try
-				{
-					new NuttFunctionVisitor().invokeProcedure(leftAsRecord.getOperators().get(op),List.of(leftAsRecord,rightAsRecord));
-				}
-				catch(NuttSuccessReturnException e)
-				{
-					yield e.getValue();
-				}
-				throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
-			}
-			case null -> throw new RuntimeException("Left operand is corrupted!");
-			default -> throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
-		};
+				case null -> throw new RuntimeException("Left operand is corrupted!");
+				default -> throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
+			};
+		}
 	}
 
-	@Override public IValuable visitRecord_initializer_exp(NuttParser.Record_initializer_expContext ctx)
+	@Override public IValuable visitRecord_initializer_exp(Nutt.Record_initializer_expContext ctx)
 	{
-		var rowList=ctx.record_initializer().record_element();
+		var rowList=ctx.record_initializer().record_element_list();
 		List<Row> members=new ArrayList<>();
-		for(var row: rowList)
+		for(var row: rowList.record_element())
 		{
-			var name=visit(row.key);
-			if(Objects.requireNonNull(name) instanceof String string)
-			{
-				var val=visit(row.val);
-				var partition=new Partition(val.getType(),val);
-				members.add(new Row(string,partition));
-			}
-			else
-			{
-				throw new RuntimeException();
-			}
+			var val=visit(row.val);
+			members.add(new Row(row.key.getText(),new Partition(val.getType(),val)));
 		}
 		return new Record(members);
 	}
 
-	@Override public IValuable visitRecord_member_access(NuttParser.Record_member_accessContext ctx)
+	@Override public IValuable visitRecord_member_access(Nutt.Record_member_accessContext ctx)
 	{
 		var left=visit(ctx.record);
 		if(!TypeInferencer.verdict("Record",left.getType().getDisplayName())) throw new RuntimeException();
-		var record=left.asFunctional().asRecord();
-		var index=Objects.requireNonNullElse(ctx.index,ctx.string_index);
-		return record.getMember(new NuttStringVisitor().visit(index).toString());
+		return left.asFunctional()
+		           .asRecord()
+		           .getMember(new NuttStringVisitor().visit(ctx.index).toString());
 	}
 
-	@Override public IValuable visitAtom(NuttParser.AtomContext ctx)
+	@Override public IValuable visitAtom(Nutt.AtomContext ctx)
 	{
 		return ctx.string()!=null?new NuttStringVisitor().visitString(ctx.string()):super.visitAtom(ctx);
 	}
 
 	@Override
-	public IValuable visitPrefix_exp(NuttParser.Prefix_expContext ctx)
+	public IValuable visitPrefix_exp(Nutt.Prefix_expContext ctx)
 	{
 		var op=ctx.operator_prefix();
 		var value=visit(ctx.exp());
@@ -226,27 +243,17 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 			if(!valueIsNumerable) throw new ArithmeticException("Cannot abs a "+value.getType());
 			return INumerable.abs(value.asFunctional().asNumerable());
 		}
-		if(op.OP_Tilda()!=null)
-		{
-			if(!valueIsNumerable) throw new ArithmeticException("Cannot bitswap a "+value.getType());
-			return INumerable.bitSwap(value.asFunctional().asNumerable());
-		}
 		if(op.OP_Length()!=null)
-		{
-			return new Int(java.lang.String.valueOf(value.getLength()));
-		}
+			return new Int(value.getLength());
 		if(op.OP_Not()!=null)
-		{
-			return new String(java.lang.String.valueOf(
-					!new NuttConditionVisitor().visit(ctx.exp()).asFunctional().asBoolean().isTrue()));
-		}
+			return new Boolean(!new NuttConditionVisitor().visit(ctx.exp()).asFunctional().asBoolean().isTrue());
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public IValuable visitInstance_of_exp(NuttParser.Instance_of_expContext ctx)
+	public IValuable visitInstance_of_exp(Nutt.Instance_of_expContext ctx)
 	{
-		IType ceilType;
+		Type ceilType;
 		if(ctx.type_exp!=null) ceilType=visit(ctx.type_exp).getType();
 		else
 		{
@@ -257,45 +264,45 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 				                                                               .getType()
 				                                                               .getDisplayName());
 		}
-		return new String(ceilType.findChild(visit(ctx.to_check).getType())!=null);
+		return new Boolean(TypeInferencer.verdict(ceilType,visit(ctx.to_check).getType()));
 	}
 
 	@Override
-	public IValuable visitExplicit_atom(NuttParser.Explicit_atomContext ctx)
+	public IValuable visitExplicit_atom(Nutt.Explicit_atomContext ctx)
 	{
 		var atom=ctx.atom();
 		if(atom.number()!=null) return visitNumber(atom.number());
 		if(atom.string()!=null) return visitString(atom.string());
-		if(atom.boolean_()!=null) return new Boolean(atom.boolean_().kw_true()!=null);
+		if(atom.boolean_()!=null) return new Boolean(atom.boolean_().KW_True()!=null);
 		if(atom.nil()!=null) return new Nil();
 		throw new RuntimeException();
 	}
 
 	@Override
-	public IValuable visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx)
+	public IValuable visitParenthesis_exp(Nutt.Parenthesis_expContext ctx)
 	{
 		return visit(ctx.exp());
 	}
 
 	@Override
-	public IValuable visitFunction_definition_exp(NuttParser.Function_definition_expContext ctx)
+	public IValuable visitFunction_definition_exp(Nutt.Function_definition_expContext ctx)
 	{
 		return visitLocal_funct(ctx.local_funct());
 	}
 
-	@Override public IValuable visitLocal_funct(NuttParser.Local_functContext ctx)
+	@Override public IValuable visitLocal_funct(Nutt.Local_functContext ctx)
 	{
 		var lambda=ctx.lambda_decl();
 		return lambda!=null?evalLambda(lambda):evalAnonymousFunct(ctx.funcbody());
 	}
 
-	private IValuable evalAnonymousFunct(NuttParser.FuncbodyContext funcbody)
+	private IValuable evalAnonymousFunct(Nutt.FuncbodyContext funcbody)
 	{
-		var parameters=funcbody.func_parameters().func_param_list().func_param().stream().toList();
+		var parameters=funcbody.var_signature_list().var_signature();
 		var functionBody=funcbody.block();
-		Pair<IType,IValuable> outputPair;
+		Pair<Type,IValuable> outputPair;
 		IValuable declaredOutputValue;
-		IType declaredOutputType;
+		Type declaredOutputType;
 		var isTypePresented=funcbody.func_output().by_type_var_decl()!=null;
 		var isValuePresented=funcbody.func_output().default_output!=null;
 		if(isTypePresented)
@@ -316,16 +323,15 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 		                             .createProcedure();
 	}
 
-	private IValuable evalLambda(NuttParser.Lambda_declContext lambda)
+	private IValuable evalLambda(Nutt.Lambda_declContext lambda)
 	{
-		java.lang.String params=NuttEnvironment.toSourceCode(lambda.func_parameters()),
-				output=NuttEnvironment.toSourceCode(lambda.func_output()),
-				exp=NuttEnvironment.toSourceCode(lambda.exp());
-		var transformed="funct %s%s=yield %s return".formatted(params,output,exp);
+		var sources=NuttEnvironment.toSourceList(List.of(lambda.var_signature_list(),lambda.func_output(),lambda.exp()));
+		var transformed="funct %s%s=yield %s return".formatted(sources.get(0),sources.get(1),sources.get(2));
 		return visitLocal_funct(NuttEnvironment.getTempParser(transformed).local_funct());
 	}
 
-	@Override public IValuable visitMap_exp(NuttParser.Map_expContext ctx)
+	/*
+	@Override public IValuable visitMap_exp(Nutt.Map_expContext ctx)
 	{
 		var left=visit(ctx.left);
 		var right=visit(ctx.right);
@@ -343,19 +349,20 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 		//		}
 		return super.visitMap_exp(ctx);
 	}
+	*/
 
-	@Override public IValuable visitMatch_to_exp(NuttParser.Match_to_expContext ctx)
+	@Override public IValuable visitMatch_to_exp(Nutt.Match_to_expContext ctx)
 	{
 		var matched=visit(ctx.matched);
 		IValuable lastMatch=null;
-		Predicate<NuttParser.Match_branchContext> branchSuits=
-				b->b.case_list().exp().stream().anyMatch(m->matched.equalTo(visit(m)));
+		Predicate<Nutt.Match_branchContext> branchSuits=
+				b->b.explist().exp().stream().anyMatch(m->matched.equalTo(visit(m)));
 		for(var branch: ctx.match_branch().stream().filter(branchSuits).toList())
 		{
 			if(branchSuits.test(branch))
 			{
 				lastMatch=visit(branch.exp());
-				if(branch.final_match_branch()!=null) break;
+				if(branch.KW_Final()!=null) break;
 			}
 		}
 		if(lastMatch==null)
@@ -367,19 +374,19 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	}
 
 	@Override
-	public IValuable visitType_of_exp(NuttParser.Type_of_expContext ctx)
+	public IValuable visitType_of_exp(Nutt.Type_of_expContext ctx)
 	{
 		return visit(ctx.exp()).getType();
 	}
 
 	//	@Override
-	//	public IValuable visitFunctionCallExp(NuttParser.FunctionCallExpContext ctx)
+	//	public IValuable visitFunctionCallExp(Nutt.FunctionCallExpContext ctx)
 	//	{
 	//		return new Nutt.Visitors.NuttFunctionVisitor(interpreter).visitFunctionCallExp(ctx);
 	//	}
 
 	@Override
-	public IValuable visitNumber(NuttParser.NumberContext ctx)
+	public IValuable visitNumber(Nutt.NumberContext ctx)
 	{
 		Function<ParseTree,java.lang.String> removeUnderscores=(p)->p.getText().replaceAll("_","");
 		if(ctx.Int()!=null) return new Int(removeUnderscores.apply(ctx.Int()));
@@ -390,32 +397,18 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	}
 
 	@Override
-	public IValuable visitString(NuttParser.StringContext ctx)
+	public IValuable visitString(Nutt.StringContext ctx)
 	{
 		return new String(new NuttStringVisitor().visitString(ctx));
 	}
 
-	@Override
-	public IValuable visitFunctioncall(NuttParser.FunctioncallContext ctx)
-	{
-		try
-		{
-			new NuttFunctionVisitor().visitFunctioncall(ctx).getValue();
-		}
-		catch(NuttSuccessReturnException e)
-		{
-			return e.getValue();
-		}
-		return new Nil();
-	}
-
-	@Override public IValuable visitEval_exp(NuttParser.Eval_expContext ctx)
+	@Override public IValuable visitEval_exp(Nutt.Eval_expContext ctx)
 	{
 		return visit(NuttEnvironment.parseAsSource(ctx.exp(),true).exp());
 	}
 
 	@Override
-	public IValuable visitFunc_output(NuttParser.Func_outputContext ctx)
+	public IValuable visitFunc_output(Nutt.Func_outputContext ctx)
 	{
 		return NuttEnvironment.constructValuable(new NuttTypeInferenceVisitor().visitFunc_output(ctx));
 	}

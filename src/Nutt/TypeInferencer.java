@@ -1,8 +1,7 @@
 package Nutt;
 
 import Nutt.Exceptions.NuttTypeIsDeclaredException;
-import Nutt.Types.Functional.Type.CustomType;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.ArrayList;
@@ -11,11 +10,11 @@ import java.util.Objects;
 
 public class TypeInferencer
 {
-	public final static IType typeTree;
+	public final static Type typeTree;
 
 	static
 	{
-		typeTree=new CustomType("Valuable")
+		typeTree=new Type("Valuable")
 				.addChildrenByNames(List.of("Nil","Functional"));
 		var functional=typeTree.findChild("Functional");
 		functional
@@ -36,28 +35,28 @@ public class TypeInferencer
 				.addChild("Procedure");
 	}
 
-	public static IType removeCustomType(String typeName)
+	public static Type removeCustomType(String typeName)
 	{
 		return typeTree.removeChild(typeName);
 	}
 
-	public static IType addCustomType(String typeName)
+	public static Type addCustomType(String typeName)
 	{
 		return addCustomType(typeName,new ArrayList<>());
 	}
 
-	public static IType addCustomType(String typeName,List<String> children)
+	public static Type addCustomType(String typeName,List<String> children)
 	{
 		return addCustomType(typeName,"Type",children);
 	}
 
-	public static IType addCustomType(String typeName,String parentName,List<String> children)
+	public static Type addCustomType(String typeName,String parentName,List<String> children)
 	{
 		if(!canTypeBeAdded(typeName,parentName)) throw new NuttTypeIsDeclaredException(typeName);
-		return findType(parentName).addChild("").addChildrenByNames(children);
+		return findType(parentName).addChild(typeName).addChildrenByNames(children);
 	}
 
-	public static IType addCustomType(String typeName,IType parent,List<String> children)
+	public static Type addCustomType(String typeName,Type parent,List<String> children)
 	{
 		return addCustomType(typeName,parent.getDisplayName(),children);
 	}
@@ -67,12 +66,12 @@ public class TypeInferencer
 		return !hasType(typeName);//||verdict("Type",parentName);
 	}
 
-	public static IType findTypeElse(String typeName,String otherTypeName)
+	public static Type findTypeElse(String typeName,String otherTypeName)
 	{
 		return Objects.requireNonNullElse(findType(typeName),findType(otherTypeName));
 	}
 
-	public static IType findType(String typeName)
+	public static Type findType(String typeName)
 	{
 		return typeTree.findChild(typeName);
 	}
@@ -87,7 +86,7 @@ public class TypeInferencer
 		return verdict(findType(typeA),findType(typeB));
 	}
 
-	public static Boolean verdict(IType typeA,IType typeB)
+	public static Boolean verdict(Type typeA,Type typeB)
 	{
 		return typeA!=null
 		       &&typeB!=null
@@ -95,22 +94,22 @@ public class TypeInferencer
 		       &&typeA.getTypeParameters().equals(typeB.getTypeParameters());
 	}
 
-	public static Boolean verdict(String typeA,IType typeB)
+	public static Boolean verdict(String typeA,Type typeB)
 	{
 		return verdict(typeA,typeB.getDisplayName());
 	}
 
-	public static IType findTypeElse(IType type,IType otherType)
+	public static Type findTypeElse(Type type,Type otherType)
 	{
 		return findTypeElse(type.getDisplayName(),otherType.getDisplayName());
 	}
 	
-	public static IType findType(IType type)
+	public static Type findType(Type type)
 	{
 		return findType(type.getDisplayName());
 	}
 
-	private static void prettyPrintTypeTree(IType tree,int depth,int offset)
+	private static void prettyPrintTypeTree(Type tree,int depth,int offset)
 	{
 		if(tree!=null)
 		{
@@ -130,32 +129,32 @@ public class TypeInferencer
 		prettyPrintTypeTree(typeTree);
 	}
 
-	public static void prettyPrintTypeTree(IType tree)
+	public static void prettyPrintTypeTree(Type tree)
 	{
 		prettyPrintTypeTree(tree,0,0);
 	}
 
-	public static Boolean verdictAll(String ceilType,List<IType> types)
+	public static Boolean verdictAll(String ceilType,List<Type> types)
 	{
 		return verdictAll(findType(ceilType),types);
 	}
 
-	public static Boolean verdictAll(IType ceilType,List<IType> types)
+	public static Boolean verdictAll(Type ceilType,List<Type> types)
 	{
 		return types.stream().allMatch(t->verdict(ceilType,t));
 	}
 
-	public static IType getCommonIValuableWrapperType(List<IValuable> valuables)
+	public static Type getCommonIValuableWrapperType(List<IValuable> valuables)
 	{
 		return getCommonWrapperType(valuables.stream().map(IValuable::getType).toList());
 	}
 
-	public static IType getCommonWrapperType(IType typeA,IType typeB)
+	public static Type getCommonWrapperType(Type typeA,Type typeB)
 	{
-		return IType.LowestCommonAncestor(typeA,typeB);
+		return Type.LowestCommonAncestor(typeA,typeB);
 	}
 
-	public static IType getCommonWrapperType(List<IType> types)
+	public static Type getCommonWrapperType(List<Type> types)
 	{
 		if(types.isEmpty()) return findType("Nil");
 		var commonType=types.get(0);
@@ -164,12 +163,12 @@ public class TypeInferencer
 		return commonType;
 	}
 
-	public static IType getTypeTreeRoot()
+	public static Type getTypeTreeRoot()
 	{
 		return typeTree;
 	}
 
-	public static boolean typesEquals(IType typeA,IType typeB)
+	public static boolean typesEquals(Type typeA,Type typeB)
 	{
 		return typeA.equals(typeB);
 	}

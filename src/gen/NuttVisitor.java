@@ -1,963 +1,839 @@
-// Generated from F:/NuttTest/src\Nutt.g4 by ANTLR 4.12.0
+// Generated from G:/Nutt/src\Nutt.g4 by ANTLR 4.12.0
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
  * This interface defines a complete generic visitor for a parse tree produced
- * by {@link NuttParser}.
+ * by {@link Nutt}.
  *
  * @param <T> The return type of the visit operation. Use {@link Void} for
  * operations with no return type.
  */
 public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#chunk}.
+	 * Visit a parse tree produced by {@link Nutt#chunk}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitChunk(NuttParser.ChunkContext ctx);
+	T visitChunk(Nutt.ChunkContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module}.
+	 * Visit a parse tree produced by {@link Nutt#module}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule(NuttParser.ModuleContext ctx);
+	T visitModule(Nutt.ModuleContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module_start}.
+	 * Visit a parse tree produced by {@link Nutt#module_start}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_start(NuttParser.Module_startContext ctx);
+	T visitModule_start(Nutt.Module_startContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module_name}.
+	 * Visit a parse tree produced by {@link Nutt#module_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_name(NuttParser.Module_nameContext ctx);
+	T visitModule_name(Nutt.Module_nameContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module_import}.
+	 * Visit a parse tree produced by {@link Nutt#module_import}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_import(NuttParser.Module_importContext ctx);
+	T visitModule_import(Nutt.Module_importContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module_deport}.
+	 * Visit a parse tree produced by {@link Nutt#module_deport}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_deport(NuttParser.Module_deportContext ctx);
+	T visitModule_deport(Nutt.Module_deportContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module_list}.
+	 * Visit a parse tree produced by {@link Nutt#module_list}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_list(NuttParser.Module_listContext ctx);
+	T visitModule_list(Nutt.Module_listContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module_group}.
+	 * Visit a parse tree produced by {@link Nutt#module_group}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_group(NuttParser.Module_groupContext ctx);
+	T visitModule_group(Nutt.Module_groupContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#module_name_or_group}.
+	 * Visit a parse tree produced by {@link Nutt#module_name_or_group}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_name_or_group(NuttParser.Module_name_or_groupContext ctx);
+	T visitModule_name_or_group(Nutt.Module_name_or_groupContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#block}.
+	 * Visit a parse tree produced by {@link Nutt#block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBlock(NuttParser.BlockContext ctx);
+	T visitBlock(Nutt.BlockContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code demandStat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDemandStat(NuttParser.DemandStatContext ctx);
+	T visitDemandStat(Nutt.DemandStatContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code do_if_stat}
+	 * labeled alternative in {@link Nutt#stat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDo_if_stat(Nutt.Do_if_statContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code do_if_not_stat}
+	 * labeled alternative in {@link Nutt#stat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDo_if_not_stat(Nutt.Do_if_not_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exec_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExec_stat(NuttParser.Exec_statContext ctx);
+	T visitExec_stat(Nutt.Exec_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code module_import_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_import_stat(NuttParser.Module_import_statContext ctx);
+	T visitModule_import_stat(Nutt.Module_import_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code module_deport_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitModule_deport_stat(NuttParser.Module_deport_statContext ctx);
+	T visitModule_deport_stat(Nutt.Module_deport_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code group_assignment_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitGroup_assignment_stat(NuttParser.Group_assignment_statContext ctx);
+	T visitGroup_assignment_stat(Nutt.Group_assignment_statContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code group_var_decl_stat}
+	 * labeled alternative in {@link Nutt#stat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGroup_var_decl_stat(Nutt.Group_var_decl_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code var_decl_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitVar_decl_stat(NuttParser.Var_decl_statContext ctx);
+	T visitVar_decl_stat(Nutt.Var_decl_statContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code operator_decl_stat}
+	 * labeled alternative in {@link Nutt#stat}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOperator_decl_stat(Nutt.Operator_decl_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code forget_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitForget_stat(NuttParser.Forget_statContext ctx);
+	T visitForget_stat(Nutt.Forget_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code functiondef_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunctiondef_stat(NuttParser.Functiondef_statContext ctx);
+	T visitFunctiondef_stat(Nutt.Functiondef_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code functioncall_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunctioncall_stat(NuttParser.Functioncall_statContext ctx);
+	T visitFunctioncall_stat(Nutt.Functioncall_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code do_done_block_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDo_done_block_stat(NuttParser.Do_done_block_statContext ctx);
+	T visitDo_done_block_stat(Nutt.Do_done_block_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code loop_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitLoop_stat(NuttParser.Loop_statContext ctx);
+	T visitLoop_stat(Nutt.Loop_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code composed_assign_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComposed_assign_stat(NuttParser.Composed_assign_statContext ctx);
+	T visitComposed_assign_stat(Nutt.Composed_assign_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code self_in_place_op_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSelf_in_place_op_stat(NuttParser.Self_in_place_op_statContext ctx);
+	T visitSelf_in_place_op_stat(Nutt.Self_in_place_op_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code if_then_else_block_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitIf_then_else_block_stat(NuttParser.If_then_else_block_statContext ctx);
+	T visitIf_then_else_block_stat(Nutt.If_then_else_block_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code try_catch_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTry_catch_stat(NuttParser.Try_catch_statContext ctx);
+	T visitTry_catch_stat(Nutt.Try_catch_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code pass_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPass_stat(NuttParser.Pass_statContext ctx);
+	T visitPass_stat(Nutt.Pass_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code type_def_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitType_def_stat(NuttParser.Type_def_statContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code enum_def_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnum_def_stat(NuttParser.Enum_def_statContext ctx);
+	T visitType_def_stat(Nutt.Type_def_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code record_def_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_def_stat(NuttParser.Record_def_statContext ctx);
+	T visitRecord_def_stat(Nutt.Record_def_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code exit_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExit_stat(NuttParser.Exit_statContext ctx);
+	T visitExit_stat(Nutt.Exit_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code yield_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitYield_stat(NuttParser.Yield_statContext ctx);
+	T visitYield_stat(Nutt.Yield_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code break_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBreak_stat(NuttParser.Break_statContext ctx);
+	T visitBreak_stat(Nutt.Break_statContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code continue_stat}
-	 * labeled alternative in {@link NuttParser#stat}.
+	 * labeled alternative in {@link Nutt#stat}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitContinue_stat(NuttParser.Continue_statContext ctx);
+	T visitContinue_stat(Nutt.Continue_statContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#type_param}.
+	 * Visit a parse tree produced by {@link Nutt#type_param}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitType_param(NuttParser.Type_paramContext ctx);
+	T visitType_param(Nutt.Type_paramContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#type_param_list}.
+	 * Visit a parse tree produced by {@link Nutt#type_param_list}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitType_param_list(NuttParser.Type_param_listContext ctx);
+	T visitType_param_list(Nutt.Type_param_listContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#type_def}.
+	 * Visit a parse tree produced by {@link Nutt#type_def}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitType_def(NuttParser.Type_defContext ctx);
+	T visitType_def(Nutt.Type_defContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#record_def}.
+	 * Visit a parse tree produced by {@link Nutt#record_def}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_def(NuttParser.Record_defContext ctx);
+	T visitRecord_def(Nutt.Record_defContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#record_member}.
+	 * Visit a parse tree produced by {@link Nutt#record_member}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_member(NuttParser.Record_memberContext ctx);
+	T visitRecord_member(Nutt.Record_memberContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#record_member_list}.
+	 * Visit a parse tree produced by {@link Nutt#record_member_list}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_member_list(NuttParser.Record_member_listContext ctx);
+	T visitRecord_member_list(Nutt.Record_member_listContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#implementation_list}.
+	 * Visit a parse tree produced by {@link Nutt#implementation_list}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitImplementation_list(NuttParser.Implementation_listContext ctx);
+	T visitImplementation_list(Nutt.Implementation_listContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#implementation}.
+	 * Visit a parse tree produced by {@link Nutt#using}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitImplementation(NuttParser.ImplementationContext ctx);
+	T visitUsing(Nutt.UsingContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#using}.
+	 * Visit a parse tree produced by {@link Nutt#overloading_operator_param}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitUsing(NuttParser.UsingContext ctx);
+	T visitOverloading_operator_param(Nutt.Overloading_operator_paramContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#overloading_operator_param}.
+	 * Visit a parse tree produced by {@link Nutt#overloading_operator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOverloading_operator_param(NuttParser.Overloading_operator_paramContext ctx);
+	T visitOverloading_operator(Nutt.Overloading_operatorContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#overloading_operator}.
+	 * Visit a parse tree produced by {@link Nutt#operator_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOverloading_operator(NuttParser.Overloading_operatorContext ctx);
+	T visitOperator_decl(Nutt.Operator_declContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#enum_def}.
+	 * Visit a parse tree produced by {@link Nutt#group_assignment}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitEnum_def(NuttParser.Enum_defContext ctx);
+	T visitGroup_assignment(Nutt.Group_assignmentContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#group_assignment}.
+	 * Visit a parse tree produced by {@link Nutt#do_done_block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitGroup_assignment(NuttParser.Group_assignmentContext ctx);
+	T visitDo_done_block(Nutt.Do_done_blockContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#do_done_block}.
+	 * Visit a parse tree produced by {@link Nutt#composed_assign}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDo_done_block(NuttParser.Do_done_blockContext ctx);
+	T visitComposed_assign(Nutt.Composed_assignContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#composed_assign}.
+	 * Visit a parse tree produced by {@link Nutt#self_assign}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComposed_assign(NuttParser.Composed_assignContext ctx);
+	T visitSelf_assign(Nutt.Self_assignContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#self_assign}.
+	 * Visit a parse tree produced by {@link Nutt#if_then_else_block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSelf_assign(NuttParser.Self_assignContext ctx);
+	T visitIf_then_else_block(Nutt.If_then_else_blockContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#if_then_else_block}.
+	 * Visit a parse tree produced by {@link Nutt#then_block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitIf_then_else_block(NuttParser.If_then_else_blockContext ctx);
+	T visitThen_block(Nutt.Then_blockContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#then_block}.
+	 * Visit a parse tree produced by {@link Nutt#else_block}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitThen_block(NuttParser.Then_blockContext ctx);
+	T visitElse_block(Nutt.Else_blockContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#else_block}.
+	 * Visit a parse tree produced by {@link Nutt#forget}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitElse_block(NuttParser.Else_blockContext ctx);
+	T visitForget(Nutt.ForgetContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#forget}.
+	 * Visit a parse tree produced by {@link Nutt#flat_name_list}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitForget(NuttParser.ForgetContext ctx);
+	T visitFlat_name_list(Nutt.Flat_name_listContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#flat_name_list}.
+	 * Visit a parse tree produced by {@link Nutt#loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFlat_name_list(NuttParser.Flat_name_listContext ctx);
+	T visitLoop(Nutt.LoopContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#loop}.
+	 * Visit a parse tree produced by {@link Nutt#for_each_loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitLoop(NuttParser.LoopContext ctx);
+	T visitFor_each_loop(Nutt.For_each_loopContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#for_each_loop}.
+	 * Visit a parse tree produced by {@link Nutt#op_direction}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFor_each_loop(NuttParser.For_each_loopContext ctx);
+	T visitOp_direction(Nutt.Op_directionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_direction}.
+	 * Visit a parse tree produced by {@link Nutt#while_do_loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOp_direction(NuttParser.Op_directionContext ctx);
+	T visitWhile_do_loop(Nutt.While_do_loopContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#while_do_loop}.
+	 * Visit a parse tree produced by {@link Nutt#repeat_until_loop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitWhile_do_loop(NuttParser.While_do_loopContext ctx);
+	T visitRepeat_until_loop(Nutt.Repeat_until_loopContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#repeat_until_loop}.
+	 * Visit a parse tree produced by {@link Nutt#function_yield}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRepeat_until_loop(NuttParser.Repeat_until_loopContext ctx);
+	T visitFunction_yield(Nutt.Function_yieldContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#break}.
+	 * Visit a parse tree produced by {@link Nutt#try_catch}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBreak(NuttParser.BreakContext ctx);
+	T visitTry_catch(Nutt.Try_catchContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#continue}.
+	 * Visit a parse tree produced by {@link Nutt#demand}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitContinue(NuttParser.ContinueContext ctx);
+	T visitDemand(Nutt.DemandContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#function_yield}.
+	 * Visit a parse tree produced by {@link Nutt#annotation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunction_yield(NuttParser.Function_yieldContext ctx);
+	T visitAnnotation(Nutt.AnnotationContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#try_catch}.
+	 * Visit a parse tree produced by {@link Nutt#group_var_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitTry_catch(NuttParser.Try_catchContext ctx);
+	T visitGroup_var_decl(Nutt.Group_var_declContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#demand}.
+	 * Visit a parse tree produced by {@link Nutt#var_signature}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDemand(NuttParser.DemandContext ctx);
+	T visitVar_signature(Nutt.Var_signatureContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#var_decl}.
+	 * Visit a parse tree produced by {@link Nutt#var_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitVar_decl(NuttParser.Var_declContext ctx);
+	T visitVar_decl(Nutt.Var_declContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#func_param}.
+	 * Visit a parse tree produced by {@link Nutt#constant_qualifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunc_param(NuttParser.Func_paramContext ctx);
+	T visitConstant_qualifier(Nutt.Constant_qualifierContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#constant_qualifier}.
+	 * Visit a parse tree produced by {@link Nutt#by_type_var_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitConstant_qualifier(NuttParser.Constant_qualifierContext ctx);
+	T visitBy_type_var_decl(Nutt.By_type_var_declContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#var_header}.
+	 * Visit a parse tree produced by {@link Nutt#by_value_var_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitVar_header(NuttParser.Var_headerContext ctx);
+	T visitBy_value_var_decl(Nutt.By_value_var_declContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#func_param_header}.
+	 * Visit a parse tree produced by {@link Nutt#list_initializer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunc_param_header(NuttParser.Func_param_headerContext ctx);
+	T visitList_initializer(Nutt.List_initializerContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#by_type_var_decl}.
+	 * Visit a parse tree produced by {@link Nutt#explist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBy_type_var_decl(NuttParser.By_type_var_declContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#by_value_var_decl}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBy_value_var_decl(NuttParser.By_value_var_declContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#enumeration_initializer}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnumeration_initializer(NuttParser.Enumeration_initializerContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#list_initializer}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitList_initializer(NuttParser.List_initializerContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#enum_list}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnum_list(NuttParser.Enum_listContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#explist}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExplist(NuttParser.ExplistContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#enum_case}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnum_case(NuttParser.Enum_caseContext ctx);
+	T visitExplist(Nutt.ExplistContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code explicit_array}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExplicit_array(NuttParser.Explicit_arrayContext ctx);
+	T visitExplicit_array(Nutt.Explicit_arrayContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code explicit_variable}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExplicit_variable(NuttParser.Explicit_variableContext ctx);
+	T visitExplicit_variable(Nutt.Explicit_variableContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code array_access}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitArray_access(NuttParser.Array_accessContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code type_cast}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitType_cast(NuttParser.Type_castContext ctx);
+	T visitArray_access(Nutt.Array_accessContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code using_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitUsing_exp(NuttParser.Using_expContext ctx);
+	T visitUsing_exp(Nutt.Using_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code prefix_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitPrefix_exp(NuttParser.Prefix_expContext ctx);
+	T visitPrefix_exp(Nutt.Prefix_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code instance_of_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitInstance_of_exp(NuttParser.Instance_of_expContext ctx);
+	T visitInstance_of_exp(Nutt.Instance_of_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code explicit_atom}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExplicit_atom(NuttParser.Explicit_atomContext ctx);
+	T visitExplicit_atom(Nutt.Explicit_atomContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code function_definition_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunction_definition_exp(NuttParser.Function_definition_expContext ctx);
+	T visitFunction_definition_exp(Nutt.Function_definition_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code type_of_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitType_of_exp(NuttParser.Type_of_expContext ctx);
+	T visitType_of_exp(Nutt.Type_of_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code contains_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitContains_exp(NuttParser.Contains_expContext ctx);
+	T visitContains_exp(Nutt.Contains_expContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code fold_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * Visit a parse tree produced by the {@code comprehense_array_initializer_exp}
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFold_exp(NuttParser.Fold_expContext ctx);
+	T visitComprehense_array_initializer_exp(Nutt.Comprehense_array_initializer_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code range_array_initializer_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRange_array_initializer_exp(NuttParser.Range_array_initializer_expContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code map_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitMap_exp(NuttParser.Map_expContext ctx);
+	T visitRange_array_initializer_exp(Nutt.Range_array_initializer_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code eval_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitEval_exp(NuttParser.Eval_expContext ctx);
+	T visitEval_exp(Nutt.Eval_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code common_of_exp}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCommon_of_exp(Nutt.Common_of_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code record_initializer_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_initializer_exp(NuttParser.Record_initializer_expContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code filter_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFilter_exp(NuttParser.Filter_expContext ctx);
+	T visitRecord_initializer_exp(Nutt.Record_initializer_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code func_call_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunc_call_exp(NuttParser.Func_call_expContext ctx);
+	T visitFunc_call_exp(Nutt.Func_call_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code spread_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSpread_exp(NuttParser.Spread_expContext ctx);
+	T visitSpread_exp(Nutt.Spread_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code quarternary_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitQuarternary_exp(NuttParser.Quarternary_expContext ctx);
+	T visitQuarternary_exp(Nutt.Quarternary_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code infix_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitInfix_exp(NuttParser.Infix_expContext ctx);
+	T visitInfix_exp(Nutt.Infix_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code block_exp}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBlock_exp(Nutt.Block_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code map_initializer_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMap_initializer_exp(NuttParser.Map_initializer_expContext ctx);
+	T visitMap_initializer_exp(Nutt.Map_initializer_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code op_call_exp}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOp_call_exp(Nutt.Op_call_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code reverse_exp}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReverse_exp(Nutt.Reverse_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code parenthesis_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitParenthesis_exp(NuttParser.Parenthesis_expContext ctx);
+	T visitParenthesis_exp(Nutt.Parenthesis_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code record_member_access}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_member_access(NuttParser.Record_member_accessContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code explicit_enum_case}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExplicit_enum_case(NuttParser.Explicit_enum_caseContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code explicit_enumeration}
-	 * labeled alternative in {@link NuttParser#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExplicit_enumeration(NuttParser.Explicit_enumerationContext ctx);
+	T visitRecord_member_access(Nutt.Record_member_accessContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code match_to_exp}
-	 * labeled alternative in {@link NuttParser#exp}.
+	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMatch_to_exp(NuttParser.Match_to_expContext ctx);
+	T visitMatch_to_exp(Nutt.Match_to_expContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#fold}.
+	 * Visit a parse tree produced by {@link Nutt#range_array_initializer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFold(NuttParser.FoldContext ctx);
+	T visitRange_array_initializer(Nutt.Range_array_initializerContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#range_array_initializer}.
+	 * Visit a parse tree produced by {@link Nutt#comprehense_array_initializer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRange_array_initializer(NuttParser.Range_array_initializerContext ctx);
+	T visitComprehense_array_initializer(Nutt.Comprehense_array_initializerContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#map_element}.
+	 * Visit a parse tree produced by {@link Nutt#map_element}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMap_element(NuttParser.Map_elementContext ctx);
+	T visitMap_element(Nutt.Map_elementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#map_initializer}.
+	 * Visit a parse tree produced by {@link Nutt#map_initializer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMap_initializer(NuttParser.Map_initializerContext ctx);
+	T visitMap_initializer(Nutt.Map_initializerContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#record_element}.
+	 * Visit a parse tree produced by {@link Nutt#record_element}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_element(NuttParser.Record_elementContext ctx);
+	T visitRecord_element(Nutt.Record_elementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#record_initializer}.
+	 * Visit a parse tree produced by {@link Nutt#record_element_list}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitRecord_initializer(NuttParser.Record_initializerContext ctx);
+	T visitRecord_element_list(Nutt.Record_element_listContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_logical}.
+	 * Visit a parse tree produced by {@link Nutt#record_initializer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOperator_logical(NuttParser.Operator_logicalContext ctx);
+	T visitRecord_initializer(Nutt.Record_initializerContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#default_match_branch}.
+	 * Visit a parse tree produced by {@link Nutt#operator_logical}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitDefault_match_branch(NuttParser.Default_match_branchContext ctx);
+	T visitOperator_logical(Nutt.Operator_logicalContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#match_branch}.
+	 * Visit a parse tree produced by {@link Nutt#default_match_branch}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitMatch_branch(NuttParser.Match_branchContext ctx);
+	T visitDefault_match_branch(Nutt.Default_match_branchContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#final_match_branch}.
+	 * Visit a parse tree produced by {@link Nutt#match_branch}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFinal_match_branch(NuttParser.Final_match_branchContext ctx);
+	T visitMatch_branch(Nutt.Match_branchContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#case_list}.
+	 * Visit a parse tree produced by {@link Nutt#atom}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitCase_list(NuttParser.Case_listContext ctx);
+	T visitAtom(Nutt.AtomContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#atom}.
+	 * Visit a parse tree produced by {@link Nutt#nil}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitAtom(NuttParser.AtomContext ctx);
+	T visitNil(Nutt.NilContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#nil}.
+	 * Visit a parse tree produced by {@link Nutt#boolean}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitNil(NuttParser.NilContext ctx);
+	T visitBoolean(Nutt.BooleanContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#boolean}.
+	 * Visit a parse tree produced by {@link Nutt#number}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitBoolean(NuttParser.BooleanContext ctx);
+	T visitNumber(Nutt.NumberContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#number}.
+	 * Visit a parse tree produced by {@link Nutt#string}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitNumber(NuttParser.NumberContext ctx);
+	T visitString(Nutt.StringContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#string}.
+	 * Visit a parse tree produced by {@link Nutt#using_in_call}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitString(NuttParser.StringContext ctx);
+	T visitUsing_in_call(Nutt.Using_in_callContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#functioncall}.
+	 * Visit a parse tree produced by {@link Nutt#var_signature_list}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunctioncall(NuttParser.FunctioncallContext ctx);
+	T visitVar_signature_list(Nutt.Var_signature_listContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#using_in_call}.
+	 * Visit a parse tree produced by {@link Nutt#func_output}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitUsing_in_call(NuttParser.Using_in_callContext ctx);
+	T visitFunc_output(Nutt.Func_outputContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#func_param_list}.
+	 * Visit a parse tree produced by {@link Nutt#local_funct}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunc_param_list(NuttParser.Func_param_listContext ctx);
+	T visitLocal_funct(Nutt.Local_functContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#func_parameters}.
+	 * Visit a parse tree produced by {@link Nutt#funcbody}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunc_parameters(NuttParser.Func_parametersContext ctx);
+	T visitFuncbody(Nutt.FuncbodyContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#func_output}.
+	 * Visit a parse tree produced by {@link Nutt#lambda_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFunc_output(NuttParser.Func_outputContext ctx);
+	T visitLambda_decl(Nutt.Lambda_declContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#local_funct}.
+	 * Visit a parse tree produced by {@link Nutt#operator_infix}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitLocal_funct(NuttParser.Local_functContext ctx);
+	T visitOperator_infix(Nutt.Operator_infixContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#funcbody}.
+	 * Visit a parse tree produced by {@link Nutt#default_infix_operator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitFuncbody(NuttParser.FuncbodyContext ctx);
+	T visitDefault_infix_operator(Nutt.Default_infix_operatorContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#lambda_decl}.
+	 * Visit a parse tree produced by {@link Nutt#operator_composed}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitLambda_decl(NuttParser.Lambda_declContext ctx);
+	T visitOperator_composed(Nutt.Operator_composedContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_infix}.
+	 * Visit a parse tree produced by {@link Nutt#operator_math}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOperator_infix(NuttParser.Operator_infixContext ctx);
+	T visitOperator_math(Nutt.Operator_mathContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_composed}.
+	 * Visit a parse tree produced by {@link Nutt#operator_postfix}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOperator_composed(NuttParser.Operator_composedContext ctx);
+	T visitOperator_postfix(Nutt.Operator_postfixContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_math}.
+	 * Visit a parse tree produced by {@link Nutt#composed_assign_op}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOperator_math(NuttParser.Operator_mathContext ctx);
+	T visitComposed_assign_op(Nutt.Composed_assign_opContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_postfix}.
+	 * Visit a parse tree produced by {@link Nutt#operator_bitwise}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOperator_postfix(NuttParser.Operator_postfixContext ctx);
+	T visitOperator_bitwise(Nutt.Operator_bitwiseContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#composed_assign_op}.
+	 * Visit a parse tree produced by {@link Nutt#operator_prefix}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitComposed_assign_op(NuttParser.Composed_assign_opContext ctx);
+	T visitOperator_prefix(Nutt.Operator_prefixContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_mult}.
+	 * Visit a parse tree produced by {@link Nutt#operator_comparison}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOp_mult(NuttParser.Op_multContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_div}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOp_div(NuttParser.Op_divContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_bitwise}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOperator_bitwise(NuttParser.Operator_bitwiseContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_prefix}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOperator_prefix(NuttParser.Operator_prefixContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#operator_comparison}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOperator_comparison(NuttParser.Operator_comparisonContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_less_equal}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOp_less_equal(NuttParser.Op_less_equalContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_greater_equal}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOp_greater_equal(NuttParser.Op_greater_equalContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_not_similar}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOp_not_similar(NuttParser.Op_not_similarContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_not_equal}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOp_not_equal(NuttParser.Op_not_equalContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#op_equal}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitOp_equal(NuttParser.Op_equalContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#kw_in}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitKw_in(NuttParser.Kw_inContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#kw_not_in}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitKw_not_in(NuttParser.Kw_not_inContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#kw_true}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitKw_true(NuttParser.Kw_trueContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#kw_false}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitKw_false(NuttParser.Kw_falseContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#kw_all}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitKw_all(NuttParser.Kw_allContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#inner_string}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitInner_string(NuttParser.Inner_stringContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#normal_string}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNormal_string(NuttParser.Normal_stringContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link NuttParser#interpolated_string}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitInterpolated_string(NuttParser.Interpolated_stringContext ctx);
+	T visitOperator_comparison(Nutt.Operator_comparisonContext ctx);
 }

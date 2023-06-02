@@ -2,7 +2,7 @@ package Nutt;
 
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Record.Record;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 public final class NuttInterpreter
 {
 	private final static java.lang.String outputColor="green";
-	public static NuttScope currentScope=new NuttScope();
+	public static Scope currentScope=new Scope();
 	public static List<java.lang.String> moduleNames=new ArrayList<>();
 
 	public static Context context;
@@ -27,15 +27,15 @@ public final class NuttInterpreter
 		return value;
 	}
 
-	public static NuttScope setScope(NuttScope scope)
+	public static Scope setScope(Scope scope)
 	{
 		currentScope=scope;
 		return currentScope;
 	}
 
-	public static NuttScope createScope()
+	public static Scope createScope()
 	{
-		var scope=new NuttScope();
+		var scope=new Scope();
 		scope.parent=currentScope;
 		return scope;
 	}
@@ -80,25 +80,28 @@ public final class NuttInterpreter
 		return "%s".formatted(ConsoleColorizer.colorize(format,outputColor));
 	}
 
-	public static void sayFormatted(List<IValuable> args)
+	public static List<IValuable> sayFormatted(List<IValuable> args)
 	{
 		System.out.printf(getColorizedFormat("%s".repeat(args.size())),args.toArray());
+		return args;
 	}
 
-	public static void say(IValuable valuable)
+	public static IValuable say(IValuable valuable)
 	{
 		System.out.printf(getColorizedFormat("%s"),valuable);
+		return valuable;
 	}
 
-	public static void sayNewLine(IValuable valuable)
+	public static IValuable sayNewLine(IValuable valuable)
 	{
 		System.out.printf(getColorizedFormat("%s")+"%n",valuable);
+		return valuable;
 	}
 
 	public static void clear()
 	{
 		forgetAll();
-		currentScope=new NuttScope();
+		currentScope=new Scope();
 	}
 
 	public static void forget(String name)
@@ -126,7 +129,7 @@ public final class NuttInterpreter
 				.asRecord();
 	}
 
-	public NuttScope removeScope()
+	public Scope removeScope()
 	{
 		//if(currentScope.parent==null) return currentScope;
 		var old=currentScope.clear();
@@ -136,12 +139,12 @@ public final class NuttInterpreter
 
 	public static class Variable
 	{
-		public IType ceilType;
+		public Type ceilType;
 		public IValuable valuable;
 		public boolean isConstant;
 		public java.lang.String name;
 
-		public Variable(IType ceilType,IValuable valuable,java.lang.String name,boolean isConstant)
+		public Variable(Type ceilType,IValuable valuable,java.lang.String name,boolean isConstant)
 		{
 			setCeilType(ceilType)
 					.setValuable(valuable)
@@ -161,7 +164,7 @@ public final class NuttInterpreter
 			return this;
 		}
 
-		public Variable setCeilType(IType ceilType)
+		public Variable setCeilType(Type ceilType)
 		{
 			this.ceilType=ceilType;
 			return this;

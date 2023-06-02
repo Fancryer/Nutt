@@ -1,13 +1,12 @@
 package Nutt.Visitors;
 
-import Nutt.NuttInterpreter;
 import Nutt.TypeInferencer;
-import Nutt.Types.Functional.Type.IType;
-import gen.NuttParser;
+import Nutt.Types.Functional.Type.Type;
+import gen.Nutt;
 
 import java.util.function.Function;
 
-public class NuttTypeInferenceVisitor extends NuttGenericVisitor
+public class NuttTypeInferenceVisitor extends NuttGenericVisitor<Type>
 {
 	//@Override
 	//public Type visitType_decl(Token ctx)
@@ -18,18 +17,18 @@ public class NuttTypeInferenceVisitor extends NuttGenericVisitor
 	//		return TypeInferencer.findType(ctx.NAME().getText());
 	//	}
 
-	private static String getVariableNameFromContext(NuttParser.Explicit_variableContext ctx)
+	private static String getVariableNameFromContext(Nutt.Explicit_variableContext ctx)
 	{
 		return ctx.NAME().getSymbol().getText();
 	}
 
 	@Override
-	public IType visitExplist(NuttParser.ExplistContext ctx)
+	public Type visitExplist(Nutt.ExplistContext ctx)
 	{
 		var expList=ctx.exp();
 		if(expList.isEmpty()) return TypeInferencer.findType("Nil");
 		var evaluator=new NuttEvalVisitor();
-		Function<NuttParser.ExpContext,IType> inferType=e->evaluator.visit(e).getType();
+		Function<Nutt.ExpContext,Type> inferType=e->evaluator.visit(e).getType();
 		var commonType=inferType.apply(expList.get(0));
 		if(expList.size()==1) return commonType;
 		for(var exp: ctx.exp()) commonType=TypeInferencer.getCommonWrapperType(commonType,inferType.apply(exp));
@@ -38,7 +37,7 @@ public class NuttTypeInferenceVisitor extends NuttGenericVisitor
 	}
 
 	@Override
-	public IType visitNumber(NuttParser.NumberContext ctx)
+	public Type visitNumber(Nutt.NumberContext ctx)
 	{
 		if(ctx.Int()!=null||ctx.HexInt()!=null) return TypeInferencer.findType("Int");
 		if(ctx.Float()!=null||ctx.HexFloat()!=null) return TypeInferencer.findType("Float");
@@ -46,24 +45,25 @@ public class NuttTypeInferenceVisitor extends NuttGenericVisitor
 	}
 
 	@Override
-	public IType visitString(NuttParser.StringContext ctx)
+	public Type visitString(Nutt.StringContext ctx)
 	{
 		return TypeInferencer.findType("String");
 	}
 
 	@Override
-	public IType visitType_param(NuttParser.Type_paramContext ctx)
+	public Type visitType_param(Nutt.Type_paramContext ctx)
 	{
 		var name=ctx.flat_type.getText();
 		var inferenced=TypeInferencer.findType(name);
 		if(inferenced!=null) return inferenced;
-		var valuable=NuttInterpreter.currentScope.getValuable(name);
-		if(TypeInferencer.verdict("Record",valuable.getType())) return valuable.getType();
+		//		var valuable=NuttInterpreter.currentScope.getValuable(name);
+		//		if(TypeInferencer.verdict("Record",valuable.getType())) return valuable.getType();
+		//return ;
 		throw new RuntimeException();
 	}
 
 	@Override
-	public IType visitFunc_output(NuttParser.Func_outputContext ctx)
+	public Type visitFunc_output(Nutt.Func_outputContext ctx)
 	{
 		return ctx.by_type_var_decl()==null
 		       ?TypeInferencer.findType("Valuable")

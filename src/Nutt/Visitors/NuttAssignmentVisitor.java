@@ -2,17 +2,17 @@ package Nutt.Visitors;
 
 import Nutt.NuttEnvironment;
 import Nutt.NuttInterpreter;
-import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.IValuable;
-import gen.NuttParser;
+import Nutt.TypeInferencer;
+import gen.Nutt;
 
 import java.util.ArrayList;
 
-public class NuttAssignmentVisitor extends NuttGenericVisitor
+public class NuttAssignmentVisitor extends NuttGenericVisitor<IValuable>
 {
 	@Override
-	public IValuable visitGroup_assignment(NuttParser.Group_assignmentContext ctx)
+	public IValuable visitGroup_assignment(Nutt.Group_assignmentContext ctx)
 	{
 		var evaluator=new NuttEvalVisitor();
 		var variableContexts=ctx.variables.exp();
@@ -25,21 +25,23 @@ public class NuttAssignmentVisitor extends NuttGenericVisitor
 			var variableName=NuttEnvironment.toSourceCode(variableContext);
 			var valueToAssign=expContexts.get(i);
 
-			if(variableContext instanceof NuttParser.Explicit_variableContext)
+			if(variableContext instanceof Nutt.Explicit_variableContext)
 			{
 				valuables.add(NuttInterpreter.currentScope.setVariable(variableName,valueToAssign).valuable);
 			}
 			else
 				//Assign to Listable element
-				if(variableContext instanceof NuttParser.Array_accessContext acc)
+				if(variableContext instanceof Nutt.Array_accessContext acc)
 				{
+					NuttEnvironment.toSourceCode(acc.arr);
 					var listable=evaluator.visit(acc.arr).asFunctional().asListable();
-					if(TypeInferencer.findType("Listable").findChild(listable.getType())!=null)
+					if(!TypeInferencer.verdict("Listable",listable.getType()))
 					{
+						TypeInferencer.prettyPrintTypeTree();
 						throw new RuntimeException();
 					}
 					var index=evaluator.visit(acc.index);
-					if(TypeInferencer.findType("Int").findChild(index.getType())!=null)
+					if(!TypeInferencer.verdict("Int",index.getType()))
 					{
 						throw new RuntimeException();
 					}

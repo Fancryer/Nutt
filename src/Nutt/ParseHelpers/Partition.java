@@ -1,12 +1,12 @@
 package Nutt.ParseHelpers;
 
 import Nutt.NuttEnvironment;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
-public record Partition(IType ceilType,IValuable value)
+public record Partition(Type ceilType,IValuable value)
 {
-	public Partition(IType ceilType)
+	public Partition(Type ceilType)
 	{
 		this(ceilType,NuttEnvironment.constructValuable(ceilType));
 	}

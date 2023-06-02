@@ -11,6 +11,7 @@
           <option name="encoding" value="" />
           <option name="pkg" value="gen" />
           <option name="language" value="Java" />
+          <option name="generateListener" value="false" />
           <option name="generateVisitor" value="true" />
         </PerGrammarGenerationSettings>
         <PerGrammarGenerationSettings>
@@ -31,6 +32,27 @@
           <option name="encoding" value="" />
           <option name="pkg" value="" />
           <option name="language" value="Scala" />
+          <option name="generateVisitor" value="true" />
+        </PerGrammarGenerationSettings>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/src/Interpol.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="F:\Nutt\src\gen\" />
+          <option name="libDir" value="" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="Interpol" />
+          <option name="language" value="Java" />
+          <option name="generateListener" value="false" />
+          <option name="generateVisitor" value="true" />
+        </PerGrammarGenerationSettings>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/src/NuttParser.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="src\gen" />
+          <option name="libDir" value="F:\Nutt\src" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="Nutt" />
+          <option name="language" value="Java" />
           <option name="generateVisitor" value="true" />
         </PerGrammarGenerationSettings>
       </list>

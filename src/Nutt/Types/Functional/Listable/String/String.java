@@ -5,7 +5,7 @@ import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.*;
@@ -72,7 +72,7 @@ public class String implements IListable
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("String");
 	}
@@ -142,7 +142,7 @@ public class String implements IListable
 	}
 
 	@Override
-	public IType getElementType()
+	public Type getElementType()
 	{
 		return TypeInferencer.findType("String");
 	}
@@ -187,6 +187,16 @@ public class String implements IListable
 		};
 	}
 
+	@Override public IListable addAll(IValuable valuable)
+	{
+		var newContent=content+valuable.asElementsArray().
+		                               getElements().
+		                               stream().
+		                               map(Objects::toString).
+		                               collect(Collectors.joining());
+		return new String(newContent);
+	}
+
 	@Override public boolean lessThan(IValuable value)
 	{
 		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)<0;
@@ -196,11 +206,11 @@ public class String implements IListable
 	{
 		return toString().compareTo
 				                 (
-						                 valuable
-								                 .asFunctional()
-								                 .asListable()
-								                 .map(Objects::toString)
-								                 .collect(Collectors.joining())
+						                 valuable.asElementsArray()
+						                         .getElements()
+						                         .stream()
+						                         .map(Objects::toString)
+						                         .collect(Collectors.joining())
 				                 );
 	}
 

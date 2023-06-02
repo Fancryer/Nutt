@@ -6,16 +6,17 @@ import Nutt.NuttInterpreter;
 import Nutt.Pair;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.IActionable;
+import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Numerable.Boolean;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
 import Nutt.Visitors.NuttDeclarationVisitor;
 import Nutt.Visitors.NuttStatementVisitor;
-import gen.NuttParser;
-import gen.NuttParser.BlockContext;
+import gen.Nutt;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static Nutt.NuttEnvironment.getTempParser;
@@ -24,26 +25,26 @@ import static Nutt.NuttEnvironment.toSourceCode;
 public class Procedure implements IActionable
 {
 	public static int lambdaCount;
-	private final String name;
-	private final BlockContext functionBody;
-	private final Signature signature;
+	protected final String name;
+	private final Nutt.BlockContext functionBody;
+	protected final Signature signature;
 	private final IValuable output;
 
 	public Procedure()
 	{
 		this(
-				"\\"+lambdaCount++,
+				String.valueOf(Objects.hashCode(lambdaCount++)),
 				new Signature(),
 				NuttEnvironment.getTempParser("yield nil").block(),
 				new Nil());
 	}
 
-	public Procedure(Signature signature,BlockContext functionBody)
+	public Procedure(Signature signature,Nutt.BlockContext functionBody)
 	{
 		this("lambda%s".formatted(signature),signature,functionBody,TypeInferencer.findType("Nil"));
 	}
 
-	public Procedure(String name,Signature signature,BlockContext functionBody,IValuable output)
+	public Procedure(String name,Signature signature,Nutt.BlockContext functionBody,IValuable output)
 	{
 		this.name=name;
 		this.signature=signature;
@@ -56,7 +57,7 @@ public class Procedure implements IActionable
 		this(procedure.name,procedure.signature,procedure.functionBody,procedure.output);
 	}
 
-	private static NuttParser.Var_declContext functParamToVarDecl(Pair<String,NuttParser.Func_paramContext> decl)
+	private static Nutt.Var_declContext functParamToVarDecl(Pair<String,Nutt.Var_signatureContext> decl)
 	{
 		return getTempParser("var %s".formatted(toSourceCode(decl.right()))).var_decl();
 	}
@@ -70,16 +71,18 @@ public class Procedure implements IActionable
 	public IValuable proceed(List<IValuable> argumentList) throws NuttSuccessReturnException
 	{
 		if(argumentList.size()>signature.getSize()) throw new RuntimeException("Parameter length is too large!");
-		declareYield();
-		declareParameters();
 		return NuttInterpreter.executeBlockAsScope(
 				()->
 				{
+					declareYield();
+					declareParameters();
 					var parameterNames=signature.getInputParameterList().stream().map(Pair::left).toList();
 					IntStream.range(0,argumentList.size())
 					         .forEach(i->NuttInterpreter.currentScope.setVariable(parameterNames.get(i),
 					                                                              argumentList.get(i)));
-					return new NuttStatementVisitor().tryYield(functionBody,output.getType());
+					var ret=new NuttStatementVisitor().tryYield(functionBody,output.getType());
+					forgetParameters();
+					return ret;
 				}
 		                                          );
 	}
@@ -98,6 +101,15 @@ public class Procedure implements IActionable
 		         .forEach(declarator::visitVar_decl);
 	}
 
+	private void forgetParameters()
+	{
+		var toForget=signature.getInputParameterList()
+		                      .stream()
+		                      .map(decl->functParamToVarDecl(decl).var_signature().NAME().getText())
+		                      .toList();
+		NuttInterpreter.forgetList(toForget);
+	}
+
 	//	public NuttSuccessReturnException yield()
 	//	{
 	//		var yieldValue=NuttInterpreter.currentScope.forgetLocally("yield");
@@ -114,11 +126,11 @@ public class Procedure implements IActionable
 	@Override
 	public IValuable getValue()
 	{
-		return new Nil();
+		return this;
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("Procedure");
 	}
@@ -132,6 +144,12 @@ public class Procedure implements IActionable
 	@Override public Procedure replicate()
 	{
 		return new Procedure(this);
+	}
+
+	//TODO
+	@Override public Array asElementsArray()
+	{
+		return null;
 	}
 
 	@Override

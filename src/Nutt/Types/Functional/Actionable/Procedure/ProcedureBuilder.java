@@ -1,13 +1,13 @@
 package Nutt.Types.Functional.Actionable.Procedure;
 
+import gen.Nutt;
 import Nutt.TypeInferencer;
 import Nutt.Types.IValuable;
-import gen.NuttParser;
 
 public class ProcedureBuilder
 {
 	private Signature signature;
-	private NuttParser.BlockContext functionBody;
+	private Nutt.BlockContext functionBody;
 	private IValuable output=TypeInferencer.findType("Nil");
 
 	public ProcedureBuilder setSignature(Signature signature)
@@ -16,7 +16,7 @@ public class ProcedureBuilder
 		return this;
 	}
 
-	public ProcedureBuilder setFunctionBody(NuttParser.BlockContext functionBody)
+	public ProcedureBuilder setFunctionBody(Nutt.BlockContext functionBody)
 	{
 		this.functionBody=functionBody;
 		return this;

@@ -1,7 +1,8 @@
 package Nutt.Types;
 
 import Nutt.TypeInferencer;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Type.Type;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class Nil implements IValuable
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("Nil");
 	}
@@ -41,6 +42,11 @@ public class Nil implements IValuable
 	@Override public Nil replicate()
 	{
 		return new Nil();
+	}
+
+	@Override public Array asElementsArray()
+	{
+		return new Array();
 	}
 
 	@Override public boolean lessThan(IValuable value)

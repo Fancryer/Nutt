@@ -9,13 +9,17 @@ import Nutt.Types.Functional.Actionable.Procedure.LambdaBuilder;
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.IFunctional;
+import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Numerable.Boolean;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import com.google.common.collect.Streams;
-import gen.NuttParser;
+import gen.Nutt;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -51,7 +55,7 @@ public class Record implements IFunctional
 
 	private static Signature getDefaultSignature()
 	{
-		Function<String,NuttParser.Func_paramContext> paramContextFunction=s->NuttEnvironment.getTempParser(s).func_param();
+		Function<String,Nutt.Var_signatureContext> paramContextFunction=s->NuttEnvironment.getTempParser(s).var_signature();
 		return new Signature(List.of(paramContextFunction.apply("r1"),paramContextFunction.apply("r2")));
 	}
 
@@ -118,7 +122,7 @@ public class Record implements IFunctional
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findTypeElse(name,"Record");
 	}
@@ -132,6 +136,12 @@ public class Record implements IFunctional
 	@Override public Record replicate()
 	{
 		return new Record(this.name,this.rows,this.operatorMap);
+	}
+
+	//TODO
+	@Override public Array asElementsArray()
+	{
+		return null;
 	}
 
 	@Override public boolean lessThan(IValuable value)

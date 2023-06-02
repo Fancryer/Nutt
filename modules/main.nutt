@@ -1,16 +1,14 @@
 module main
 
-//|record Point
-//|{
-//|	x:Numerable,
-//|	y:Numerable
-//|}
-//|
-//|var p1:Point={'x':1,'y':7}
-//|var p2:Point={'x':-90,'y':4}
+vals a=9,
+	 b=3,
+	 c=''
 
-//|say(p1-p2)
-
-say("Hello, ${'world'}! ${1+${2-3}}")
+try
+	demand c instanceof Int
+	say(a+b)
+catch
+	say('b is '+b)
+end
 
 end

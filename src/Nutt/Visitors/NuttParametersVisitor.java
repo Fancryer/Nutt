@@ -2,24 +2,22 @@ package Nutt.Visitors;
 
 import Nutt.NuttEnvironment;
 import Nutt.NuttInterpreter;
-import gen.NuttParser;
+import Nutt.Types.IValuable;
+import gen.Nutt;
 
 import java.util.List;
 
-public class NuttParametersVisitor extends NuttGenericVisitor
+public class NuttParametersVisitor extends NuttGenericVisitor<IValuable>
 {
-	public static NuttParser.Var_declContext funcParamToVarDecl(NuttParser.Func_paramContext ctx)
+	public static Nutt.Var_declContext funcParamToVarDecl(Nutt.Var_signatureContext ctx)
 	{
-		var declPrefix=ctx.func_param_header().constant_qualifier()==null?"var ":"";
-		return NuttEnvironment.getTempParser(declPrefix+NuttEnvironment.toSourceCode(ctx)).var_decl();
+		return NuttEnvironment.getTempParser("var"+NuttEnvironment.toSourceCode(ctx)).var_decl();
 	}
 
-
-	public List<NuttInterpreter.Variable> visitParameters(NuttParser.Func_parametersContext ctx)
+	public List<NuttInterpreter.Variable> visitParameters(Nutt.Var_signature_listContext ctx)
 	{
 		var declarator=new NuttDeclarationVisitor();
-		return ctx.func_param_list()
-		          .func_param()
+		return ctx.var_signature()
 		          .stream()
 		          .map(v->NuttInterpreter.getVariable(declarator.visitVar_decl(funcParamToVarDecl(v)).toString()))
 		          .toList();

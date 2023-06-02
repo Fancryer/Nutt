@@ -6,7 +6,7 @@ import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.HashMap;
@@ -16,14 +16,14 @@ import java.util.List;
 public class Map implements IListable
 {
 	private final java.util.Map<IValuable,IValuable> elements;
-	private final Pair<IType,IType> typePair;
+	private final Pair<Type,Type> typePair;
 
 	public Map(Map other)
 	{
 		this(other.elements,other.typePair);
 	}
 
-	public Map(java.util.Map<IValuable,IValuable> elements,Pair<IType,IType> typePair)
+	public Map(java.util.Map<IValuable,IValuable> elements,Pair<Type,Type> typePair)
 	{
 		this.elements=elements;
 		this.typePair=typePair;
@@ -61,7 +61,7 @@ public class Map implements IListable
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("Map");
 	}
@@ -113,7 +113,7 @@ public class Map implements IListable
 	}
 
 	@Override
-	public IType getElementType()
+	public Type getElementType()
 	{
 		return TypeInferencer.findType("Array");
 	}
@@ -142,7 +142,7 @@ public class Map implements IListable
 				.toList();
 	}
 
-	public IType getKeyType()
+	public Type getKeyType()
 	{
 		return typePair.left();
 	}
@@ -166,6 +166,11 @@ public class Map implements IListable
 		return elements
 				.keySet()
 				.iterator();
+	}
+
+	@Override public IListable addAll(IValuable valuable)
+	{
+		return null;
 	}
 
 	@Override public boolean lessThan(IValuable value)

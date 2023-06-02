@@ -1,10 +1,12 @@
 package Nutt.Types.Functional.Numerable.Float;
 
 import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.INumerable;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import ch.obermuhlner.math.big.BigDecimalMath;
 
@@ -22,17 +24,17 @@ public class Float implements INumerable
 		this("0.0");
 	}
 
-	public Float(String value)
+	public Float(java.lang.String value)
 	{
 		fromString(value);
 	}
-	
+
 	public Float(Float other)
 	{
 		this(other.toString());
 	}
 
-	public void fromString(String value)
+	public void fromString(java.lang.String value)
 	{
 		if(!isValidFloat(value)) throw new IllegalArgumentException("Value is not a valid NuttFloat value");
 		if(fitsInDouble(value))
@@ -41,7 +43,7 @@ public class Float implements INumerable
 			setAsBigDecimal(value);
 	}
 
-	private boolean isValidFloat(String value)
+	private boolean isValidFloat(java.lang.String value)
 	{
 		try
 		{
@@ -54,23 +56,23 @@ public class Float implements INumerable
 		}
 	}
 
-	private boolean fitsInDouble(String n)
+	private boolean fitsInDouble(java.lang.String n)
 	{
 		var bigDecimal=BigDecimalMath.toBigDecimal(n);
 		var result=bigDecimal.doubleValue();
 		boolean isDoubleValueValid=!(Double.isNaN(result)||Double.isInfinite(result));
-		var wrappedValue=BigDecimalMath.toBigDecimal(String.valueOf(result));
+		var wrappedValue=BigDecimalMath.toBigDecimal(java.lang.String.valueOf(result));
 		return isDoubleValueValid&&wrappedValue.compareTo(bigDecimal)==0;
 	}
 
-	private void setAsDouble(String value)
+	private void setAsDouble(java.lang.String value)
 	{
 		doubleValue=Double.valueOf(value);
 		bigDecimalValue=null;
 		isBigDecimal=false;
 	}
 
-	private void setAsBigDecimal(String value)
+	private void setAsBigDecimal(java.lang.String value)
 	{
 		bigDecimalValue=BigDecimalMath.toBigDecimal(value);
 		doubleValue=null;
@@ -135,7 +137,7 @@ public class Float implements INumerable
 	}
 
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return isDouble()?doubleValue.toString():bigDecimalValue.toPlainString();
 	}
@@ -147,7 +149,7 @@ public class Float implements INumerable
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("Float");
 	}
@@ -161,6 +163,15 @@ public class Float implements INumerable
 	@Override public Float replicate()
 	{
 		return new Float(this);
+	}
+
+	@Override public Array asElementsArray()
+	{
+		var str=toString();
+		var parts=str.split(",");
+		var left=new String(parts[0]);
+		var right=new String(parts[1]);
+		return new Array(List.of(left.asElementsArray(),right.asElementsArray()));
 	}
 
 	@Override public boolean lessThan(IValuable value)

@@ -5,9 +5,8 @@ import Nutt.Pair;
 import Nutt.ParseHelpers.Partition;
 import Nutt.ParseHelpers.Row;
 import Nutt.TypeInferencer;
-import Nutt.Types.Functional.Type.IType;
-import gen.NuttParser;
-import gen.NuttParser.Func_paramContext;
+import Nutt.Types.Functional.Type.Type;
+import gen.Nutt.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,24 +14,34 @@ import java.util.stream.Collectors;
 
 public class Signature
 {
-	private final List<Pair<String,Func_paramContext>> inputParameterList;
+	private final List<Pair<String,Var_signatureContext>> inputParameterList;
 	private final Row outputRow;
 
-	public Signature(List<NuttParser.Func_paramContext> paramContexts)
+	public Signature(Var_signatureContext paramContext)
+	{
+		this(List.of(paramContext));
+	}
+
+	public Signature(String paramAsString)
+	{
+		this(NuttEnvironment.getTempParser(paramAsString).var_signature());
+	}
+
+	public Signature(List<Var_signatureContext> paramContexts)
 	{
 		this(paramContexts,TypeInferencer.findType("Valuable"));
 	}
 
-	public Signature(List<Func_paramContext> paramContexts,String outputType)
+	public Signature(List<Var_signatureContext> paramContexts,String outputType)
 	{
 		this(paramContexts,TypeInferencer.findType(outputType));
 	}
 
-	public Signature(List<Func_paramContext> paramContexts,IType outputType)
+	public Signature(List<Var_signatureContext> paramContexts,Type outputType)
 	{
 		inputParameterList=paramContexts
 				.stream()
-				.map(p->new Pair<>(p.func_param_header().NAME().getText(),p))
+				.map(p->new Pair<>(p.NAME().getText(),p))
 				.toList();
 		outputRow=new Row("yield",new Partition(outputType.getType(),NuttEnvironment.constructValuable(outputType)));
 	}
@@ -47,7 +56,7 @@ public class Signature
 		return inputParameterList.size();
 	}
 
-	public List<Pair<String,Func_paramContext>> getInputParameterList()
+	public List<Pair<String,Var_signatureContext>> getInputParameterList()
 	{
 		return inputParameterList;
 	}

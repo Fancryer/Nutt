@@ -1,16 +1,16 @@
 package Nutt.Visitors;
 
+import gen.Nutt;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.IValuable;
-import gen.NuttParser;
 
 import java.util.ArrayList;
 
-public class NuttArrayVisitor extends NuttGenericVisitor
+public class NuttArrayVisitor extends NuttGenericVisitor<Array>
 {
 
-	@Override public Array visitExplicit_array(NuttParser.Explicit_arrayContext ctx)
+	@Override public Array visitExplicit_array(Nutt.Explicit_arrayContext ctx)
 	{
 		var expList=ctx
 				.list_initializer()

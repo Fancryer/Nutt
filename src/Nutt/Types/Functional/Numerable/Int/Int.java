@@ -1,10 +1,12 @@
 package Nutt.Types.Functional.Numerable.Int;
 
 import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.INumerable;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import ch.obermuhlner.math.big.BigDecimalMath;
 
@@ -151,7 +153,7 @@ public class Int implements INumerable
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("Int");
 	}
@@ -165,6 +167,11 @@ public class Int implements INumerable
 	@Override public Int replicate()
 	{
 		return new Int(this);
+	}
+
+	@Override public Array asElementsArray()
+	{
+		return new Array(getType(),toString().chars().mapToObj(obj->new String(obj).asValuable()).toList());
 	}
 
 	@Override
@@ -240,5 +247,4 @@ public class Int implements INumerable
 		Long,
 		BigInteger
 	}
-
 }

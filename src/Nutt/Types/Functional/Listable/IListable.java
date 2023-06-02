@@ -5,14 +5,13 @@ import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.Map.Map;
 import Nutt.Types.Functional.Listable.Set.Set;
 import Nutt.Types.Functional.Listable.String.String;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public interface IListable extends IFunctional, Iterable<IValuable>
 {
@@ -61,19 +60,17 @@ public interface IListable extends IFunctional, Iterable<IValuable>
 
 	IListable setElements(List<IValuable> elements);
 
-	default Stream<IValuable> stream()
-	{
-		return getElements().stream();
-	}
+	//	default Stream<IValuable> stream()
+	//	{
+	//		return getElements().stream();
+	//	}
+	//
+	//	default <T> Stream<T> map(java.util.function.Function<? super IValuable,? extends T> mapper)
+	//	{
+	//		return stream().map(mapper);
+	//	}
 
-	default <T> Stream<T> map(java.util.function.Function<? super IValuable,? extends T> mapper)
-	{
-		return stream().map(mapper);
-	}
-
-	IType getElementType();
-
-	Array asElementsArray();
+	Type getElementType();
 
 	@Override default void forEach(Consumer<? super IValuable> action)
 	{
@@ -89,4 +86,6 @@ public interface IListable extends IFunctional, Iterable<IValuable>
 	{
 		return getElements().spliterator();
 	}
+
+	IListable addAll(IValuable valuable);
 }

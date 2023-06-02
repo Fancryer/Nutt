@@ -1,30 +1,38 @@
 package Nutt.Visitors;
 
+import Nutt.Interpolator;
 import Nutt.NuttCommon;
 import Nutt.Types.Functional.Listable.String.String;
-import gen.NuttParser;
+import gen.Nutt;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-public class NuttStringVisitor extends NuttGenericVisitor
+public class NuttStringVisitor extends NuttGenericVisitor<String>
 {
-	public java.lang.String extractTypeName(NuttParser.Type_paramContext ctx)
+	@Override public String visit(ParseTree tree)
 	{
-		if(ctx==null) return null;
-		else return visitType_param(ctx).getValue();
+		return super.visit(tree).asFunctional().asListable().asString();
+	}
+
+	public java.lang.String extractTypeName(Nutt.Type_paramContext ctx)
+	{
+		return ctx==null?null:visitType_param(ctx).getValue();
 	}
 
 	@Override
-	public String visitType_param(NuttParser.Type_paramContext ctx)
+	public String visitType_param(Nutt.Type_paramContext ctx)
 	{
 		if(ctx.flat_type!=null) return new String(ctx.flat_type.getText());
 		throw new RuntimeException();
 	}
 
 	@Override
-	public String visitString(NuttParser.StringContext ctx)
+	public String visitString(Nutt.StringContext ctx)
 	{
-		return ctx.normal_string()!=null
-		       ?visitNormalString(ctx.normal_string())
+		return ctx.Normal_string()!=null
+		       ?new String(Interpolator.interpolate(ctx.Normal_string().getText()))
 		       :visitCharString(ctx.Char_String());
 	}
 
@@ -33,22 +41,14 @@ public class NuttStringVisitor extends NuttGenericVisitor
 		return new String(NuttCommon.removeFirstAndLastChars(charString.getText()).replaceAll("\\\\'","'"));
 	}
 
-	private String visitNormalString(NuttParser.Normal_stringContext ctx)
+	private java.lang.String getFullText(ParserRuleContext context)
 	{
-		StringBuilder str=new StringBuilder();
-		for(var stringPart: ctx.inner_string())
-		{
-			var asInterpolated=stringPart.interpolated_string();
-			str.append(asInterpolated!=null&&asInterpolated.exp()!=null?
-			           new NuttEvalVisitor()
-					           .visit(asInterpolated.exp())
-					           .toString():
-			           stringPart.getText());
-		}
-		return new String(str.toString());
+		return context.start==null||context.stop==null||context.start.getStartIndex()<0||context.stop.getStopIndex()<0
+		       ?context.getText()
+		       :context.start.getInputStream().getText(Interval.of(context.start.getStartIndex(),context.stop.getStopIndex()));
 	}
 
-	@Override public String visitExplicit_variable(NuttParser.Explicit_variableContext ctx)
+	@Override public String visitExplicit_variable(Nutt.Explicit_variableContext ctx)
 	{
 		return new String(ctx.NAME().getText());
 	}

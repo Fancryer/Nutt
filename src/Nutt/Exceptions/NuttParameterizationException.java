@@ -1,13 +1,13 @@
 package Nutt.Exceptions;
 
 import Nutt.NuttCommon;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 
 import java.util.List;
 
 public class NuttParameterizationException extends RuntimeException
 {
-	public NuttParameterizationException(String typeName,List<IType> typeParameters)
+	public NuttParameterizationException(String typeName,List<Type> typeParameters)
 	{
 		super(
 				typeName

@@ -5,8 +5,7 @@ import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.CustomType;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.*;
@@ -14,7 +13,7 @@ import java.util.function.Consumer;
 
 public class Array implements IListable
 {
-	private final IType elementBoundType;
+	private final Type elementBoundType;
 	private final List<IValuable> elements;
 
 	public Array()
@@ -24,7 +23,7 @@ public class Array implements IListable
 
 	public Array(String elementBoundType,List<IValuable> valuables)
 	{
-		this.elementBoundType=new CustomType(elementBoundType);
+		this.elementBoundType=new Type(elementBoundType);
 		elements=valuables;
 	}
 
@@ -33,12 +32,12 @@ public class Array implements IListable
 		this(elementBoundType,new ArrayList<>());
 	}
 
-	public Array(IType elementBoundType)
+	public Array(Type elementBoundType)
 	{
 		this(elementBoundType,new ArrayList<>());
 	}
 
-	public Array(IType elementBoundType,List<IValuable> valuables)
+	public Array(Type elementBoundType,List<IValuable> valuables)
 	{
 		this.elementBoundType=elementBoundType;
 		elements=valuables;
@@ -52,16 +51,33 @@ public class Array implements IListable
 				                                         .toList()),valuables);
 	}
 
+	public Array(Array array)
+	{
+		this(array.elementBoundType,array.elements);
+	}
+
 	public void clear()
 	{
 		elements.clear();
 	}
 
 	@Override
-	public IValuable add(IValuable value)
+	public Array add(IValuable value)
 	{
+		if(!TypeInferencer.verdict(getElementType(),value.getType()))
+			throw new ArrayStoreException("Array of '%s' cannot store '%s'".formatted(getElementType(),value.getType()));
 		var ret=new ArrayList<>(elements);
 		ret.add(value);
+		return new Array(elementBoundType,ret);
+	}
+
+	@Override public IListable addAll(IValuable valuable)
+	{
+		var right=valuable.asElementsArray();
+		if(!TypeInferencer.verdict(getElementType(),right.getElementType()))
+			throw new ArrayStoreException("Array of '%s' cannot store '%s'".formatted(getElementType(),valuable.getType()));
+		var ret=new ArrayList<>(elements);
+		ret.addAll(right.getElements());
 		return new Array(elementBoundType,ret);
 	}
 
@@ -69,19 +85,19 @@ public class Array implements IListable
 	public IValuable getAt(IValuable index)
 	{
 		if(!(index instanceof Int intIndex)) throw new RuntimeException();
-		return elements.get(intIndex
-				                    .asLong()
-				                    .intValue());
+		return elements.get(intIndex.asLong()
+		                            .intValue());
 	}
 
 	@Override
 	public IValuable setAt(IValuable value,IValuable index)
 	{
 		if(!(index instanceof Int intIndex)) throw new RuntimeException();
+		if(!TypeInferencer.verdict(getElementType(),value.getType()))
+			throw new ArrayStoreException("Array of '%s' cannot store '%s'".formatted(getElementType(),value.getType()));
 		var ret=new ArrayList<>(elements);
-		ret.set(intIndex
-				        .asLong()
-				        .intValue(),value);
+		ret.set(intIndex.asLong()
+		                .intValue(),value);
 		return new Array(elementBoundType,ret);
 	}
 
@@ -96,16 +112,15 @@ public class Array implements IListable
 	{
 		String type=elements==null||elements.isEmpty()
 		            ?"Valuable"
-		            :elements
-				            .get(0)
-				            .getType()
-				            .getDisplayName();
+		            :elements.get(0)
+		                     .getType()
+		                     .getDisplayName();
 		//System.out.println(type);
 		return new Array(type,Objects.requireNonNullElse(elements,new ArrayList<>()));
 	}
 
 	@Override
-	public IType getElementType()
+	public Type getElementType()
 	{
 		return elementBoundType;
 	}
@@ -113,9 +128,7 @@ public class Array implements IListable
 	@Override
 	public Array asElementsArray()
 	{
-		var arr=new Array();
-		arr.elements.addAll(elements);
-		return arr;
+		return new Array(this);
 	}
 
 	//	@Override
@@ -135,13 +148,14 @@ public class Array implements IListable
 	@Override
 	public String toString()
 	{
-		return "{%s}".formatted(
-				NuttCommon.removeLastChar(
-						NuttCommon.removeFirstChar(elements
-								                           .stream()
-								                           .map(IValuable::getValue)
-								                           .toList()
-								                           .toString())));
+		return elements.isEmpty()
+		       ?"{}"
+		       :"{%s}".formatted(
+				       NuttCommon.removeLastChar(
+						       NuttCommon.removeFirstChar(elements.stream()
+						                                          .map(IValuable::getValue)
+						                                          .toList()
+						                                          .toString())));
 	}
 
 	@Override
@@ -157,7 +171,7 @@ public class Array implements IListable
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("Array");
 	}

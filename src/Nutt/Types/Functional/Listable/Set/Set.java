@@ -6,7 +6,7 @@ import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.IType;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.List;
 public class Set implements IListable
 {
 	private final java.util.Set<IValuable> elements;
-	IType elementType;
+	Type elementType;
 
 	public Set()
 	{
@@ -64,7 +64,7 @@ public class Set implements IListable
 	}
 
 	@Override
-	public IType getType()
+	public Type getType()
 	{
 		return TypeInferencer.findType("Set");
 	}
@@ -127,7 +127,7 @@ public class Set implements IListable
 	}
 
 	@Override
-	public IType getElementType()
+	public Type getElementType()
 	{
 		return elementType;
 	}
@@ -146,6 +146,11 @@ public class Set implements IListable
 
 	@Override
 	public Iterator<IValuable> iterator()
+	{
+		return null;
+	}
+
+	@Override public IListable addAll(IValuable valuable)
 	{
 		return null;
 	}
