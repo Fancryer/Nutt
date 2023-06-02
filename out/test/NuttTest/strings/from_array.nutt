@@ -1,0 +1,12 @@
+module from_array
+
+funct from_array(arr:Array):String=
+	var i=0 val l=#arr var ret=""
+	while i<l do
+		ret..=arr[i]
+		i++
+	done
+	yield ret
+return
+
+end

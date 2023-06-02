@@ -1,0 +1,5 @@
+module map
+
+operator |> (arr:Array,f:Procedure):Array==>{f(x) of x |-> arr}
+
+end

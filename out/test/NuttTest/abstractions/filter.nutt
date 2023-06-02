@@ -1,0 +1,5 @@
+module filter
+
+operator ?? (arr:Array,p:Procedure)==>{x |-> arr if p(x)}
+
+end

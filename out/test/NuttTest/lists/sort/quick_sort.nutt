@@ -1,0 +1,43 @@
+module quick_sort imports lists.slice
+
+funct quick_sort(array:Array,low:Int=0,high:Int=#array-1):Array=
+	if #array==0||low>=high yield array end
+	var middle=low+((high-low)/2)
+	var opora=array[middle]
+	var i=low
+	var j=high
+	while i<=j do
+		while array[i]<opora do i++ done
+		while array[j]>opora do j-- done
+		if i<=j
+			array[i],array[j]=array[j],array[i]
+			i++
+			j--
+		end
+	done
+	var left={}
+	var right={}
+	if low<j
+		left=quick_sort(array,low,j)
+		var ind=0
+		while ind<#left do
+			array[ind]=left[ind]
+			ind++
+		done
+	end
+	if high>i
+		right=quick_sort(array,i,high)
+		var ind=0
+        while ind<#right do
+            array[ind]=right[ind]
+            ind++
+        done
+	end
+	yield array
+return
+
+var x={8,0,4,7,3,7,10,12,-3}
+say(x)
+say(quick_sort(x,0,#x-1))
+
+end

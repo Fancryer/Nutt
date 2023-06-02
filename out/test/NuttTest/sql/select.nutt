@@ -1,0 +1,15 @@
+module select
+
+funct select(Class tClass):Array|Valuable
+	val connection=DriverManager.getConnection("jdbc:h2:~/test","sa","")
+	val statement=connection.createStatement()
+	val resSet=statement.executeQuery('SELECT * FROM '+tClass+'s')
+			|>
+			\(row)==>create tClass with {...tClass}
+			|>
+			\(f)==>row.getValuable(f[0])
+	connection.close()
+	yield resSet
+return
+
+end

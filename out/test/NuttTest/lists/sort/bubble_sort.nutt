@@ -1,0 +1,22 @@
+module bubble_sort
+
+imports lists.slice,lists.sort.selection_sort
+
+funct bubbleSort(arr:Array):Array=
+	var va=0
+	var swapped=true
+	while swapped do
+		swapped=false
+		va=0
+		while va<((#arr)-1)do
+			if arr[va]>(arr[va+1])
+				arr[va],arr[va+1]=arr[va+1],arr[va]
+				swapped=true
+			end
+			va++
+		done
+	done
+	yield arr
+return
+
+end

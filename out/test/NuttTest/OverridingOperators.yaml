@@ -1,0 +1,67 @@
+---
+operators:
+    math:
+        add:
+        - "+"
+        sub:
+        - "-"
+        mult:
+        - "*"
+        - "×"
+        - "⋅"
+        div:
+        - "/"
+        intDiv:
+        - "//"
+        mod:
+        - "%"
+        pow:
+        - "^"
+    bitwise:
+        blshift:
+        - '<<'
+        alshift:
+        - "<<<"
+        brshift:
+        - ">>"
+        arshift:
+        - ">>>"
+        bor:
+        - "|"
+        band:
+        - "&"
+        bxor:
+        - bxor
+    logical:
+        and:
+        - "&&"
+        - and
+        - "∧"
+        or:
+        - "||"
+        - or
+        - "∨"
+        not:
+        - "!"
+        - not
+        - "¬"
+    comparison:
+        less:
+        - "<"
+        lessEqual:
+        - "<="
+        greater:
+        - ">"
+        greaterEqual:
+        - ">="
+        similar:
+        - "=="
+        equal:
+        - "==="
+        notSimilar:
+        - "!="
+        notEqual:
+        - "!=="
+
+#Fields are either String or Integer
+#List<T>: Get connection -> create statement -> select * from T.classSimpleName

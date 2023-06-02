@@ -1,0 +1,5 @@
+module foldr
+
+operator <- (arr:Array,f:Procedure)==><|>arr->f
+
+end
