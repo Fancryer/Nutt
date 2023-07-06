@@ -9,7 +9,9 @@ Nutt features:
 - Available custom types at runtime;
 - Passing parameters by value;
 - Easy learning curve;
-- Simple syntax similar to Lua, Scala and - a bit - Haskell.
+- Simple syntax similar to Lua, Scala and - a bit - Haskell;
+- First-class functions;
+- Extended C-like structures (records).
 
 ```
 module main imports native.sys.io.output.say
