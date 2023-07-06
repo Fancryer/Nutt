@@ -29,4 +29,4 @@ Nutt features:
 - Easy learning curve;
 - Simple syntax similar to Lua, Scala and - a bit - Haskell.
 
-<span class="blue">val</span> a: <span class="type">Numerable</span> = <span class="number">4</span>
+<span style="color:#61afef">val</span> a: <span class="type">Numerable</span> = <span class="number">4</span>
