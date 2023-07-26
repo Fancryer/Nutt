@@ -1,14 +1,62 @@
+/|
 module main
+imports native
+{
+	io.output.say,
+	files
+	{
+		create_file,
+		read_file,
+		write_file,
+		delete_file
+	}
+}
 
-vals a=9,
-	 b=3,
-	 c=''
+//|type StringOrBinary{String,Array|Int}
 
-try
-	demand c instanceof Int
-	say(a+b)
-catch
-	say('b is '+b)
+val path="A:\\Test.txt"
+create_file(path) write_file(path,"val add=(a,b)==>a+b")
+
+val content=read_file(path,false)[0] say(content) exec "val add=(a,b)==>a+b"
+
+say(add)
+
+delete_file(path)
+
 end
+|\
+
+module main
+imports native.io.output.say
+
+var a=3
+say("a is "+a)
+var b=a
+b=b+3
+say("b is "+b)
+say("a is "+a)
+
+/|
+{
+	io.output.say,
+	strings.base64
+	{
+		encode_base64,
+		decode_base64
+	},
+	files
+	{
+		read_file,
+		write_file
+	}
+}
+|\
+
+//|val bytes=encode_base64(read_file("G:\\Nutt\\resources\\rosetta_code_logo.ico",true))
+//|say(bytes)
+//|say(typeof bytes)
+//|write_file("G:\\Nutt\\resources\\rosetta_code_logo_1.ico",decode_base64(bytes))
+
+//|write_file("G:\\Nutt\\resources\test.txt",decode_base64("VG8gZXJyIGlzIGh1bWFuLCBidXQgdG8gcmVhbGx5IGZvdWwgdGhpbmdzIHVwIHlvdSBuZWVkIGEgY29tcHV0ZXIuCiAgICAtLSBQYXVsIFIuIEVocmxpY2g="))
 
 end

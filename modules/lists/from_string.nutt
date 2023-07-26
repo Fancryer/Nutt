@@ -9,4 +9,6 @@ funct from_string(var str:String):Array=
 	yield asStr
 return
 
+val from_string=(str:String)==>{...str}
+
 end

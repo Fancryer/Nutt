@@ -7,11 +7,17 @@ options
 
 chunk: module? EOF;
 
-module: module_start module_import* block KW_End;
+module: module_start module_require* module_import* block KW_End;
 
 module_start: KW_Module module_name;
 
 module_name: NAME (Dot NAME)*;
+
+module_require: KW_Requires named_import_list;
+
+named_import: module_name (KW_As NAME)?;
+named_import_list: named_import (Comma named_import)?;
+
 module_import: KW_Imports module_list;
 module_deport: KW_Deports module_list;
 
@@ -34,9 +40,10 @@ stat: demand #demandStat
 	| group_var_decl #group_var_decl_stat
     | var_decl #var_decl_stat
     | operator_decl #operator_decl_stat
+    | annotation_decl #annotation_decl_stat
     | forget #forget_stat
     | KW_Funct flat_name_list funcbody #functiondef_stat
-    | /*module_name?*/ name=NAME using_in_call? OP_LeftPar arguments=explist? OP_RightPar #functioncall_stat
+    | /*module_name?*/ name=exp using_in_call? OP_LeftPar arguments=explist? OP_RightPar #functioncall_stat
     | do_done_block #do_done_block_stat
     | loop #loop_stat
     | composed_assign #composed_assign_stat
@@ -61,7 +68,7 @@ type_def: KW_Type derived_type=type_param (OP_Extends parent_type=type_param)? c
 
 record_def: annotation* KW_Record NAME OP_LeftCurly record_member_list implementation_list? OP_RightCurly;
 
-record_member: Char_String by_type_var_decl;
+record_member: string by_type_var_decl;
 record_member_list: record_member (Comma record_member)*;
 
 implementation_list: KW_Implements (operator_decl | lambda_decl)*;
@@ -77,6 +84,8 @@ overloading_operator: operator_infix
 //enum_def: KW_Enum NAME OP_LeftCurly enum_case (Comma enum_case)* OP_RightCurly;
 
 operator_decl: (KW_Prefix | KW_Infix | KW_Postfix)? KW_Operator overloading_operator local_funct;
+
+annotation_decl: KW_Annotation NAME OP_LeftCurly (KW_Param? var_signature)* KW_Yield exp OP_RightCurly;
 
 group_assignment: variables=explist OP_Assign expressions=explist;
 do_done_block: KW_Do block KW_Done;
@@ -108,7 +117,7 @@ repeat_until_loop: KW_Repeat block KW_Until explist;
 function_yield: KW_Yield exp?;
 
 try_catch: KW_Try try_branch=block KW_Catch catch_branch=block KW_End;
-demand: KW_Demand exp;
+demand: KW_Demand exp (KW_With string)?;
 
 //Nutt declarations start
 
@@ -133,8 +142,12 @@ explist: exp (Comma exp)*;
 
 exp: NAME #explicit_variable
 	| atom #explicit_atom
+	| type_param #explicit_type
+	| operator #explicit_operator
 	| do_done_block #block_exp
 	| OP_Reverse exp #reverse_exp
+	| exp OP_Compose exp #compose_exp
+	| KW_New exp OP_LeftPar explist OP_RightPar #new_exp
 	| KW_Eval OP_LeftPar (exp | block) OP_RightPar #eval_exp
     | record=exp Dot index=string #record_member_access
 	| record_initializer #record_initializer_exp
@@ -172,7 +185,7 @@ comprehense_array_initializer: OP_LeftCurly (element=exp KW_Of)? NAME op_directi
 map_element: key=(Char_String | NAME) SemiColon val=exp;
 map_initializer: OP_LeftCurly map_element (Comma map_element)* OP_RightCurly;
 
-record_element: key=(Char_String | NAME) Colon val=exp;
+record_element: (name_key=NAME | string_key=string) Colon val=exp;
 record_element_list: record_element (Comma record_element)*;
 record_initializer: OP_LeftCurly record_element_list OP_RightCurly;
 
@@ -201,23 +214,26 @@ number: Int
 string: Normal_string
     | Char_String;
 
+operator: BackTick operator_infix BackTick;
+
 using_in_call: OP_LeftCurly overloading_operator OP_RightCurly;
 
-var_signature_list: var_signature (Comma var_signature)*;
+var_signature_list: var_signature (Comma var_signature)* (Comma vararg)? | vararg;
+vararg: OP_Pass var_signature;
+
 //varargs: Comma OP_Pass;
 func_output: by_type_var_decl? (OP_LeftBracket default_output=exp OP_RightBracket)?;
 
 local_funct: lambda_decl
     | (KW_Funct funcbody);
 
-funcbody: /*annotation* using?*/ (var_signature | OP_LeftPar var_signature_list? OP_RightPar) func_output OP_Assign block KW_Return;
+funcbody: annotation* using? (var_signature | OP_LeftPar var_signature_list? OP_RightPar) func_output OP_Assign block KW_Return;
 lambda_decl: annotation* using? (var_signature | OP_LeftPar var_signature_list? OP_RightPar) func_output OP_LambdaReturn lambda_exp=exp;
 
 operator_infix: default_infix_operator
 	| Op_Custom;
 
-default_infix_operator: operator_bitwise
-    | operator_math
+default_infix_operator: operator_math
     | operator_logical
     | operator_comparison
     | OP_Append
@@ -238,13 +254,13 @@ operator_postfix: operator_math operator_math
 
 composed_assign_op: operator_infix OP_Assign;
 
-operator_bitwise: OP_Bit_LeftShift
-    | OP_Bit_RightShift
-    | OP_Arithmetic_LeftShift
-    | OP_Arithmetic_RightShift
-    | OP_Bit_Or
-    | OP_Bit_And
-    | OP_Bit_Xor;
+//operator_bitwise: OP_Bit_LeftShift
+//    | OP_Bit_RightShift
+//    | OP_Arithmetic_LeftShift
+//    | OP_Arithmetic_RightShift
+//    | OP_Bit_Or
+//    | OP_Bit_And
+//    | OP_Bit_Xor;
 
 operator_prefix: OP_Not
     | OP_Length

@@ -2,20 +2,27 @@
   <artifact type="jar" build-on-make="true" name="NuttTest:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/NuttTest_jar</output-path>
     <root id="archive" name="NuttTest.jar">
-      <element id="module-output" name="NuttTest" />
-      <element id="module-test-output" name="NuttTest" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/big-math-2.3.2.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/guava-31.1-jre.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/javassist.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../antlr-4.12.0-complete.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$USER_HOME$/.ivy2/cache/org.scala-lang/scala3-library_3/jars/scala3-library_3-3.2.2.jar" path-in-jar="/" />
       <element id="library" level="project" name="KotlinJavaRuntime" />
-      <element id="library" level="project" name="big-math-2.3.2" />
-      <element id="library" level="project" name="guava-31.1-jre" />
-      <element id="library" level="project" name="javassist" />
-      <element id="file-copy" path="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.26/lombok-1.18.26.jar" />
-      <element id="library" level="application" name="scala-sdk-3.2.2" />
-      <element id="file-copy" path="$PROJECT_DIR$/../antlr-4.12.0-complete.jar" />
+      <element id="module-output" name="Nutt" />
+      <element id="library" level="project" name="Maven: com.google.guava:guava:32.0.0-jre" />
+      <element id="library" level="project" name="Maven: com.google.guava:failureaccess:1.0.1" />
+      <element id="library" level="project" name="Maven: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" />
+      <element id="library" level="project" name="Maven: org.checkerframework:checker-qual:3.33.0" />
+      <element id="library" level="project" name="Maven: com.google.errorprone:error_prone_annotations:2.18.0" />
+      <element id="library" level="project" name="Maven: com.google.j2objc:j2objc-annotations:2.8" />
+      <element id="library" level="project" name="Maven: org.antlr:antlr4:4.13.0" />
+      <element id="library" level="project" name="Maven: org.antlr:antlr-runtime:3.5.3" />
+      <element id="library" level="project" name="Maven: org.antlr:ST4:4.3.4" />
+      <element id="library" level="project" name="Maven: org.abego.treelayout:org.abego.treelayout.core:1.0.3" />
+      <element id="library" level="project" name="Maven: com.ibm.icu:icu4j:72.1" />
+      <element id="library" level="project" name="Maven: org.reflections:reflections:0.10.2" />
+      <element id="library" level="project" name="Maven: ch.obermuhlner:big-math:2.3.2" />
+      <element id="library" level="project" name="Maven: com.google.code.findbugs:jsr305:3.0.2" />
+      <element id="library" level="project" name="Maven: org.javassist:javassist:3.29.2-GA" />
+      <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:2.0.7" />
+      <element id="library" level="project" name="Maven: org.dom4j:dom4j:2.1.4" />
+      <element id="library" level="project" name="Maven: org.projectlombok:lombok:1.18.28" />
+      <element id="library" level="project" name="Maven: org.antlr:antlr4-runtime:4.13.0" />
     </root>
   </artifact>
 </component>

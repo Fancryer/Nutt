@@ -3,15 +3,17 @@ module selection_sort
 funct selection_sort(array:Array):Array=
 	var i=0
 	while i<#array-1 do
-		var minPos=i
-		var j=i+1
+		vars
+			minPos=i,
+			j=i+1
 		while j<#array do
-			if array[j]<array[minPos] minPos=j end
+			doif array[j]<array[minPos]
+				minPos=j
 			j++
 		done
-		var saveValue=array[minPos]
-        array[minPos]=array[i]
-        array[i]=saveValue
+		array[minPos],array[i]
+		=
+		array[i],array[minPos]
 		i++
 	done
 	yield array

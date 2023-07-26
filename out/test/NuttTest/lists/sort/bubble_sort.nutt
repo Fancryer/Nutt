@@ -10,7 +10,9 @@ funct bubbleSort(arr:Array):Array=
 		va=0
 		while va<((#arr)-1)do
 			if arr[va]>(arr[va+1])
-				arr[va],arr[va+1]=arr[va+1],arr[va]
+				arr[va],arr[va+1]
+				=
+				arr[va+1],arr[va]
 				swapped=true
 			end
 			va++

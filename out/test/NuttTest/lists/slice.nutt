@@ -10,4 +10,18 @@ funct slice(var arr:Array,var start_index:Int,var end_index:Int):Array=
     yield ret
 return
 
+val slice=(arr,in_range:Procedure)==>
+	{0,1..#arr-1}
+		??in_range
+		|>i==>arr[i]
+
+val slice=
+(
+	arr:Array,
+	in_range=i==>i>=0&&i<#arr
+)==>
+	{0,1..#arr-1}
+		??in_range
+		|>i==>arr[i]
+
 end

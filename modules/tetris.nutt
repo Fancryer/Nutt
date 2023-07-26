@@ -1,0 +1,125 @@
+module main
+
+//|Определяем тип для фигур тетриса
+record Tetromino
+{
+  "shape":Array|Array|Booleanean,
+  "color":String
+}
+
+//|Определяем фигуры тетриса
+val tetrominos:Array|Tetromino=
+{
+	{"shape":{{true,true},{true,true}},"color":"yellow"},				//|квадрат
+	{"shape":{{false,true,false},{true,true,true}},"color":"cyan"},		//|зигзаг
+	{"shape":{{true,true,false},{false,true,true}},"color":"orange"},	//|обратный зигзаг
+	{"shape":{{true,false,false},{true,true,true}},"color":"blue"},		//|буква T
+	{"shape":{{false,false,true},{true,true,true}},"color":"red"},		//|буква L
+	{"shape":{{true,true,true},{false,false,true}},"color":"green"},	//|обратная буква L
+	{"shape":{{false,true,true},{true,true,false}},"color":"purple"}	//|буква Z
+}
+
+//|Определяем функцию для получения случайной фигуры тетриса
+val getRandomTetromino=():Tetromino==>tetrominos[random(1,#tetrominos)]
+
+//|TODO
+//|Определяем функцию для отрисовки игрового поля
+funct draw_field(field:Array|Array|Booleanean)=
+	console.'clear'()
+	for i|->{1,2..#field} do
+		var row=""
+		for j|->{1,2..#field[i]}
+			row=row+field[i][j]?"█":" "
+		console.'print'(row)
+	done
+return
+
+//|TODO
+//|Определяем функцию для проверки возможности движения фигуры вниз
+funct can_move_down(field:Array|Array|Booleanean,tetromino:Tetromino,x:Int,y:Int):Booleanean=
+	for i|->{1,2..#tetromino.'shape'}do
+		for j|->{1,2..#tetromino.'shape'[i]} do
+			if tetromino.'shape'[i][j] then
+				vars row=i+y,col=j+x
+				doif
+					row>#field
+					||
+					col<1
+					||
+					col>#field[row]
+					||
+					(row<=#field&&field[row][col])
+				yield false
+			end
+		done
+	done
+	yield true
+return
+
+//|Определяем функцию для добавления фигуры на игровое поле
+val add_tetromino_to_field=(field: Array|Array|Booleanean,tetromino:Tetromino,x:Int,y:Int)==>
+	{1,2..#tetromino.'shape'}
+		|>()==>{1,2..#tetromino.'shape'[i]}
+			??()==>tetromino.'shape'[i][j]
+				|>()==>
+				do
+					vars row=i+y,col=j+x
+					doif row<=#field&&col>=1&&col<=#field[row]
+						field[row][col]=true
+				done
+
+//|TODO
+//|Определяем функцию для удаления заполненных строк из игрового поля
+funct remove_filled_rows(field:Array|Array|Boolean):Int=
+	var count=0
+	for i|->{1,2..#field;<|>} do
+		var isFilled=true
+		for j|->{1,2..#field[i]} do
+			if !field[i][j] then
+				isFilled=false
+				break
+			end
+		done
+		if isFilled then
+			append(field,{i})
+			insert(field,1,#field[1])
+			count=count+1
+		end
+	done
+	yield count
+return
+
+//|TODO
+//|Определяем игровой цикл
+funct game_loop()=
+	//|Инициализируем игровое поле
+	var field=Array|Array|Boolean(20)
+	for i|->{1,2..#field}
+		field[i]=Array|Boolean(10)
+	var score=0
+	while true do
+		//|Получаем случайную фигуру тетриса и устанавливаем её в верхней части игрового поля
+		vars tetromino=get_random_tetromino(),
+			x=math.'floor'(#field[1]/2)-math.'floor'(#tetromino.'shape'[1]/2),
+			y=1//|Пока фигура может двигаться вниз, двигаем её и отрисовываем игровое поле
+		while can_move_down(field,tetromino,x,y) do
+			y=y+1
+			draw_field(field)
+			delay(100)
+		done
+		//|Добавляем фигуру на игровое поле и удаляем заполненные строки
+		add_tetromino_to_field(field,tetromino,x,y-1)
+		score=score+remove_filled_rows(field)
+		//|Если верхняя строка игрового поля заполнена, игра заканчивается
+		if field[1][math.'floor'(#field[1]/2)] then
+			say("Game over!")
+			say("Score: "+score)
+			break
+		end
+	done
+return
+
+//|Запускаем игровой цикл
+game_loop()
+
+end
