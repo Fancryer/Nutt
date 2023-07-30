@@ -1,4 +1,4 @@
-// Generated from E:/Nutt/src/main/java\Nutt.g4 by ANTLR 4.12.0
+// Generated from G:/Nutt/src/main/java\Nutt.g4 by ANTLR 4.12.0
 package gen;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -537,6 +537,12 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitVar_decl(Nutt.Var_declContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link Nutt#scope_qualifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitScope_qualifier(Nutt.Scope_qualifierContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link Nutt#constant_qualifier}.
 	 * @param ctx the parse tree

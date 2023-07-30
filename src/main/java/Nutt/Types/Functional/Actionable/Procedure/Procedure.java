@@ -2,52 +2,44 @@ package Nutt.Types.Functional.Actionable.Procedure;
 
 import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.NuttInterpreter;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.Pair;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.IActionable;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
-import Nutt.Types.Nil;
-import Nutt.Visitors.VisitorsPool;
+import Nutt.Visitors.VisitorPool;
 import gen.Nutt;
+import gen.Nutt.BlockContext;
+import gen.Nutt.Vararg_or_signatureContext;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static Nutt.NuttEnvironment.getTempParser;
 import static Nutt.NuttEnvironment.toSourceCode;
 
-public class Procedure implements IActionable
+@Getter public class Procedure implements IActionable
 {
-	public static int lambdaCount;
 	protected final String name;
 	protected final Signature signature;
-	private final Nutt.BlockContext functionBody;
-	private final Nutt.Interpreter.NuttReference output;
+	private final BlockContext functionBody;
+	private final NuttReference output;
 
-	public Procedure()
+	public Procedure(Signature signature,BlockContext functionBody)
 	{
-		this(
-				String.valueOf(Objects.hashCode(lambdaCount++)),
-				new Signature(),
-				getTempParser("yield nil").block(),
-				new Nil());
+		this("lambda%s".formatted(signature),signature,functionBody,TypeInferencer.findTypeReference("Nil"));
 	}
 
-	public Procedure(String name,Signature signature,Nutt.BlockContext functionBody,IValuable output)
+	public Procedure(String name,Signature signature,BlockContext functionBody,NuttReference output)
 	{
 		this.name=name;
 		this.signature=signature;
 		this.functionBody=functionBody;
 		this.output=output;
-	}
-
-	public Procedure(Signature signature,Nutt.BlockContext functionBody)
-	{
-		this("lambda%s".formatted(signature),signature,functionBody,TypeInferencer.findTypeReference("Nil"));
 	}
 
 	public Procedure(Procedure procedure)
@@ -61,12 +53,12 @@ public class Procedure implements IActionable
 		return "funct %s = %s return".formatted(signature,toSourceCode(functionBody));
 	}
 
-	public IValuable proceed() throws NuttSuccessReturnException
+	public NuttReference proceed() throws NuttSuccessReturnException
 	{
 		return proceed(new ArrayList<>());
 	}
 
-	public IValuable proceed(List<Nutt.Interpreter.NuttReference> argumentList) throws NuttSuccessReturnException
+	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		if(argumentList.size()>signature.getSize()) throw new RuntimeException("Parameter length is too large!");
 		return NuttInterpreter.executeBlockAsScope(
@@ -76,9 +68,9 @@ public class Procedure implements IActionable
 					declareParameters();
 					var parameterNames=signature.getInputParameterList().stream().map(Pair::left).toList();
 					IntStream.range(0,argumentList.size())
-					         .forEach(i->NuttInterpreter.currentScope.setVariable(parameterNames.get(i),
-					                                                              argumentList.get(i)));
-					var ret=VisitorsPool.statementVisitor.tryYield(functionBody,output.getType());
+					         .forEach(i->NuttInterpreter.currentScope.setReference(parameterNames.get(i),
+					                                                               argumentList.get(i).getValue()));
+					var ret=VisitorPool.statementVisitor.tryYield(functionBody,output.getType());
 					forgetParameters();
 					return ret;
 				}
@@ -87,19 +79,19 @@ public class Procedure implements IActionable
 
 	private void declareYield()
 	{
-		NuttInterpreter.currentScope.addVariable("yield",output,output.getType());
+		NuttInterpreter.currentScope.addReference("yield",output,output.getType());
 	}
 
 	private void declareParameters()
 	{
-		var declarator=VisitorsPool.declarationVisitor;
+		var declarator=VisitorPool.declarationVisitor;
 		signature.getInputParameterList()
 		         .stream()
 		         .map(Procedure::functParamToVarDecl)
 		         .forEach(declarator::visitVar_decl);
 	}
 
-	private static Nutt.Var_declContext functParamToVarDecl(Pair<String,Nutt.Vararg_or_signatureContext> decl)
+	private static Nutt.Var_declContext functParamToVarDecl(Pair<String,Vararg_or_signatureContext> decl)
 	{
 		return getTempParser("var %s".formatted(toSourceCode(decl.right()))).var_decl();
 	}
@@ -127,11 +119,11 @@ public class Procedure implements IActionable
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference("Procedure");
+		return TypeInferencer.findTypeReference("Procedure").getType();
 	}
 
 	@Override
-	public IValuable getValue()
+	public Procedure getValue()
 	{
 		return this;
 	}
@@ -194,11 +186,6 @@ public class Procedure implements IActionable
 		       &&!equals(value.asFunctional().asActionable().asProcedure());
 	}
 
-	public String getName()
-	{
-		return name;
-	}
-
 	@Override public boolean isTrue()
 	{
 		return true;
@@ -207,6 +194,6 @@ public class Procedure implements IActionable
 	//TODO
 	@Override public Array spread()
 	{
-		return asElementsArray();
+		return spread();
 	}
 }

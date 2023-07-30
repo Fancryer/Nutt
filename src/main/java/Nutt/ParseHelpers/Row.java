@@ -8,7 +8,7 @@ public record Row(java.lang.String name,CeiledValue ceiledValue)
 {
 	public Row(java.lang.String name,java.lang.String ceilType)
 	{
-		this(name,TypeInferencer.findTypeReference(ceilType));
+		this(name,TypeInferencer.findTypeReference(ceilType).getType());
 	}
 
 	public Row(java.lang.String name,Type ceilType)
@@ -46,7 +46,7 @@ public record Row(java.lang.String name,CeiledValue ceiledValue)
 		return new Row(name,ceiledValue);
 	}
 
-	public Row setPartition(CeiledValue ceiledValue)
+	public Row setCeiledValue(CeiledValue ceiledValue)
 	{
 		return new Row(name,ceiledValue);
 	}

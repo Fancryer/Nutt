@@ -1,16 +1,14 @@
 package Nutt.Types.Functional.Actionable.Procedure;
 
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.TypeInferencer;
-import Nutt.Types.IValuable;
 import gen.Nutt;
-
-import java.security.Signature;
 
 public class ProcedureBuilder
 {
 	private Signature signature;
 	private Nutt.BlockContext functionBody;
-	private IValuable output=TypeInferencer.findTypeReference("Nil");
+	private NuttReference output=TypeInferencer.findTypeReference("Nil");
 
 	public ProcedureBuilder setSignature(Signature signature)
 	{
@@ -24,7 +22,7 @@ public class ProcedureBuilder
 		return this;
 	}
 
-	public ProcedureBuilder setOutput(IValuable output)
+	public ProcedureBuilder setOutput(NuttReference output)
 	{
 		this.output=output;
 		return this;

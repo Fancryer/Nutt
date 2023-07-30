@@ -1,25 +1,30 @@
-//package Nutt.Types.Functional.Actionable.Procedure.Native.Arrays;
-//
-//import Nutt.Annotations.ANativeProcedure;
-//import Nutt.Exceptions.NuttSuccessReturnException;
-//import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
-//import Nutt.Types.Functional.Actionable.Procedure.Signature;
-//import Nutt.Types.Functional.Numerable.Int.Int;
-//import Nutt.Types.IValuable;
-//
-//import java.util.List;
-//
-//@ANativeProcedure("native.arrays")
-//public class Count extends NativeProcedure
-//{
-//	public Count()
-//	{
-//		super("count",new Signature("arr_0:Listable,val","Array"));
-//	}
-//
-//	@Override public IValuable proceed(List<IValuable> argumentList) throws NuttSuccessReturnException
-//	{
-//		var list=argumentList.get(0).asFunctional().asListable();
-//		return new Int(list.stream().filter(el->el.equalTo(argumentList.get(1))).count());
-//	}
-//}
+package Nutt.Types.Functional.Actionable.Procedure.Native.Arrays;
+
+import Nutt.Annotations.ANativeProcedure;
+import Nutt.Exceptions.NuttSuccessReturnException;
+import Nutt.Interpreter.References.NuttReference;
+import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
+import Nutt.Types.Functional.Actionable.Procedure.Signature;
+import Nutt.Types.Functional.Numerable.Int.Int;
+
+import java.util.List;
+
+@ANativeProcedure("native.arrays")
+public class Count extends NativeProcedure
+{
+	public Count()
+	{
+		super("count",new Signature("arr_0:Listable,val","Array"));
+	}
+
+	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
+	{
+		var list=argumentList.get(0).getValue().asFunctional().asListable();
+		var seeking=argumentList.get(1).getValue();
+		var count=list.stream()
+		              .map(NuttReference::getValue)
+		              .filter(el->el.equalTo(seeking))
+		              .count();
+		return new Int(count).toAnonymousReference();
+	}
+}

@@ -16,12 +16,6 @@ public class Mutable<T> implements IReplicatable<Mutable<T>>
 		return value;
 	}
 
-	@Override
-	public String toString()
-	{
-		return String.valueOf(value);
-	}
-
 	public void set(T value)
 	{
 		this.value=value;
@@ -30,5 +24,10 @@ public class Mutable<T> implements IReplicatable<Mutable<T>>
 	@Override public Mutable<T> replicate()
 	{
 		return new Mutable<>(value);
+	}
+
+	public String toString()
+	{
+		return value.toString();
 	}
 }

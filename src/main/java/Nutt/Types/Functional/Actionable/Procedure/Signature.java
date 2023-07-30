@@ -6,6 +6,7 @@ import Nutt.ParseHelpers.CeiledValue;
 import Nutt.ParseHelpers.Row;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Type.Type;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 import static gen.Nutt.Var_signature_listContext;
 import static gen.Nutt.Vararg_or_signatureContext;
 
-public class Signature
+@Getter public class Signature
 {
 	private final List<Pair<String,Vararg_or_signatureContext>> inputParameterList;
 	private final Row outputRow;
@@ -36,12 +37,7 @@ public class Signature
 
 	public Signature(List<Vararg_or_signatureContext> paramContexts,String outputType)
 	{
-		this(paramContexts,TypeInferencer.findTypeReference(outputType));
-	}
-
-	public Signature(List<Vararg_or_signatureContext> paramContexts)
-	{
-		this(paramContexts,TypeInferencer.findTypeReference("Valuable"));
+		this(paramContexts,TypeInferencer.findTypeReference(outputType).getType());
 	}
 
 	public Signature(List<Vararg_or_signatureContext> paramContexts,Type outputType)
@@ -50,7 +46,12 @@ public class Signature
 				.stream()
 				.map(p->new Pair<>(p.var_signature().NAME().getText(),p))
 				.toList();
-		outputRow=new Row("yield",new CeiledValue(outputType.getType(),NuttEnvironment.constructValuable(outputType)));
+		outputRow=new Row("yield",new CeiledValue(outputType.getType(),NuttEnvironment.constructReference(outputType).getValue()));
+	}
+
+	public Signature(List<Vararg_or_signatureContext> paramContexts)
+	{
+		this(paramContexts,TypeInferencer.findTypeReference("Valuable").getType());
 	}
 
 	public Signature()
@@ -61,11 +62,6 @@ public class Signature
 	public int getSize()
 	{
 		return inputParameterList.size();
-	}
-
-	public List<Pair<String,Vararg_or_signatureContext>> getInputParameterList()
-	{
-		return inputParameterList;
 	}
 
 	@Override

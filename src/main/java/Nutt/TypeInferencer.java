@@ -2,13 +2,12 @@ package Nutt;
 
 import Nutt.Exceptions.NuttTypeIsDeclaredException;
 import Nutt.Interpreter.NuttInterpreter;
-import Nutt.Interpreter.NuttReference;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Type.Type;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static Nutt.Interpreter.NuttInterpreter.typeTree;
@@ -17,12 +16,9 @@ public class TypeInferencer
 {
 	public static NuttReference removeCustomType(String typeName)
 	{
-		return findTypeReference(typeTree.removeChild(typeName));
-	}
-
-	public static NuttReference findTypeReference(Type type)
-	{
-		return findTypeReference(type.getDisplayName());
+		var foundReference=findTypeReference(typeName);
+		NuttInterpreter.forget(typeName);
+		return foundReference;
 	}
 
 	public static NuttReference findTypeReference(String typeName)
@@ -44,6 +40,11 @@ public class TypeInferencer
 	{
 		if(!canTypeBeAdded(typeName,parentName)) throw new NuttTypeIsDeclaredException(typeName);
 		return findTypeReference(findTypeReference(parentName).getType().addChild(typeName).addChildrenByNames(children));
+	}
+
+	public static NuttReference findTypeReference(Type type)
+	{
+		return type==null?null:findTypeReference(type.getDisplayName());
 	}
 
 	public static boolean canTypeBeAdded(String typeName,String parentName)
@@ -159,6 +160,7 @@ public class TypeInferencer
 
 	public static NuttReference getCommonWrapperType(List<NuttReference> types)
 	{
+		System.out.println("types = "+types);
 		if(types.isEmpty()) return findTypeReference("Nil");
 		var commonType=types.get(0);
 		if(types.size()==1) return commonType;
@@ -192,12 +194,7 @@ public class TypeInferencer
 
 	public static NuttReference findParent(NuttReference typeReference)
 	{
-		Predicate<NuttReference> predicate=reference->reference.getType()
-		                                                       .equals(reference.getType().parent.getType());
-		return NuttInterpreter.currentScope.referenceContainer.getReferences()
-		                                                      .stream()
-		                                                      .filter(predicate)
-		                                                      .findFirst()
-		                                                      .orElse(null);
+		var parentType=typeReference.getValue().asFunctional().asType().parent;
+		return findTypeReference(parentType);
 	}
 }

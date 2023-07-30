@@ -4,6 +4,7 @@ import Nutt.Annotations.IReplicatable;
 import Nutt.Interfaces.IBoolable;
 import Nutt.Interfaces.IMeasurable;
 import Nutt.Interfaces.ISpreadable;
+import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Type.Type;
@@ -33,7 +34,7 @@ public interface IValuable extends Nutt.Types.IComparable<IValuable>, ISpreadabl
 
 	default boolean isNil()
 	{
-		return Objects.equals(getType(),TypeInferencer.findTypeReference("Nil"));
+		return Objects.equals(getType(),TypeInferencer.findTypeReference("Nil").getType());
 	}
 
 	Type getType();
@@ -44,4 +45,9 @@ public interface IValuable extends Nutt.Types.IComparable<IValuable>, ISpreadabl
 	}
 
 	Object getValue();
+
+	default AnonymousNuttReference toAnonymousReference()
+	{
+		return AnonymousNuttReference.of(this);
+	}
 }

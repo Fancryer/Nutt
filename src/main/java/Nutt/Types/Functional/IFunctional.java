@@ -3,6 +3,8 @@ package Nutt.Types.Functional;
 import Nutt.Types.Functional.Actionable.IActionable;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.INumerable;
+import Nutt.Types.Functional.Record.Record;
+import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.Objects;
@@ -52,5 +54,12 @@ public interface IFunctional extends IValuable
 		if(!(this instanceof Record))
 			throw new ClassCastException("Functional type is not a Record");
 		return (Record)this;
+	}
+
+	default Type asType()
+	{
+		if(!(this instanceof Type))
+			throw new ClassCastException("Functional type is not a Type");
+		return (Type)this;
 	}
 }

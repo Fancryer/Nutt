@@ -1,7 +1,9 @@
 package Nutt.Exceptions;
 
-import Nutt.Interpreter.NuttReference;
+import Nutt.Interpreter.References.NuttReference;
+import lombok.Getter;
 
+@Getter
 public class NuttSuccessReturnException extends RuntimeException
 {
 	private final NuttReference reference;
@@ -21,10 +23,5 @@ public class NuttSuccessReturnException extends RuntimeException
 	public String getMessage()
 	{
 		return "%s returned successfully".formatted(reference.getMutable().get().getValue());
-	}
-
-	public NuttReference getReference()
-	{
-		return reference;
 	}
 }

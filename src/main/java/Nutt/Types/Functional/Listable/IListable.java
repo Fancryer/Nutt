@@ -1,13 +1,12 @@
 package Nutt.Types.Functional.Listable;
 
-import Nutt.Interpreter.NuttReference;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.Map.Map;
 import Nutt.Types.Functional.Listable.Set.Set;
 import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
 
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +53,7 @@ public interface IListable extends IFunctional, Iterable<NuttReference>
 
 	IListable add(NuttReference value);
 
-	IValuable getAt(NuttReference index);
+	NuttReference getAt(NuttReference index);
 
 	IListable setAt(NuttReference value,NuttReference index);
 
@@ -89,5 +88,5 @@ public interface IListable extends IFunctional, Iterable<NuttReference>
 		return getElements().spliterator();
 	}
 
-	IListable addAll(IValuable valuable);
+	IListable addAll(IListable listable);
 }

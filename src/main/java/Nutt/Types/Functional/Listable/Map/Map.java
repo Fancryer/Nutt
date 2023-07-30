@@ -1,20 +1,22 @@
 package Nutt.Types.Functional.Listable.Map;
 
+import Nutt.Interpreter.References.AnonymousNuttReference;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.Pair;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
-import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Map implements IListable
 {
-	private final java.util.Map<IValuable,IValuable> elements;
+	private final java.util.Map<NuttReference,NuttReference> elements;
 	private final Pair<Type,Type> typePair;
 
 	public Map(Map other)
@@ -22,7 +24,7 @@ public class Map implements IListable
 		this(other.elements,other.typePair);
 	}
 
-	public Map(java.util.Map<IValuable,IValuable> elements,Pair<Type,Type> typePair)
+	public Map(java.util.Map<NuttReference,NuttReference> elements,Pair<Type,Type> typePair)
 	{
 		this.elements=elements;
 		this.typePair=typePair;
@@ -35,8 +37,8 @@ public class Map implements IListable
 						new HashMap<>(),
 						new Pair<>
 								(
-										TypeInferencer.findType("Valuable"),
-										TypeInferencer.findType("Valuable")
+										TypeInferencer.findTypeReference("Valuable").getType(),
+										TypeInferencer.findTypeReference("Valuable").getType()
 								)
 				);
 	}
@@ -50,18 +52,13 @@ public class Map implements IListable
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findType("Map");
+		return TypeInferencer.findTypeReference("Map").getType();
 	}
 
 	@Override
 	public Object getValue()
 	{
 		return "...";
-	}
-
-	@Override public Map setValue(Object value)
-	{
-		return null;
 	}
 
 	@Override
@@ -72,52 +69,59 @@ public class Map implements IListable
 
 	@Override public Map replicate()
 	{
-		return new Map<>(this);
+		return new Map(this);
 	}
 
 	@Override
-	public IValuable add(IValuable value)
+	public Map add(NuttReference value)
+	{
+		return this;
+	}
+
+	@Override public NuttReference getAt(NuttReference index)
 	{
 		return null;
 	}
 
 	@Override
-	public IValuable setAt(IValuable value,IValuable index)
+	public Map setAt(NuttReference value,NuttReference index)
 	{
-		if(!TypeInferencer.verdict(getKeyType(),index.getType())) throw new RuntimeException();
+		if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(getKeyType()),TypeInferencer.findTypeReference(index.getType())))
+			throw new RuntimeException();
 		elements.put(index,value);
-		return value;
-	}
-
-	public Type getKeyType()
-	{
-		return typePair.left();
+		return this;
 	}
 
 	@Override
-	public List<IValuable> getElements()
+	public List<NuttReference> getElements()
 	{
 		return asList();
 	}
 
 	@Override
-	public Map setElements(List<IValuable> elements)
+	public Map setElements(List<NuttReference> elements)
 	{
-		return null;
+		return this;
 	}
 
 	@Override
 	public Type getElementType()
 	{
-		return TypeInferencer.findType("Array");
+		return TypeInferencer.findTypeReference("Array").getType();
 	}
 
 	@Override
-	public Iterator<IValuable> iterator()
+	public Iterator<NuttReference> iterator()
 	{
 		return elements
 				.values()
 				.iterator();
+	}
+
+	@Override
+	public Map addAll(IListable listable)
+	{
+		return this;
 	}
 
 	//	@Override
@@ -126,7 +130,7 @@ public class Map implements IListable
 	//		return null;
 	//	}
 
-	private List<IValuable> asList()
+	private List<NuttReference> asList()
 	{
 		return elements
 				.entrySet()
@@ -137,28 +141,32 @@ public class Map implements IListable
 								{
 									var key=entry.getKey();
 									var val=entry.getValue();
-									var commonType=TypeInferencer.getCommonWrapperType(key.getType(),val.getType());
-									return (IValuable)new Array(commonType,List.of(key,val));
+									var commonType=TypeInferencer.getCommonWrapperType
+											                             (
+													                             TypeInferencer.findTypeReference(key.getType()),
+													                             TypeInferencer.findTypeReference(val.getType())
+											                             );
+									return AnonymousNuttReference.of(new Array(commonType.getType(),List.of(key,val)));
 								}
 						)
-				.toList();
+				.collect(Collectors.toList());
+	}
+
+	public Type getKeyType()
+	{
+		return typePair.left();
 	}
 
 	@Override
-	public Array asElementsArray()
+	public Array spread()
 	{
 		return new Array(getElementType(),asList());
 	}
 
 	@Override
-	public Boolean asBoolean()
+	public boolean isTrue()
 	{
-		return new Boolean(elements.isEmpty());
-	}
-
-	@Override public Map addAll(IValuable valuable)
-	{
-		return null;
+		return elements.isEmpty();
 	}
 
 	@Override public boolean lessThan(IValuable value)

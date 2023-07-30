@@ -1,4 +1,4 @@
-package Nutt.Interpreter;
+package Nutt.Interpreter.References;
 
 import Nutt.Exceptions.NuttConstantVariableWriteException;
 import Nutt.Interpreter.NuttInterpreter.EConstantQualifier;
@@ -10,15 +10,20 @@ import lombok.Getter;
 
 import static Nutt.Interpreter.NuttInterpreter.EConstantQualifier.*;
 
+@Getter
 public class NuttReference
 {
-	@Getter
 	private final String name;
 	private final Mutable<IValuable> value;
 	@Getter
 	private final EConstantQualifier qualifier;
 	@Getter
 	private final Type ceilType;
+
+	public NuttReference(String name,IValuable value)
+	{
+		this(name,new Mutable<>(value));
+	}
 
 	public NuttReference(String name,Mutable<IValuable> value)
 	{
@@ -30,8 +35,7 @@ public class NuttReference
 		this(name,value,qualifier,value.get().getType());
 	}
 
-	public NuttReference(String name,Mutable<IValuable> value,EConstantQualifier qualifier,
-	                     Type ceilType)
+	public NuttReference(String name,Mutable<IValuable> value,EConstantQualifier qualifier,Type ceilType)
 	{
 		this.name=name;
 		this.value=value;
@@ -47,6 +51,11 @@ public class NuttReference
 	public Type getType()
 	{
 		return value.get().getType();
+	}
+
+	public IValuable getValue()
+	{
+		return getMutable().get();
 	}
 
 	/**
@@ -78,5 +87,10 @@ public class NuttReference
 	public boolean isWriteable()
 	{
 		return !isConstant();
+	}
+
+	@Override public String toString()
+	{
+		return "{name='%s',value=%s,qualifier=%s,ceilType=%s}".formatted(name,value,qualifier,ceilType);
 	}
 }

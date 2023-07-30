@@ -3,7 +3,7 @@ module main
 //|Определяем тип для фигур тетриса
 record Tetromino
 {
-  "shape":Array|Array|Booleanean,
+  "shape":Array|Array|Boolean,
   "color":String
 }
 

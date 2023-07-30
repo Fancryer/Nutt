@@ -1,19 +1,20 @@
 package Nutt;
 
 import Nutt.Annotations.ANativeProcedure;
-import Nutt.Exceptions.NuttParameterizationException;
-import Nutt.Types.Functional.Actionable.Procedure.LambdaBuilder;
+import Nutt.Interpreter.NuttInterpreter;
+import Nutt.Interpreter.References.AnonymousNuttReference;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.ProcedureBuilder;
-import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.Map.Map;
 import Nutt.Types.Functional.Listable.Set.Set;
+import Nutt.Types.Functional.Listable.String.String;
+import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
-import Nutt.Visitors.VisitorsPool;
+import Nutt.Visitors.VisitorPool;
 import com.google.common.reflect.ClassPath;
 import gen.Nutt;
 import gen.NuttLexer;
@@ -71,7 +72,7 @@ public class NuttEnvironment
 	public NuttEnvironment visit(java.lang.String source)
 	{
 		var parser=setup(source);
-		VisitorsPool.statementVisitor.visit(parser.chunk());
+		VisitorPool.statementVisitor.visitChunk(parser.chunk());
 		return this;
 	}
 
@@ -85,16 +86,16 @@ public class NuttEnvironment
 		NuttInterpreter.clear();
 	}
 
-	public static IValuable constructValuable(java.lang.String type)
+	public static NuttReference constructReference(java.lang.String type)
 	{
-		return constructValuable(TypeInferencer.findTypeReference(type));
+		return constructReference(TypeInferencer.findTypeReference(type).getType());
 	}
 
-	public static IValuable constructValuable(Type type)
+	public static NuttReference constructReference(Type type)
 	{
 		if(type==null) return null;
 		if(!TypeInferencer.hasType(type.getDisplayName())) throw new RuntimeException();
-		return switch(type.getDisplayName())
+		var valuable=switch(type.getDisplayName())
 		{
 			case "Listable","Array" -> new Array();
 			case "String" -> new String();
@@ -103,17 +104,10 @@ public class NuttEnvironment
 			case "Numerable","Int" -> new Int();
 			case "Float" -> new Float();
 			case "Actionable","Procedure" -> new ProcedureBuilder().createProcedure();
-			case "Type" -> TypeInferencer.findTypeReference("Type");
-			default ->
-			{
-				//Construct record object
-				//				if(TypeInferencer.verdict("Record",type))
-				//				{
-				//					System.out.println(NuttInterpreter.getRecord(type.getDisplayName()));
-				//				}
-				yield new Nil();
-			}
+			case "Type" -> TypeInferencer.findTypeReference("Type").getType();
+			default -> new Nil();
 		};
+		return AnonymousNuttReference.of(valuable);
 	}
 
 	//	public static InterpolParser getTempInterpolator(java.lang.String source)
@@ -121,37 +115,36 @@ public class NuttEnvironment
 	//		return new InterpolParser(new CommonTokenStream(new InterpolLexer(CharStreams.fromString(source))));
 	//	}
 
-	public static IValuable constructGenericValuable(Type type,
-	                                                 List<Type> typeParameters)
-	{
-		if(type==null||!TypeInferencer.hasType(type.getDisplayName())) throw new RuntimeException();
-		var typeParametersAmount=typeParameters.size();
-		var typeName=type.getDisplayName();
-		return switch(typeName)
-		{
-			case "Listable","Array" ->
-			{
-				if(typeParametersAmount!=1)
-					throw new NuttParameterizationException("Array",typeParameters);
-				yield new Array(typeParameters.get(0));
-			}
-			case "String" -> new String();
-			case "Set" -> new Set();
-			case "Map" -> new Map();
-			case "Numerable","Int" -> new Int();
-			case "Float" -> new Float();
-			case "Actionable","Procedure" -> new LambdaBuilder()
-					.setSignature(new Signature())
-					.setFunctionBody("nil")
-					.setOutput(new Nil())
-					.createProcedure();
-			default ->
-			{
-				if(TypeInferencer.verdict("Record",typeName)) yield NuttInterpreter.getRecord(typeName).replicate();
-				throw new RuntimeException();
-			}
-		};
-	}
+	//	public static IValuable constructGenericValuable(Type type,List<Type> typeParameters)
+	//	{
+	//		if(type==null||!TypeInferencer.hasType(type.getDisplayName())) throw new RuntimeException();
+	//		var typeParametersAmount=typeParameters.size();
+	//		var typeName=type.getDisplayName();
+	//		return switch(typeName)
+	//		{
+	//			case "Listable","Array" ->
+	//			{
+	//				if(typeParametersAmount!=1)
+	//					throw new NuttParameterizationException("Array",typeParameters);
+	//				yield new Array(typeParameters.get(0));
+	//			}
+	//			case "String" -> new String();
+	//			case "Set" -> new Set();
+	//			case "Map" -> new Map();
+	//			case "Numerable","Int" -> new Int();
+	//			case "Float" -> new Float();
+	//			case "Actionable","Procedure" -> new LambdaBuilder()
+	//					.setSignature(new Signature())
+	//					.setFunctionBody("nil")
+	//					.setOutput(new Nil().toAnonymousReference())
+	//					.createProcedure();
+	//			default ->
+	//			{
+	//				if(TypeInferencer.verdict("Record",typeName)) yield NuttInterpreter.getRecord(typeName).replicate();
+	//				throw new RuntimeException();
+	//			}
+	//		};
+	//	}
 
 	public static List<Tree> getChildren(Tree tree)
 	{
@@ -192,16 +185,18 @@ public class NuttEnvironment
 	{
 		if(tree==null) return null;
 		int childCount=tree.getChildCount();
-		IntStream.range(0,childCount).mapToObj(tree::getChild).forEach
-				(child->
-				 {
-					 if(child instanceof TerminalNode parserRuleContext)
-						 stringBuilder
-								 .append(parserRuleContext)
-								 .append(" ");
-					 toSourceCode(child,stringBuilder);
-				 }
-				);
+		IntStream.range(0,childCount)
+		         .mapToObj(tree::getChild)
+		         .forEach
+				         (
+						         child->
+						         {
+							         if(child instanceof TerminalNode parserRuleContext)
+								         stringBuilder.append(parserRuleContext)
+								                      .append(" ");
+							         toSourceCode(child,stringBuilder);
+						         }
+				         );
 		return stringBuilder.toString().trim().replace("<EOF>","");
 	}
 

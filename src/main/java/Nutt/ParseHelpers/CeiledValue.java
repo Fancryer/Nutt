@@ -9,11 +9,11 @@ public record CeiledValue(Type ceilType,IValuable value)
 {
 	public CeiledValue(String ceilType,IValuable value)
 	{
-		this(TypeInferencer.findTypeReference(ceilType),value);
+		this(TypeInferencer.findTypeReference(ceilType).getType(),value);
 	}
 
 	public CeiledValue(Type ceilType)
 	{
-		this(ceilType,NuttEnvironment.constructValuable(ceilType));
+		this(ceilType,NuttEnvironment.constructReference(ceilType).getValue());
 	}
 }
