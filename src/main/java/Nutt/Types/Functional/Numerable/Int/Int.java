@@ -2,21 +2,20 @@ package Nutt.Types.Functional.Numerable.Int;
 
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
-import Nutt.Types.Functional.Listable.String.String;
-import Nutt.Types.Functional.Numerable.Boolean;
-import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.INumerable;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import ch.obermuhlner.math.big.BigDecimalMath;
+import org.apache.commons.lang3.mutable.MutableLong;
 
 import java.math.BigInteger;
+import java.util.List;
 
 public class Int implements INumerable
 {
 	EIntType intType;
-	private Long longValue;
-	private BigInteger bigIntegerValue;
+	private MutableLong longValue=new MutableLong();
+	private MutableBigInteger bigIntegerValue=new MutableBigInteger();
 
 	public Int()
 	{
@@ -30,24 +29,18 @@ public class Int implements INumerable
 
 	public Int(Long value)
 	{
-		longValue=value;
+		longValue.setValue(value);
 		intType=EIntType.Long;
-	}
-
-	public Int(Byte value)
-	{
-		this(value.intValue());
 	}
 
 	public Int(Int other)
 	{
 		this(other.asBigInteger());
-		longValue=other.longValue;
 	}
 
 	public Int(BigInteger value)
 	{
-		bigIntegerValue=value;
+		bigIntegerValue=new MutableBigInteger(value);
 		intType=EIntType.BigInteger;
 		if(fitsInLong(value.toString())) setAsLong(value.longValue());
 	}
@@ -56,19 +49,19 @@ public class Int implements INumerable
 	{
 		var bigInteger=new BigInteger(n);
 		var result=bigInteger.longValue();
-		return BigInteger.valueOf(result).compareTo(bigInteger)==0;
+		return new BigInteger(java.lang.String.valueOf(result)).compareTo(bigInteger)==0;
 	}
 
 	private void setAsLong(java.lang.Long value)
 	{
-		longValue=value;
+		longValue.setValue(value);
 		bigIntegerValue=null;
 		intType=EIntType.Long;
 	}
 
 	public BigInteger asBigInteger()
 	{
-		return isBigInteger()?bigIntegerValue:BigInteger.valueOf(longValue);
+		return isBigInteger()?bigIntegerValue.getValue():BigInteger.valueOf(longValue.getValue());
 	}
 
 	public boolean isBigInteger()
@@ -110,15 +103,9 @@ public class Int implements INumerable
 
 	private void setAsBigInteger(java.math.BigInteger value)
 	{
-		bigIntegerValue=value;
+		bigIntegerValue=new MutableBigInteger(value);
 		longValue=null;
 		intType=EIntType.BigInteger;
-	}
-
-	@Override
-	public Float asFloat()
-	{
-		return Float.fromString(toString());
 	}
 
 	@Override
@@ -138,6 +125,11 @@ public class Int implements INumerable
 		return isLong()?longValue:bigIntegerValue;
 	}
 
+	@Override public void setValue(BigInteger value)
+	{
+		bigIntegerValue.setValue(value);
+	}
+
 	public boolean isLong()
 	{
 		return intType==EIntType.Long;
@@ -149,14 +141,40 @@ public class Int implements INumerable
 		return this;
 	}
 
+	@Override
+	public Float asFloat()
+	{
+		return Float.fromString(toString());
+	}
+
+	@Override
+	public java.lang.String toString()
+	{
+		return (intType==EIntType.Long?longValue:bigIntegerValue).toString();
+	}	@Override
+	public Type getType()
+	{
+		return TypeInferencer.findTypeReference("Int");
+	}
+
 	@Override public Int replicate()
 	{
 		return new Int(this);
 	}
 
-	@Override public Boolean asBoolean()
+	@Override
+	public boolean canConsumeParameters(List<IValuable> iValuables)
 	{
-		return new Boolean(isTrue());
+		return false;
+	}
+
+	@Override
+	public int getLength()
+	{
+		return toString().length();
+	}	@Override public Array asElementsArray()
+	{
+		return new Array(getType(),toString().chars().mapToObj(obj->new String(obj).asValuable()).toList());
 	}
 
 	@Override
@@ -165,32 +183,9 @@ public class Int implements INumerable
 		return asBigInteger().compareTo(BigInteger.ZERO)!=0;
 	}
 
-	@Override
-	public java.lang.String toString()
-	{
-		return (intType==EIntType.Long?longValue:bigIntegerValue).toString();
-	}
-
-	@Override
-	public int getLength()
-	{
-		return toString().length();
-	}
-
-	@Override public Array spread()
-	{
-		return new Array(getType(),new String(toString()).stream().toList());
-	}
-
-	@Override
-	public Type getType()
-	{
-		return TypeInferencer.findTypeReference("Int").getType();
-	}
-
 	public Long asLong()
 	{
-		return intType==EIntType.Long?longValue:bigIntegerValue.longValue();
+		return intType==EIntType.Long?longValue.getValue():Long.valueOf(bigIntegerValue.longValue());
 	}
 
 	@Override public boolean lessThan(IValuable value)
@@ -245,4 +240,8 @@ public class Int implements INumerable
 		Long,
 		BigInteger
 	}
+
+
+
+
 }

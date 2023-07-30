@@ -1,388 +1,376 @@
-package Nutt.Visitors;
-
-import Nutt.Exceptions.*;
-import Nutt.Interpreter.NuttInterpreter;
-import Nutt.Interpreter.References.AnonymousNuttReference;
-import Nutt.Interpreter.References.NilReference;
-import Nutt.Interpreter.References.NuttReference;
-import Nutt.ModuleLoader;
-import Nutt.NuttEnvironment;
-import Nutt.TypeInferencer;
-import Nutt.Types.Functional.Listable.Array.Array;
-import Nutt.Types.Functional.Listable.IListable;
-import Nutt.Types.Functional.Listable.String.String;
-import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
-import Nutt.Types.Nil;
-import com.google.common.collect.Lists;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-
-import static Nutt.NuttEnvironment.getTempParser;
-import static gen.Nutt.*;
-
-public class NuttStatementVisitor extends NuttGenericVisitor
-{
-	@Override public NuttReference visitChunk(ChunkContext ctx)
-	{
-		System.out.println(ctx.module());
-		return visitModule(ctx.module());
-	}
-
-	@Override public NuttReference visitModule(ModuleContext ctx)
-	{
-		visitModule_start(ctx.module_start());
-		for(var i: ctx.module_import()) visitModule_import(i);
-		visitBlock(ctx.block());
-		return NilReference.getInstance();
-	}
-
-	@Override
-	public NuttReference visitModule_start(Module_startContext ctx)
-	{
-		var moduleName=new ModuleLoader().getFullModuleName(ctx.module_name());
-		NuttInterpreter.moduleNames.add(moduleName);
-		return new String(moduleName).toAnonymousReference();
-	}
-
-	@Override
-	public NuttReference visitModule_name(Module_nameContext ctx)
-	{
-		var packageList=ctx.NAME().stream().map(TerminalNode::getText).toList();
-		return AnonymousNuttReference.of(new String(java.lang.String.join("\\\\",packageList)));
-	}
-
-	@Override
-	public NuttReference visitModule_import(Module_importContext ctx)
-	{
-		new ModuleLoader().importModuleContext(ctx,this);
-		return new String().toAnonymousReference();
-	}
-
-	@Override
-	public NuttReference visitBlock(BlockContext ctx)
-	{
-		NuttInterpreter.executeBlockAsScope
-				               (
-						               ()->
-						               {
-							               NuttReference ret=NilReference.getInstance();
-							               for(var stat: ctx.stat()) ret=visit(stat);
-							               return ret;
-						               }
-				               );
-		return new String().toAnonymousReference();
-	}
-
-	@Override public NuttReference visitDo_if_stat(Do_if_statContext ctx)
-	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().isTrue();
-		if(cond) return visit(ctx.stat());
-		return NilReference.getInstance();
-	}
-
-	@Override public NuttReference visitDo_if_not_stat(Do_if_not_statContext ctx)
-	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().isTrue();
-		return cond?NilReference.getInstance():visit(ctx.stat());
-	}
-
-	@Override public NuttReference visitExec_stat(Exec_statContext ctx)
-	{
-		return visit(getTempParser(new NuttEvalVisitor().visit(ctx.exp()).toString()).stat());
-	}
-
-	@Override
-	public NuttReference visitFunctiondef_stat(Functiondef_statContext ctx)
-	{
-		return VisitorPool.declarationVisitor.visitFunctiondef_stat(ctx);
-	}
-
-	@Override public NuttReference visitFunctioncall_stat(Functioncall_statContext ctx)
-	{
-		try
-		{
-			return VisitorPool.functionVisitor.runStaticFunction(ctx);
-		}
-		catch(NuttSuccessReturnException e)
-		{
-			return NilReference.getInstance();
-		}
-	}
-
-	@Override public NuttReference visitDo_done_block_stat(Do_done_block_statContext ctx)
-	{
-		return visit(ctx.do_done_block().block());
-	}
-
-	@Override public NuttReference visitIf_then_else_block_stat(If_then_else_block_statContext ctx)
-	{
-		var block=ctx.if_then_else_block();
-		var pred=VisitorPool.conditionVisitor.visit(block.exp()).getValue().isTrue();
-		if(pred) return visitBlock(block.then_block().block());
-		var elseBlock=block.else_block();
-		return elseBlock!=null?visitBlock(elseBlock.block()):new String().toAnonymousReference();
-	}
-
-	@Override
-	public NuttReference visitType_def_stat(Type_def_statContext ctx)
-	{
-		var stringExtractor=VisitorPool.stringVisitor;
-		var derivedType=stringExtractor.extractTypeName(ctx.type_def().derived_type);
-		if(TypeInferencer.hasType(derivedType))
-			throw new NuttTypeIsDeclaredException(derivedType);
-		var childrenTypes=ctx.type_def().children.type_param().stream().map(NuttEnvironment::toSourceCode).toList();
-		var extractedType=stringExtractor.extractTypeName(ctx.type_def().parent_type);
-		var parentType=extractedType==null?"Type":extractedType;
-		//NuttInterpreter.currentScope.addLocalType(derivedType,parentType,childrenTypes);
-		return TypeInferencer.addCustomType(derivedType,parentType,childrenTypes);
-	}
-
-	@Override public NuttReference visitRecord_def_stat(Record_def_statContext ctx)
-	{
-		return VisitorPool.declarationVisitor.visitRecord_def(ctx.record_def());
-	}
-
-	@Override public NuttReference visitExit_stat(Exit_statContext ctx)
-	{
-		throw new NuttExitException();
-	}
-
-	@Override public NuttReference visitReturn_stat(Return_statContext ctx)
-	{
-		throw new NuttSuccessReturnException(VisitorPool.evalVisitor.visit(ctx.function_return().exp()));
-	}
-
-	@Override
-	public NuttReference visitYield_stat(Yield_statContext ctx)
-	{
-		throw new NuttSuccessReturnException(VisitorPool.evalVisitor.visit(ctx.function_yield().explist()));
-		//return new NuttFunctionVisitor(interpreter).visitFunction_yield();
-	}
-
-	@Override
-	public NuttReference visitBreak_stat(Break_statContext ctx)
-	{
-		throw new NuttBreakException();
-	}
-
-	@Override
-	public NuttReference visitContinue_stat(Continue_statContext ctx)
-	{
-		throw new NuttContinueException();
-	}
-
-	@Override
-	public NuttReference visitGroup_assignment(Group_assignmentContext ctx)
-	{
-		return VisitorPool.assignmentVisitor.visitGroup_assignment(ctx);
-	}
-
-	@Override
-	public NuttReference visitComposed_assign(Composed_assignContext ctx)
-	{
-		var variableName=ctx.NAME().getText();
-		var operator=NuttEnvironment.toSourceCode(ctx.operator_composed().composed_assign_op().operator_infix());
-		Supplier<java.lang.String> normalize=()->"%s=%s%s%s".formatted(
-				variableName,variableName,operator,NuttEnvironment.toSourceCode(ctx.operator_composed().exp()));
-		return visitGroup_assignment(getTempParser(normalize.get()).group_assignment());
-	}
-
-	@Override
-	public NuttReference visitSelf_assign(Self_assignContext ctx)
-	{
-		var variableName=ctx.NAME().getText();
-		var firstOp=NuttEnvironment.toSourceCode(ctx.operator_postfix().operator_math(0));
-		var secondOp=NuttEnvironment.toSourceCode(ctx.operator_postfix().operator_math(1));
-		var postfixOperator=firstOp+secondOp;
-		var stepIsOne=postfixOperator.equals("++")||postfixOperator.equals("--");
-		var normalize="%s=%s%s%s".formatted(variableName,variableName,firstOp,stepIsOne?"1":variableName);
-		return visitGroup_assignment(getTempParser(normalize).group_assignment());
-	}
-
-	@Override
-	public NuttReference visitForget(ForgetContext ctx)
-	{
-		if(ctx.KW_All()!=null) NuttInterpreter.forgetAll();
-		NuttInterpreter.forgetList(ctx.flat_name_list().NAME().stream().map(ParseTree::getText).toList());
-		return NilReference.getInstance();
-	}
-
-	@Override
-	public NuttReference visitLoop(LoopContext ctx)
-	{
-		if(ctx.for_each_loop()!=null) return visitFor_each_loop(ctx.for_each_loop());
-		if(ctx.while_do_loop()!=null) return visitWhile_do_loop(ctx.while_do_loop());
-		if(ctx.repeat_until_loop()!=null) return visitRepeat_until_loop(ctx.repeat_until_loop());
-		return super.visitLoop(ctx);
-	}
-
-	@Override
-	public NuttReference visitFor_each_loop(For_each_loopContext ctx)
-	{
-		var elementName=new String(ctx.val.getText());
-		var bDirectionIsForward=ctx.op_direction().OP_Forward()!=null;
-		var expList=bDirectionIsForward?ctx.explist().exp():Lists.reverse(ctx.explist().exp());
-		var evaluator=VisitorPool.evalVisitor;
-		NuttReference lastValue;
-		var block=getTempParser("do %s done".formatted(NuttEnvironment.toSourceCode(ctx.stat()))).block();
-		if(expList.size()==1)
-		{
-			var exp=evaluator.visit(expList.get(0));
-			//			if(!TypeInferencer.findTypeReference("Listable").getType().hasChild(exp.getType()))
-			//				throw new RuntimeException("Cannot iterate over "+exp.getType());
-			//			var listable=exp.getValue().asFunctional().asListable();
-			var listable=exp.getValue().spread();
-			lastValue=forEachOnIListable
-					(
-							bDirectionIsForward
-							?listable
-							:listable.setElements(Lists.reverse(listable.getElements())),
-							elementName,
-							block
-					);
-		}
-		else lastValue=forEachOnExpList(expList,elementName,block,evaluator);
-		NuttInterpreter.currentScope.forgetReference(elementName.toString());
-		return lastValue;
-	}
-
-	@Override
-	public NuttReference visitWhile_do_loop(While_do_loopContext ctx)
-	{
-		var conditionVisitor=VisitorPool.conditionVisitor;
-		var whileBlock=NuttEnvironment.parseWithBound("do ",ctx.stat()," done").block();
-		whileLoop:
-		while(conditionVisitor.visitExplist(ctx.explist()).getValue().isTrue())
-		{
-			for(var stat: whileBlock.children)
-			{
-				try
-				{
-					visit(stat);
-				}
-				catch(NuttBreakException e)
-				{
-					break whileLoop;
-				}
-				catch(NuttContinueException e)
-				{
-					continue whileLoop;
-				}
-			}
-		}
-		return new String().toAnonymousReference();
-	}
-
-	@Override
-	public NuttReference visitTry_catch(Try_catchContext ctx)
-	{
-		var tryBranch=ctx.try_branch;
-		var catchBranch=ctx.catch_branch;
-		try
-		{
-			visit(tryBranch);
-		}
-		catch(Exception tryException)
-		{
-			try
-			{
-				visit(catchBranch);
-			}
-			catch(Exception catchException)
-			{
-				if(catchException instanceof NuttSuccessReturnException)
-					throw catchException;
-				throw new RuntimeException("Fail on catch!",catchException);
-			}
-		}
-		return NilReference.getInstance();
-	}
-
-	@Override
-	public NuttReference visitDemand(DemandContext ctx)
-	{
-		if(!VisitorPool.conditionVisitor.visitDemand(ctx).getValue().isTrue())
-			throw new RuntimeException("Fail on demand: "+NuttEnvironment.toSourceCode(ctx.exp()));
-		return NilReference.getInstance();
-	}
-
-	@Override
-	public NuttReference visitVar_decl(Var_declContext ctx)
-	{
-		return VisitorPool.declarationVisitor.visitVar_decl(ctx);
-	}
-
-	@Override public NuttReference visitAlias_decl(Alias_declContext ctx)
-	{
-		return VisitorPool.declarationVisitor.visitAlias_decl(ctx);
-	}
-
-	@Override
-	public NuttReference visitFunc_call_exp(Func_call_expContext ctx)
-	{
-		try
-		{
-			VisitorPool.functionVisitor.visitFunc_call_exp(ctx);
-			return NilReference.getInstance();
-		}
-		catch(NuttSuccessReturnException e)
-		{
-			return e.getReference();
-		}
-	}
-
-	private NuttReference forEachOnIListable(IListable listable,String variableName,BlockContext ctx)
-	{
-		var commonExpType=TypeInferencer.getCommonIValuableWrapperType(listable.getElements());
-		var varDecl=getTempParser("var %s:%s%n".formatted(variableName,commonExpType)).var_decl();
-		VisitorPool.declarationVisitor.visit(varDecl);
-		IValuable lastValue=new Nil();
-		for(var element: listable)
-		{
-			lastValue=NuttInterpreter.currentScope.setReference(variableName.getValue(),element.getValue()).getValue();
-			NuttInterpreter.executeBlockAsScope(()->visitBlock(ctx));
-		}
-		return lastValue.toAnonymousReference();
-	}
-
-	//	@Override
-	//	public NuttReference visitLoopStatement(Nutt.LoopStatementContext ctx)
-	//	{
-	//		return super.visitLoopStatement(ctx);
-	//	}
-
-	private NuttReference forEachOnExpList(List<ExpContext> expList,String variableName,BlockContext block,NuttEvalVisitor evaluator)
-	{
-		var iteratorDecl="var %s:%s%n".formatted(variableName,TypeInferencer.getTypeTreeRoot());
-		VisitorPool.declarationVisitor.visit(getTempParser(iteratorDecl).var_decl());
-		List<NuttReference> valueList=new ArrayList<>();
-		for(var exp: expList)
-		{
-			valueList.add(NuttInterpreter.currentScope.setReference(variableName.getValue(),evaluator.visit(exp).getValue()));
-			NuttInterpreter.executeBlockAsScope(()->visitBlock(block));
-		}
-		return new Array(valueList).toAnonymousReference();
-	}
-
-	public NuttReference tryYield(BlockContext functionBody,Type expectedType)
-	{
-		try
-		{
-			visitBlock(functionBody);
-		}
-		catch(NuttSuccessReturnException e)
-		{
-			var yieldedType=e.getReference().getType();
-			if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(expectedType),TypeInferencer.findTypeReference(yieldedType)))
-				throw new RuntimeException("Yielded %s, expected %s".formatted(expectedType,yieldedType));
-			NuttInterpreter.forget("yield");
-			return e.getReference();
-		}
-		return NilReference.getInstance();
-	}
-}
+//package Nutt.Visitors;
+//
+//import Nutt.Exceptions.*;
+//import Nutt.ModuleLoader;
+//import Nutt.NuttEnvironment;
+//import Nutt.NuttInterpreter;
+//import Nutt.TypeInferencer;
+//import Nutt.Types.Functional.Listable.Array.Array;
+//import Nutt.Types.Functional.Listable.IListable;
+//import Nutt.Types.Functional.Listable.String.String;
+//import Nutt.Types.Functional.Type.Type;
+//import Nutt.Types.IValuable;
+//import Nutt.Types.Nil;
+//import com.google.common.collect.Lists;
+//import org.antlr.v4.runtime.tree.ParseTree;
+//import org.antlr.v4.runtime.tree.TerminalNode;
+//
+//import java.util.ArrayList;
+//import java.util.List;
+//import java.util.function.Supplier;
+//
+//import static gen.Nutt.*;
+//
+//public class NuttStatementVisitor extends NuttGenericVisitor<IValuable>
+//{
+//	@Override
+//	public String visitModule_start(Module_startContext ctx)
+//	{
+//		var moduleName=new ModuleLoader().getFullModuleName(ctx.module_name());
+//		NuttInterpreter.moduleNames.add(moduleName);
+//		return new String(moduleName);
+//	}
+//
+//	@Override
+//	public String visitModule_name(Module_nameContext ctx)
+//	{
+//		var packageList=ctx.NAME().stream().map(TerminalNode::getText).toList();
+//		return new String(java.lang.String.join("\\\\",packageList));
+//	}
+//
+//	@Override
+//	public String visitModule_import(Module_importContext ctx)
+//	{
+//		new ModuleLoader().importModuleContext(ctx,this);
+//		return new String();
+//	}
+//
+//	@Override
+//	public String visitBlock(BlockContext ctx)
+//	{
+//		NuttInterpreter.executeBlockAsScope
+//				               (
+//						               ()->
+//						               {
+//							               IValuable ret=new Nil();
+//							               for(var stat: ctx.stat()) ret=visit(stat);
+//							               return ret;
+//						               }
+//				               );
+//		return new String();
+//	}
+//
+//	@Override public IValuable visitAlias_decl(Alias_declContext ctx)
+//	{
+//		return VisitorsPool.declarationVisitor.visitAlias_decl(ctx);
+//	}
+//
+//	//	@Override public String visitModule(Nutt.ModuleContext ctx)
+//	//	{
+//	//		visitModule_start(ctx.module_start());
+//	//		for(var i: ctx.module_import()) visitModule_import(i);
+//	//		visitBlock(ctx.block());
+//	//		return "";
+//	//	}
+//
+//	@Override public IValuable visitDo_if_stat(Do_if_statContext ctx)
+//	{
+//		var cond=VisitorsPool.conditionVisitor.visit(ctx.exp()).asFunctional().asBoolean();
+//		if(cond.isTrue()) return visit(ctx.stat());
+//		return new Nil();
+//	}
+//
+//	@Override public IValuable visitDo_if_not_stat(Do_if_not_statContext ctx)
+//	{
+//		var cond=VisitorsPool.conditionVisitor.visit(ctx.exp()).asFunctional().asBoolean();
+//		if(!cond.isTrue()) return visit(ctx);
+//		return new Nil();
+//	}
+//
+//	@Override public IValuable visitDo_done_block_stat(Do_done_block_statContext ctx)
+//	{
+//		return visit(ctx.do_done_block().block());
+//	}
+//
+//	@Override public IValuable visitIf_then_else_block_stat(If_then_else_block_statContext ctx)
+//	{
+//		var block=ctx.if_then_else_block();
+//		var pred=VisitorsPool.conditionVisitor.visit(block.exp()).asFunctional().asBoolean();
+//		if(pred.isTrue()) return visitBlock(block.then_block().block());
+//		var elseBlock=block.else_block();
+//		return elseBlock!=null?visitBlock(elseBlock.block()):new String();
+//	}
+//
+//	@Override
+//	public String visitType_def_stat(Type_def_statContext ctx)
+//	{
+//		var stringExtractor=VisitorsPool.stringVisitor;
+//		var derivedType=stringExtractor.extractTypeName(ctx.type_def().derived_type);
+//		if(TypeInferencer.hasType(derivedType))
+//			throw new NuttTypeIsDeclaredException(derivedType);
+//		var childrenTypes=ctx.type_def().children.type_param().stream().map(NuttEnvironment::toSourceCode).toList();
+//		var extractedType=stringExtractor.extractTypeName(ctx.type_def().parent_type);
+//		var parentType=extractedType==null?"Type":extractedType;
+//		//NuttInterpreter.currentScope.addLocalType(derivedType,parentType,childrenTypes);
+//		TypeInferencer.addCustomType(derivedType,parentType,childrenTypes);
+//		return new String(derivedType);
+//	}
+//
+//	@Override public IValuable visitExec_stat(Exec_statContext ctx)
+//	{
+//		return visit(NuttEnvironment.getTempParser(new NuttEvalVisitor().visit(ctx.exp()).toString()).stat());
+//	}
+//
+//	@Override public IValuable visitReturn_stat(Return_statContext ctx)
+//	{
+//		throw new NuttSuccessReturnException(VisitorsPool.evalVisitor.visit(ctx.function_return().exp()));
+//	}
+//
+//	@Override
+//	public String visitYield_stat(Yield_statContext ctx)
+//	{
+//		throw new NuttSuccessReturnException(VisitorsPool.evalVisitor.visit(ctx.function_yield().explist()));
+//		//return new NuttFunctionVisitor(interpreter).visitFunction_yield();
+//	}
+//
+//	@Override public IValuable visitRecord_def_stat(Record_def_statContext ctx)
+//	{
+//		return VisitorsPool.declarationVisitor.visitRecord_def(ctx.record_def());
+//	}
+//
+//	@Override
+//	public IValuable visitBreak_stat(Break_statContext ctx)
+//	{
+//		throw new NuttBreakException();
+//	}
+//
+//	@Override
+//	public IValuable visitContinue_stat(Continue_statContext ctx)
+//	{
+//		throw new NuttContinueException();
+//	}
+//
+//	@Override public IValuable visitExit_stat(Exit_statContext ctx)
+//	{
+//		throw new NuttExitException();
+//	}
+//
+//	@Override
+//	public IValuable visitGroup_assignment(Group_assignmentContext ctx)
+//	{
+//		return VisitorsPool.assignmentVisitor.visitGroup_assignment(ctx);
+//	}
+//
+//	@Override
+//	public IValuable visitFunctiondef_stat(Functiondef_statContext ctx)
+//	{
+//		return VisitorsPool.declarationVisitor.visitFunctiondef_stat(ctx);
+//	}
+//
+//	@Override
+//	public IValuable visitComposed_assign(Composed_assignContext ctx)
+//	{
+//		var variableName=ctx.NAME().getText();
+//		var operator=NuttEnvironment.toSourceCode(ctx.operator_composed().composed_assign_op().operator_infix());
+//		Supplier<java.lang.String> normalize=()->"%s=%s%s%s".formatted(
+//				variableName,variableName,operator,NuttEnvironment.toSourceCode(ctx.operator_composed().exp()));
+//		return visitGroup_assignment(NuttEnvironment.getTempParser(normalize.get()).group_assignment());
+//	}
+//
+//	@Override
+//	public IValuable visitSelf_assign(Self_assignContext ctx)
+//	{
+//		var variableName=ctx.NAME().getText();
+//		var firstOp=NuttEnvironment.toSourceCode(ctx.operator_postfix().operator_math(0));
+//		var secondOp=NuttEnvironment.toSourceCode(ctx.operator_postfix().operator_math(1));
+//		var postfixOperator=firstOp+secondOp;
+//		var stepIsOne=postfixOperator.equals("++")||postfixOperator.equals("--");
+//		var normalize="%s=%s%s%s".formatted(variableName,variableName,firstOp,stepIsOne?"1":variableName);
+//		return visitGroup_assignment(NuttEnvironment.getTempParser(normalize).group_assignment());
+//	}
+//
+//	@Override
+//	public Nil visitForget(ForgetContext ctx)
+//	{
+//		if(ctx.KW_All()!=null) NuttInterpreter.forgetAll();
+//		NuttInterpreter.forgetList(ctx.flat_name_list().NAME().stream().map(ParseTree::getText).toList());
+//		return new Nil();
+//	}
+//
+//	@Override
+//	public IValuable visitLoop(LoopContext ctx)
+//	{
+//		if(ctx.for_each_loop()!=null) return visitFor_each_loop(ctx.for_each_loop());
+//		if(ctx.while_do_loop()!=null) return visitWhile_do_loop(ctx.while_do_loop());
+//		if(ctx.repeat_until_loop()!=null) return visitRepeat_until_loop(ctx.repeat_until_loop());
+//		return super.visitLoop(ctx);
+//	}
+//
+//	@Override
+//	public IValuable visitFor_each_loop(For_each_loopContext ctx)
+//	{
+//		var elementName=new String(ctx.val.getText());
+//		var bDirectionIsForward=ctx.op_direction().OP_Forward()!=null;
+//		var expList=bDirectionIsForward?ctx.explist().exp():Lists.reverse(ctx.explist().exp());
+//		var evaluator=VisitorsPool.evalVisitor;
+//		IValuable lastValue;
+//		var block=NuttEnvironment.getTempParser("do %s done".formatted(NuttEnvironment.toSourceCode(ctx.stat()))).block();
+//		if(expList.size()==1)
+//		{
+//			var exp=evaluator.visit(expList.get(0));
+//			if(TypeInferencer.findType("Listable").findChild(exp.getType())==null)
+//				throw new RuntimeException("Cannot iterate over "+exp.getType());
+//			var listable=exp.asFunctional().asListable();
+//			lastValue=forEachOnIListable(bDirectionIsForward?listable:
+//			                             listable.setElements(Lists.reverse(listable.getElements())),
+//			                             elementName,
+//			                             block);
+//		}
+//		else lastValue=forEachOnExpList(expList,elementName,block,evaluator);
+//		NuttInterpreter.currentScope.forgetVariable(elementName.toString());
+//		return lastValue;
+//	}
+//
+//	@Override
+//	public String visitWhile_do_loop(While_do_loopContext ctx)
+//	{
+//		var conditionVisitor=VisitorsPool.conditionVisitor;
+//		var whileBlock=NuttEnvironment.parseWithBound("do ",ctx.stat()," done").block();
+//		whileLoop:
+//		while(conditionVisitor.visitExplist(ctx.explist()).isTrue())
+//		{
+//			for(var stat: whileBlock.children)
+//			{
+//				try
+//				{
+//					visit(stat);
+//				}
+//				catch(NuttBreakException e)
+//				{
+//					break whileLoop;
+//				}
+//				catch(NuttContinueException e)
+//				{
+//					continue whileLoop;
+//				}
+//			}
+//		}
+//		return new String();
+//	}
+//
+//	@Override
+//	public IValuable visitTry_catch(Try_catchContext ctx)
+//	{
+//		var tryBranch=ctx.try_branch;
+//		var catchBranch=ctx.catch_branch;
+//		try
+//		{
+//			visit(tryBranch);
+//		}
+//		catch(Exception tryException)
+//		{
+//			try
+//			{
+//				visit(catchBranch);
+//			}
+//			catch(Exception catchException)
+//			{
+//				if(catchException instanceof NuttSuccessReturnException)
+//					throw catchException;
+//				throw new RuntimeException("Fail on catch!",catchException);
+//			}
+//		}
+//		return new Nil();
+//	}
+//
+//	@Override
+//	public IValuable visitDemand(DemandContext ctx)
+//	{
+//		if(!VisitorsPool.conditionVisitor.visitDemand(ctx).isTrue())
+//			throw new RuntimeException("Fail on demand: "+NuttEnvironment.toSourceCode(ctx.exp()));
+//		return new Nil();
+//	}
+//
+//	@Override
+//	public IValuable visitVar_decl(Var_declContext ctx)
+//	{
+//		return VisitorsPool.declarationVisitor.visitVar_decl(ctx);
+//	}
+//
+//	@Override
+//	public IValuable visitFunc_call_exp(Func_call_expContext ctx)
+//	{
+//		try
+//		{
+//			VisitorsPool.functionVisitor.visitFunc_call_exp(ctx);
+//			return new Nil();
+//		}
+//		catch(NuttSuccessReturnException e)
+//		{
+//			return new String(e.getValue());
+//		}
+//	}
+//
+//	@Override public IValuable visitFunctioncall_stat(Functioncall_statContext ctx)
+//	{
+//		try
+//		{
+//			return VisitorsPool.functionVisitor.runStaticFunction(ctx);
+//		}
+//		catch(NuttSuccessReturnException e)
+//		{
+//			return new Nil();
+//		}
+//	}
+//
+//	private IValuable forEachOnIListable(IListable listable,String variableName,BlockContext ctx)
+//	{
+//		var commonExpType=TypeInferencer.getCommonIValuableWrapperType(listable.getElements());
+//		var varDecl=NuttEnvironment.getTempParser("var %s:%s%n".formatted(variableName,commonExpType)).var_decl();
+//		VisitorsPool.declarationVisitor.visit(varDecl);
+//		IValuable lastValue=new Nil();
+//		for(var element: listable)
+//		{
+//			lastValue=NuttInterpreter.currentScope.setVariable(variableName.getValue(),element).valuable;
+//			NuttInterpreter.executeBlockAsScope(()->visitBlock(ctx));
+//		}
+//		return lastValue;
+//	}
+//
+//	//	@Override
+//	//	public String visitLoopStatement(Nutt.LoopStatementContext ctx)
+//	//	{
+//	//		return super.visitLoopStatement(ctx);
+//	//	}
+//
+//	private IValuable forEachOnExpList(List<ExpContext> expList,String variableName,BlockContext block,NuttEvalVisitor evaluator)
+//	{
+//		var iteratorDecl="var %s:%s%n".formatted(variableName,TypeInferencer.getTypeTreeRoot());
+//		VisitorsPool.declarationVisitor.visit(NuttEnvironment.getTempParser(iteratorDecl).var_decl());
+//		List<IValuable> valueList=new ArrayList<>();
+//		for(var exp: expList)
+//		{
+//			valueList.add(NuttInterpreter.currentScope.setVariable(variableName.getValue(),evaluator.visit(exp)).valuable);
+//			NuttInterpreter.executeBlockAsScope(()->visitBlock(block));
+//		}
+//		return new Array(valueList);
+//	}
+//
+//	public IValuable tryYield(BlockContext functionBody,Type expectedType)
+//	{
+//		try
+//		{
+//			visitBlock(functionBody);
+//		}
+//		catch(NuttSuccessReturnException e)
+//		{
+//			var yieldedType=e.getValue().getType();
+//			if(!TypeInferencer.verdict(expectedType,yieldedType))
+//				throw new RuntimeException("Yielded %s, expected %s".formatted(expectedType,yieldedType));
+//			NuttInterpreter.forget("yield");
+//			return e.getValue();
+//		}
+//		//throw new RuntimeException("Cannot yield from%n`%s`".formatted(NuttEnvironment.toSourceCode(functionBody)));
+//		return new Nil();
+//	}
+//}

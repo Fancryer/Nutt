@@ -1,7 +1,7 @@
 package Nutt.Types.Functional.Listable.String;
 
-import Nutt.Interpreter.References.AnonymousNuttReference;
-import Nutt.Interpreter.References.NuttReference;
+import Nutt.Interpreter.AnonymousNuttReference;
+import Nutt.Interpreter.NuttReference;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
@@ -84,9 +84,9 @@ public class String implements IListable
 	}
 
 	@Override
-	public NuttReference getAt(NuttReference index)
+	public String getAt(NuttReference index)
 	{
-		return getAt(index.getMutable().get().asFunctional().asNumerable().asInt().getValue().intValue()).toAnonymousReference();
+		return getAt(index.getMutable().get().asFunctional().asNumerable().asInt().getValue().intValue());
 	}
 
 	@Override
@@ -109,9 +109,9 @@ public class String implements IListable
 				);
 	}
 
-	@Override public String setElements(List<NuttReference> elements)
+	@Override public String setElements(List<? extends IValuable> elements)
 	{
-		this.content=elements.stream().map(reference->reference.getValue().toString()).collect(Collectors.joining());
+		this.content=elements.stream().map(IValuable::toString).collect(Collectors.joining());
 		return this;
 	}
 
@@ -143,9 +143,14 @@ public class String implements IListable
 		};
 	}
 
-	@Override public String addAll(IListable listable)
+	@Override public String addAll(IValuable valuable)
 	{
-		return new String(content+listable.map(Objects::toString).collect(Collectors.joining()));
+		var newContent=content+valuable.spread()
+		                               .getElements()
+		                               .stream()
+		                               .map(Objects::toString)
+		                               .collect(Collectors.joining());
+		return new String(newContent);
 	}
 
 	public String getAt(int index)

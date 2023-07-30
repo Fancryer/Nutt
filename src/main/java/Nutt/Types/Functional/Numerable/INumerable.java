@@ -1,8 +1,8 @@
 package Nutt.Types.Functional.Numerable;
 
 import Nutt.Types.Functional.IFunctional;
-import Nutt.Types.Functional.Numerable.Float.Float;
 import Nutt.Types.Functional.Numerable.Int.Int;
+import Nutt.Types.Functional.Numerable.Float.Float;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import ch.obermuhlner.math.big.BigRational;
 
@@ -11,7 +11,7 @@ import java.math.MathContext;
 
 public interface INumerable extends IFunctional
 {
-	MathContext longMathContext=MathContext.UNLIMITED;//new MathContext(2_147_483_647);
+	static final MathContext longMathContext=MathContext.UNLIMITED;//new MathContext(2_147_483_647);
 
 	static INumerable sub(INumerable left,INumerable right)
 	{
@@ -45,13 +45,6 @@ public interface INumerable extends IFunctional
 		return left;
 	}
 
-	private BigDecimal toBigDecimal()
-	{
-		return this.asFloat().asBigDecimal();
-	}
-
-	Float asFloat();
-
 	static INumerable decr(INumerable a)
 	{
 		return add(a,new Int(-1));
@@ -84,13 +77,6 @@ public interface INumerable extends IFunctional
 		return applyTriFunction(left,BigDecimal::remainder,right);
 	}
 
-	static INumerable applyTriFunction(INumerable l,
-	                                   Nutt.Runtime.TriFunction<BigDecimal,BigDecimal,MathContext,Number> infixFunction,
-	                                   INumerable r)
-	{
-		return fromString(infixFunction.apply(l.toBigDecimal(),r.toBigDecimal(),longMathContext).toString());
-	}
-
 	static INumerable intDiv(INumerable left,INumerable right)
 	{
 		return applyTriFunction(left,(l,r,ctx)->l.divideToIntegralValue(r).toBigInteger(),right);
@@ -119,20 +105,34 @@ public interface INumerable extends IFunctional
 		return applyTriFunction(left,BigDecimalMath::pow,right);
 	}
 
-	default boolean isBoolean()
+	static INumerable applyTriFunction(INumerable l,
+	                                   Nutt.Runtime.TriFunction<BigDecimal,BigDecimal,MathContext,Number> infixFunction,
+	                                   INumerable r)
+	{
+		return fromString(infixFunction.apply(l.toBigDecimal(),r.toBigDecimal(),longMathContext).toString());
+	}
+
+	private BigDecimal toBigDecimal()
+	{
+		return this.asFloat().asBigDecimal();
+	}
+
+	public boolean isBoolean()
 	{
 		return !isInt()&&!isFloat();
 	}
 
-	boolean isInt();
+	abstract public boolean isInt();
 
-	boolean isFloat();
+	abstract public boolean isFloat();
 
-	@Override Number getValue();
+	@Override abstract public Number getValue();
 
-	Int asInt();
+	@Override abstract public void setValue(Number value);
 
-	@Override INumerable replicate();
+	abstract Int asInt();
 
-	Boolean asBoolean();
+	abstract Float asFloat();
+
+	@Override abstract public INumerable replicate();
 }

@@ -1,8 +1,6 @@
 package Nutt.Exceptions;
 
-import lombok.Getter;
-
-@Getter public class NuttConstantVariableWriteException extends UnsupportedOperationException
+public class NuttConstantVariableWriteException extends UnsupportedOperationException
 {
 	private final String variableName;
 	private final Object attemptedValue;
@@ -12,5 +10,15 @@ import lombok.Getter;
 		super("Cannot write value to constant variable: "+variableName+" = "+attemptedValue);
 		this.variableName=variableName;
 		this.attemptedValue=attemptedValue;
+	}
+
+	public String getVariableName()
+	{
+		return variableName;
+	}
+
+	public Object getAttemptedValue()
+	{
+		return attemptedValue;
 	}
 }

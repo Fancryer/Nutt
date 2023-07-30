@@ -43,7 +43,7 @@ stat: demand #demandStat
     | annotation_decl #annotation_decl_stat
     | forget #forget_stat
     | functiondef #functiondef_stat
-    | name=exp (KW_With using_in_call)? Brace_Paren_Left arguments=explist? Brace_Paren_Right #functioncall_stat
+    | name=exp using_in_call? Brace_Paren_Left arguments=explist? Brace_Paren_Right #functioncall_stat
     | do_done_block #do_done_block_stat
     | loop #loop_stat
     | composed_assign #composed_assign_stat
@@ -132,7 +132,7 @@ loop: for_each_loop
     | while_do_loop
     | repeat_until_loop;
 
-for_each_loop: KW_For ind=(NAME|OP_Underscore) (Comma val=(NAME|OP_Underscore))? op_direction explist stat;
+for_each_loop: KW_For ind=NAME (Comma val=NAME)? op_direction explist stat;
 
 op_direction: OP_Forward
 	| OP_Backward;
@@ -153,9 +153,7 @@ annotation: AtSign NAME (Brace_Paren_Left record_element_list Brace_Paren_Right)
 
 var_signature: NAME by_type=by_type_var_decl? by_value=by_value_var_decl?;
 
-var_decl: scope_qualifier? constant_qualifier var_signature_list | alias_decl;
-
-scope_qualifier: KW_Global | KW_Outer Brace_Paren_Left exp Brace_Paren_Right;
+var_decl: constant_qualifier var_signature_list | alias_decl;
 
 constant_qualifier: KW_Var | KW_Val;
 
@@ -195,7 +193,7 @@ exp: NAME #explicit_variable
     | local_funct #function_definition_exp
     | operator_prefix exp #prefix_exp
     | left=exp operator_infix right=exp #infix_exp
-    | name=exp (KW_With using_in_call)? Brace_Paren_Left arguments=explist? Brace_Paren_Right #func_call_exp
+    | name=exp using_in_call? Brace_Paren_Left arguments=explist? Brace_Paren_Right #func_call_exp
     | op=operator_infix Brace_Paren_Left arguments=explist? Brace_Paren_Right #op_call_exp
     | left=exp BackTick used=NAME BackTick right=exp #using_exp
     | left=exp (in=KW_In | not_in=KW_Not_In) right=exp #contains_exp
@@ -260,7 +258,7 @@ string: Normal_string
 
 operator: BackTick operator_infix BackTick;
 
-using_in_call: Brace_Curly_Left overloading_operator (Comma overloading_operator)* Brace_Curly_Right;
+using_in_call: Brace_Curly_Left overloading_operator Brace_Curly_Right;
 
 var_signature_list: vararg_or_signature (Comma vararg_or_signature)*;
 vararg_or_signature: OP_Pass? var_signature;

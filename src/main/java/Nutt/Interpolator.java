@@ -11,7 +11,7 @@ public class Interpolator
 		//				.content()
 		//				.stream()
 		//				.map(content->String.valueOf(content.interp()!=null
-		//				                             ?VisitorPool.evalVisitor.visit(NuttEnvironment.parseAsSource(content.interp()).exp())
+		//				                             ?VisitorsPool.evalVisitor.visit(NuttEnvironment.parseAsSource(content.interp()).exp())
 		//				                             :content
 		//						                             .chars()
 		//						                             .Char()

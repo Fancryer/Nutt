@@ -1,15 +1,11 @@
 package Nutt.Interpreter;
 
-import Nutt.Interpreter.References.NuttReference;
-import Nutt.Types.IValuable;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Getter public class ReferenceContainer
+public class ReferenceContainer
 {
 	private final List<NuttReference> references;
 
@@ -23,6 +19,19 @@ import java.util.Set;
 		this.references=references;
 	}
 
+	public List<NuttReference> getReferences()
+	{
+		return references;
+	}
+
+	public NuttReference get(String name)
+	{
+		return references.stream()
+		                 .filter(reference->reference.getName().equals(name))
+		                 .findFirst()
+		                 .orElse(null);
+	}
+
 	public NuttReference get(int index)
 	{
 		return references.get(index);
@@ -34,14 +43,6 @@ import java.util.Set;
 		var reference=get(name);
 		references.remove(reference);
 		return reference;
-	}
-
-	public NuttReference get(String name)
-	{
-		return references.stream()
-		                 .filter(reference->reference.getName().equals(name))
-		                 .findFirst()
-		                 .orElse(null);
 	}
 
 	public NuttReference remove(int index)
@@ -60,13 +61,5 @@ import java.util.Set;
 	{
 		references.add(reference);
 		return this;
-	}
-
-	public NuttReference get(IValuable valuable)
-	{
-		return references.stream()
-		                 .filter(reference->reference.getMutable().get().equals(valuable))
-		                 .findFirst()
-		                 .orElseThrow();
 	}
 }

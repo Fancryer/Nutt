@@ -1,32 +1,31 @@
-package Nutt.Visitors;
-
-import Nutt.Interpreter.References.AnonymousNuttReference;
-import Nutt.Interpreter.References.NuttReference;
-import Nutt.Types.Functional.Numerable.Boolean;
-import gen.Nutt.*;
-public class NuttCompareVisitor extends NuttGenericVisitor
-{
-	@Override
-	public NuttReference visitInfix_exp(Infix_expContext ctx)
-	{
-		var evaluator=VisitorPool.evalVisitor;
-		NuttReference left=evaluator.visit(ctx.left), right=evaluator.visit(ctx.right);
-		var operator=ctx.operator_infix().default_infix_operator().operator_comparison().getText();
-		var result=new Boolean
-				(
-						switch(operator)
-						{
-							case "<" -> left.getValue().lessThan(right.getValue());
-							case "<=" -> left.getValue().lessEqualTo(right.getValue());
-							case "==" -> left.getValue().similarTo(right.getValue());
-							case "===" -> left.getValue().equalTo(right.getValue());
-							case "!=" -> left.getValue().notSimilarTo(right.getValue());
-							case "!==" -> left.getValue().notEqualTo(right.getValue());
-							case ">" -> left.getValue().greaterTo(right.getValue());
-							case ">=" -> left.getValue().greaterEqualTo(right.getValue());
-							default -> throw new RuntimeException();
-						}
-				);
-		return AnonymousNuttReference.of(result);
-	}
-}
+//package Nutt.Visitors;
+//
+//import Nutt.Types.Functional.Numerable.Boolean;
+//import Nutt.Types.IValuable;
+//import gen.Nutt.Infix_expContext;
+//
+//public class NuttCompareVisitor extends NuttGenericVisitor<Boolean>
+//{
+//	@Override
+//	public Boolean visitInfix_exp(Infix_expContext ctx)
+//	{
+//		var evaluator=VisitorsPool.evalVisitor;
+//		IValuable left=evaluator.visit(ctx.left), right=evaluator.visit(ctx.right);
+//		var operator=ctx.operator_infix().default_infix_operator().operator_comparison().getText();
+//		return new Boolean
+//				(
+//						switch(operator)
+//						{
+//							case "<" -> left.lessThan(right);
+//							case "<=" -> left.lessEqualTo(right);
+//							case "==" -> left.similarTo(right);
+//							case "===" -> left.equalTo(right);
+//							case "!=" -> left.notSimilarTo(right);
+//							case "!==" -> left.notEqualTo(right);
+//							case ">" -> left.greaterTo(right);
+//							case ">=" -> left.greaterEqualTo(right);
+//							default -> throw new RuntimeException();
+//						}
+//				);
+//	}
+//}

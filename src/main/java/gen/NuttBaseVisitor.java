@@ -1,4 +1,4 @@
-// Generated from G:/Nutt/src/main/java\Nutt.g4 by ANTLR 4.12.0
+// Generated from E:/Nutt/src/main/java\Nutt.g4 by ANTLR 4.12.0
 package gen;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
@@ -593,13 +593,6 @@ public class NuttBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements N
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitVar_decl(Nutt.Var_declContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitScope_qualifier(Nutt.Scope_qualifierContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

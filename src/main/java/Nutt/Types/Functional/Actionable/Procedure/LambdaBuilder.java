@@ -1,14 +1,16 @@
 package Nutt.Types.Functional.Actionable.Procedure;
 
-import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttEnvironment;
 import Nutt.TypeInferencer;
+import Nutt.Types.IValuable;
+
+import java.security.Signature;
 
 public class LambdaBuilder
 {
 	private Signature signature;
 	private String lambdaExp;
-	private NuttReference output=TypeInferencer.findTypeReference("Nil");
+	private IValuable output=TypeInferencer.findTypeReference("Nil");
 
 	public LambdaBuilder setSignature(Signature signature)
 	{
@@ -22,7 +24,7 @@ public class LambdaBuilder
 		return this;
 	}
 
-	public LambdaBuilder setOutput(NuttReference output)
+	public LambdaBuilder setOutput(IValuable output)
 	{
 		this.output=output;
 		return this;

@@ -6,6 +6,16 @@ import Nutt.Types.Functional.Type.Type;
 
 public class Nil implements IValuable
 {
+	public Nil()
+	{
+		this(TypeInferencer.findTypeReference("Nil"),null,false);
+	}
+
+	public Nil(Type ceilType,IValuable valuable,boolean isConstant)
+	{
+		super(ceilType,valuable,isConstant);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -15,18 +25,18 @@ public class Nil implements IValuable
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference("Nil").getType();
+		return TypeInferencer.findTypeReference("Nil");
+	}
+
+	@Override public Array asElementsArray()
+	{
+		return new Array();
 	}
 
 	@Override
 	public Object getValue()
 	{
 		return "nil";
-	}
-
-	@Override public Array spread()
-	{
-		return new Array();
 	}
 
 	@Override
@@ -83,5 +93,10 @@ public class Nil implements IValuable
 	@Override public boolean isTrue()
 	{
 		return false;
+	}
+
+	@Override public Array spread()
+	{
+		return new Array();
 	}
 }

@@ -1,10 +1,11 @@
 package Nutt.Types.Functional.Listable.Set;
 
-import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
+import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
+import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class Set implements IListable
 {
-	private final java.util.Set<NuttReference> elements;
+	private final java.util.Set<IValuable> elements;
 	Type elementType;
 
 	public Set()
@@ -24,10 +25,10 @@ public class Set implements IListable
 		this(new HashSet<>());
 	}
 
-	public Set(java.util.Set<NuttReference> other)
+	public Set(java.util.Set<IValuable> other)
 	{
 		elements=new HashSet<>(other);
-		elementType=!elements.isEmpty()
+		elementType=elements.size()!=0
 		            ?getElements().get(0).getType()
 		            :TypeInferencer.findTypeReference("Nil").getType();
 	}
@@ -42,7 +43,6 @@ public class Set implements IListable
 	public String toString()
 	{
 		return "{%s}".formatted(NuttCommon.removeFirstAndLastChars(elements.stream()
-		                                                                   .map(NuttReference::getValue)
 		                                                                   .map(IValuable::getValue)
 		                                                                   .toList()
 		                                                                   .toString()));
@@ -51,6 +51,85 @@ public class Set implements IListable
 	@Override public Set replicate()
 	{
 		return new Set(elements);
+	}
+
+	@Override
+	public Set add(IValuable value)
+	{
+		var ret=new HashSet<>(elements);
+		ret.add(value);
+		return new Set(ret);
+	}
+
+	@Override
+	public IValuable getAt(IValuable index)
+	{
+		if(!(index instanceof Int intIndex)) throw new RuntimeException();
+		return asList().get(intIndex.asLong()
+		                            .intValue());
+	}
+
+	@Override
+	public Set setAt(IValuable value,IValuable index)
+	{
+		if(!(index instanceof Int intIndex)) throw new RuntimeException();
+		var list=asList();
+		list.set(intIndex.asLong()
+		                 .intValue(),value);
+		return new Set(new HashSet<>(list));
+	}
+
+	@Override
+	public List<IValuable> getElements()
+	{
+		return asList();
+	}
+
+	private List<IValuable> asList()
+	{
+		return new ArrayList<>(elements);
+	}
+
+	@Override
+	public IListable setElements(List<IValuable> elements)
+	{
+		return null;
+	}
+
+	//	@Override
+	//	public IValuable insertAt(IValuable value,int i)
+	//	{
+	//		var list=asList();
+	//		list.add(i,value);
+	//		return new Set(new HashSet<>(list));
+	//	}
+
+	@Override
+	public Type getElementType()
+	{
+		return elementType;
+	}
+
+	@Override
+	public Iterator<IValuable> iterator()
+	{
+		return elements.iterator();
+	}
+
+	@Override public IListable addAll(IValuable valuable)
+	{
+		return null;
+	}
+
+	@Override public String setValue(java.util.Set<IValuable> value)
+	{
+		return null;
+	}
+
+	@Override
+	public Boolean asBoolean()
+	{
+		return new Boolean(!elements.isEmpty());
 	}
 
 	@Override public boolean lessThan(IValuable value)
@@ -72,11 +151,6 @@ public class Set implements IListable
 	@Override public boolean greaterTo(IValuable value)
 	{
 		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)>0;
-	}	public Set add(NuttReference reference)
-	{
-		var ret=new HashSet<>(elements);
-		ret.add(reference);
-		return new Set(ret);
 	}
 
 	@Override public boolean lessEqualTo(IValuable value)
@@ -108,22 +182,6 @@ public class Set implements IListable
 	public Type getType()
 	{
 		return TypeInferencer.findTypeReference("Set").getType();
-	}	@Override
-	public NuttReference getAt(NuttReference index)
-	{
-		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
-		return asList().get(intIndex.asLong().intValue());
-	}
-
-	@Override
-	public java.util.Set<NuttReference> getValue()
-	{
-		return elements;
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
 	}
 
 	@Override
@@ -132,65 +190,14 @@ public class Set implements IListable
 		return new Array(getElementType(),getElements());
 	}
 
-	@Override public boolean isTrue()
-	{
-		return !elements.isEmpty();
-	}
-
-
-
 	@Override
-	public List<NuttReference> getElements()
+	public java.util.Set<IValuable> getValue()
 	{
-		return asList();
+		return elements;
 	}
 
-
-
-	private List<NuttReference> asList()
+	@Override public boolean notEqualTo(IValuable value)
 	{
-		return new ArrayList<>(elements);
-	}
-
-	@Override
-	public Type getElementType()
-	{
-		return elementType;
-	}
-
-	@Override
-	public Iterator<NuttReference> iterator()
-	{
-		return elements.iterator();
-	}
-
-	//	@Override
-	//	public IValuable insertAt(IValuable value,int i)
-	//	{
-	//		var list=asList();
-	//		list.add(i,value);
-	//		return new Set(new HashSet<>(list));
-	//	}
-
-	@Override
-	public Set setAt(NuttReference value,NuttReference index)
-	{
-		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
-		var list=asList();
-		list.set(intIndex.asLong()
-		                 .intValue(),value);
-		return new Set(new HashSet<>(list));
-	}
-
-	@Override
-	public IListable setElements(List<NuttReference> elements)
-	{
-		return this;
-	}
-
-	@Override public IListable addAll(IListable listable)
-	{
-		listable.forEach(this::add);
-		return this;
+		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
 	}
 }

@@ -1,23 +1,24 @@
 package Nutt.Types.Functional.Type;
 
-import Nutt.Interpreter.References.NuttReference;
+import Nutt.Interpreter.NuttReference;
 import Nutt.NuttCommon;
+import Nutt.ParseHelpers.Row;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.IValuable;
-import lombok.Getter;
 
 import java.util.*;
 
 public class Type implements IFunctional
 {
-	@Getter private final java.lang.String displayName;
+	private final java.lang.String displayName;
 	private final Map<java.lang.String,Procedure> operatorMap=new HashMap<>();
-	@Getter public Type parent;
+	public Type parent;
 	public List<Type> children=new ArrayList<>();
-	@Getter public List<Type> typeParameters;
+	public List<Type> typeParameters;
 
 	public Type(java.lang.String displayName)
 	{
@@ -61,22 +62,31 @@ public class Type implements IFunctional
 	public static NuttReference LowestCommonAncestor(NuttReference n1,NuttReference n2)
 	{
 		//Create a map to store ancestors of n1
-		Map<Type,java.lang.Boolean> ancestors=new HashMap<>();
+		Map<NuttReference,java.lang.Boolean> ancestors=new HashMap<>();
 		//Insert n1 and all its ancestors in map
 		while(n1!=null)
 		{
-			ancestors.put(n1.getType(),true);
-			n1=TypeInferencer.findTypeReference(n1.getType().parent);
-			System.out.println("|n1 = "+n1);
+			ancestors.put(n1,true);
+			n1=TypeInferencer.findParent(n1);
 		}
 		//Check if n2 or any of its ancestors in a map.
 		while(n2!=null)
 		{
-			if(ancestors.containsKey(n2.getType())!=ancestors.isEmpty()) return n2;
-			n2=TypeInferencer.findTypeReference(n2.getType().parent);
-			System.out.println("||n2 = "+n2);
+			if(ancestors.containsKey(n2)!=ancestors.isEmpty()) return n2;
+			n2=TypeInferencer.findParent(n2);
 		}
 		return null;
+	}
+
+	public Type getParent()
+	{
+		return parent;
+	}
+
+	public Type setParent(Type parent)
+	{
+		this.parent=parent;
+		return this;
 	}
 
 	public boolean hasChild(java.lang.String name)
@@ -105,6 +115,11 @@ public class Type implements IFunctional
 		return host;
 	}
 
+	public java.lang.String getDisplayName()
+	{
+		return displayName;
+	}
+
 	@Override public boolean isTrue()
 	{
 		return getLength()!=0;
@@ -120,6 +135,21 @@ public class Type implements IFunctional
 	public Type getType()
 	{
 		return this;
+	}
+
+	@Override public Array asElementsArray()
+	{
+		/*
+		{
+			{'name','name'},
+			{'children',{a,b,c}}
+		}
+		*/
+		var childrenAsRows=new ArrayList<Row>();
+		var nameAsArray=new Array(List.of(new String("name"),new String(displayName)));
+		var childrenAsArray=new Array(List.of(new String("children"),
+		                                      new Array("Type",children.stream().map(IValuable::asValuable).toList())));
+		return new Array("Valuable",List.of(nameAsArray,childrenAsArray));
 	}
 
 	@Override public java.lang.String toSerializedString()
@@ -139,11 +169,6 @@ public class Type implements IFunctional
 	@Override public Object getValue()
 	{
 		return null;
-	}
-
-	@Override public Array spread()
-	{
-		return new Array(children.stream().map(TypeInferencer::findTypeReference).toList());
 	}
 
 	@Override
@@ -169,6 +194,11 @@ public class Type implements IFunctional
 		return displayName;
 	}
 
+	public List<Type> getTypeParameters()
+	{
+		return typeParameters;
+	}
+
 	public Type addChild(java.lang.String typeName)
 	{
 		return addChild(new Type(typeName));
@@ -176,16 +206,7 @@ public class Type implements IFunctional
 
 	public Type addChild(Type child)
 	{
-		System.out.println("child = "+child);
-		child.setParent(this);
-		children.add(child);
-		return this;
-	}
-
-	public Type setParent(Type parent)
-	{
-		System.out.println("parent = "+parent);
-		this.parent=parent;
+		children.add(child.setParent(this));
 		return this;
 	}
 
@@ -338,6 +359,11 @@ public class Type implements IFunctional
 	@Override public boolean notEqualTo(IValuable value)
 	{
 		return false;
+	}
+
+	@Override public Array spread()
+	{
+		return new Array(children.stream().map(IValuable::asValuable).toList());
 	}
 
 	public Procedure getOperator(java.lang.String name)

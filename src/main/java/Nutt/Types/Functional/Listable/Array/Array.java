@@ -1,6 +1,6 @@
 package Nutt.Types.Functional.Listable.Array;
 
-import Nutt.Interpreter.References.NuttReference;
+import Nutt.Interpreter.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.IListable;
@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-public class Array implements IListable
+public class Array extends IListable<Int,IValuable>
 {
 	private final Type elementBoundType;
 	private final List<NuttReference> elements;
@@ -44,9 +44,18 @@ public class Array implements IListable
 		elements=valuables;
 	}
 
-	public Array(List<NuttReference> references)
+	public Array(List<NuttReference> valuables)
 	{
-		this(TypeInferencer.getCommonWrapperType(references).getType(),references);
+		this
+				(
+						TypeInferencer.getCommonWrapperType
+								              (
+										              valuables
+												              .stream()
+												              .toList()
+								              ).getType(),
+						valuables
+				);
 	}
 
 	public Array(Array array)
@@ -62,7 +71,7 @@ public class Array implements IListable
 	@Override
 	public Array add(NuttReference value)
 	{
-		if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(elementBoundType),TypeInferencer.findTypeReference(value.getType())))
+		if(!TypeInferencer.verdict(elementBoundType,value.getType()))
 			throw new ArrayStoreException("Array of '%s' cannot store '%s'".formatted(elementBoundType,value.getType()));
 		var ret=new ArrayList<>(elements);
 		ret.add(value);
@@ -70,13 +79,13 @@ public class Array implements IListable
 	}
 
 	@Override
-	public NuttReference getAt(NuttReference index)
+	public IValuable getAt(NuttReference index)
 	{
 		if(!(index.getMutable().get() instanceof Int intIndex)) throw new RuntimeException();
 		return getAt(intIndex.asLong().intValue());
 	}
 
-	public NuttReference getAt(int index)
+	public IValuable getAt(int index)
 	{
 		return elements.get(index);
 	}
@@ -117,15 +126,15 @@ public class Array implements IListable
 	}
 
 	@Override
-	public Iterator<NuttReference> iterator()
+	public Iterator<IValuable> iterator()
 	{
-		return spread().elements.iterator();
+		return asElementsArray().elements.iterator();
 	}
 
 	@Override
-	public Array spread()
+	public Spliterator<IValuable> spliterator()
 	{
-		return new Array(this);
+		return asElementsArray().elements.spliterator();
 	}
 
 	//	@Override
@@ -137,43 +146,25 @@ public class Array implements IListable
 	//		return new Array(elementBoundType,ret);
 	//	}
 
-	@Override
-	public void forEach(Consumer<? super NuttReference> action)
+	@Override public Array addAll(IValuable valuable)
 	{
-		elements.forEach(action);
-	}
-
-	@Override
-	public Spliterator<NuttReference> spliterator()
-	{
-		return spread().elements.spliterator();
-	}
-
-	@Override public Array addAll(IListable listable)
-	{
-		if
-		(
-				!TypeInferencer.verdict
-						               (
-								               TypeInferencer.findTypeReference(elementBoundType),
-								               TypeInferencer.findTypeReference(listable.getElementType())
-						               )
-		)
+		var right=valuable.asFunctional().asListable();
+		if(!TypeInferencer.verdict(elementBoundType,right.getElementType()))
 		{
 			throw new ArrayStoreException(
 					"'%s' cannot store '%s'".formatted(
 							getType().toSerializedString(),
-							listable.getType().toSerializedString()));
+							right.getType().toSerializedString()));
 		}
 		var ret=new ArrayList<>(elements);
-		ret.addAll(listable.getElements());
+		ret.addAll(right.getElements());
 		return new Array(elementBoundType,ret);
 	}
 
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference("Array").getType();
+		return TypeInferencer.findTypeReference("Array");
 	}
 
 	@Override public String toSerializedString()
@@ -181,10 +172,9 @@ public class Array implements IListable
 		var asEmpty="[]";
 		var asElements="[%s]".formatted(
 				NuttCommon.removeFirstAndLastChars(
-						elements.stream()
-						        .map(reference->reference.getValue().toSerializedString())
-						        .toList()
-						        .toString()));
+						this.map(IValuable::toSerializedString)
+						    .toList()
+						    .toString()));
 		return elements.isEmpty()
 		       ?asEmpty
 		       :asElements;
@@ -193,7 +183,24 @@ public class Array implements IListable
 	@Override
 	public List<IValuable> getValue()
 	{
-		return elements.stream().map(reference->reference.getMutable().get()).toList();
+		return elements;
+	}
+
+	@Override public Array setValue(Object value)
+	{
+		return this;
+	}
+
+	@Override
+	public Array asElementsArray()
+	{
+		return new Array(this);
+	}
+
+	@Override
+	public void forEach(Consumer<? super IValuable> action)
+	{
+		elements.forEach(action);
 	}
 
 	public void remove(int index)
@@ -207,14 +214,18 @@ public class Array implements IListable
 		var asEmpty="{}";
 		var asElements="{%s}".formatted(
 				NuttCommon.removeFirstAndLastChars(
-						elements.stream()
-						        .map(NuttReference::getValue)
-						        .map(IValuable::toString)
+						elements.stream().map(IValuable::toString)
 						        .toList()
 						        .toString()));
 		return elements.isEmpty()
 		       ?asEmpty
 		       :asElements;
+	}
+
+	@Override
+	public boolean canConsumeParameters(List<IValuable> iValuables)
+	{
+		return iValuables.size()<=1;
 	}
 
 	@Override public Array replicate()
@@ -223,9 +234,9 @@ public class Array implements IListable
 	}
 
 	@Override
-	public boolean isTrue()
+	public Boolean asBoolean()
 	{
-		return elements.isEmpty();
+		return new Boolean(elements.isEmpty());
 	}
 
 	@Override public boolean lessThan(IValuable value)
@@ -274,7 +285,7 @@ public class Array implements IListable
 		if(!TypeInferencer.typesEquals(getType(),value.getType())) return false;
 		var list=value.asFunctional().asListable().asArray().getValue();
 		if(list.size()!=getLength()) return false;
-		return IntStream.range(0,list.size()).allMatch(i->list.get(i).equalTo(elements.get(i).getValue()));
+		return IntStream.range(0,list.size()).allMatch(i->list.get(i).equalTo(elements.get(i)));
 	}
 
 	@Override public boolean notEqualTo(IValuable value)

@@ -5,26 +5,31 @@ import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
+import java.util.List;
+
 public class Boolean extends Int
 {
+	private boolean condition;
+
 	public Boolean()
 	{
-		this(false);
+		condition=false;
+	}
+
+	public Boolean(String value)
+	{
+		super(List.of("0","","false")
+		          .contains(value)?0:1);
+	}
+
+	public Boolean(Boolean other)
+	{
+		this(other.condition);
 	}
 
 	public Boolean(java.lang.Boolean value)
 	{
 		super(value?1:0);
-	}
-
-	public Boolean(String value)
-	{
-		this(fromString(value));
-	}
-
-	public Boolean(Boolean other)
-	{
-		this(other.asLong()==1);
 	}
 
 	public static Boolean fromString(String str)
@@ -40,14 +45,19 @@ public class Boolean extends Int
 				);
 	}
 
-	@Override public boolean isBoolean()
-	{
-		return true;
-	}
-
 	@Override public Number getValue()
 	{
-		return asLong();
+		return condition?1:0;
+	}
+
+	@Override public String toString()
+	{
+		return String.valueOf(condition);
+	}
+
+	@Override public Type getType()
+	{
+		return TypeInferencer.findTypeReference("Boolean");
 	}
 
 	@Override public Boolean replicate()
@@ -55,29 +65,21 @@ public class Boolean extends Int
 		return new Boolean(this);
 	}
 
-	@Override public String toString()
-	{
-		return String.valueOf(isTrue());
-	}
-
-	@Override public Type getType()
-	{
-		return TypeInferencer.findTypeReference("Boolean").getType();
-	}
-
 	public boolean isTrue()
 	{
-		return asLong()==1;
+		return condition;
 	}
 
 	@Override public boolean lessThan(IValuable value)
 	{
-		return !isTrue()&&value.isTrue();
+		var otherIsTrue=value.isTrue();
+		return !isTrue()&&otherIsTrue;
 	}
 
 	@Override public boolean greaterTo(IValuable value)
 	{
-		return isTrue()&&!value.isTrue();
+		var otherIsTrue=value.isTrue();
+		return isTrue()&&!otherIsTrue;
 	}
 
 	@Override public boolean lessEqualTo(IValuable value)
@@ -92,7 +94,8 @@ public class Boolean extends Int
 
 	@Override public boolean similarTo(IValuable value)
 	{
-		return isTrue()&&value.isTrue();
+		var otherIsTrue=value.isTrue();
+		return isTrue()&&otherIsTrue;
 	}
 
 	@Override public boolean notSimilarTo(IValuable value)
