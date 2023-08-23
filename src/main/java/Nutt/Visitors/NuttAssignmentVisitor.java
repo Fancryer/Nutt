@@ -26,7 +26,7 @@ public class NuttAssignmentVisitor extends NuttGenericVisitor
 		{
 			var variableName=NuttEnvironment.toSourceCode(variableContext);
 			var valueToAssign=expContexts.get(i);
-			System.out.printf("name: '%s', valueHash: '%s'%n",variableName,valueToAssign.getValue().hashCode());
+			//System.out.printf("name: '%s', valueHash: '%s'%n",variableName,valueToAssign.getValue().hashCode());
 
 			if(variableContext instanceof Explicit_variableContext)
 			{

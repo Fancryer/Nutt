@@ -11,6 +11,6 @@ public class NuttRecordOperatorNotImplementedException extends RuntimeException
 
 	public NuttRecordOperatorNotImplementedException(Type type,String operator)
 	{
-		this(type.getDisplayName(),operator);
+		this(type.getHeader().getDisplayName(),operator);
 	}
 }

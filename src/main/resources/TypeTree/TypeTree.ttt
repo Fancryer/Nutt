@@ -1,0 +1,22 @@
+Valuable:>
+	Nil,
+	Functional:>
+		Listable:>
+			String,
+			Array,
+			Map,
+			Set
+		|,
+		Numerable:>
+			Int:>Boolean,
+			Float
+		|,
+		Actionable:>
+			Procedure,
+			Task,
+			Event
+		|,
+		Record,
+		Type
+	|
+|

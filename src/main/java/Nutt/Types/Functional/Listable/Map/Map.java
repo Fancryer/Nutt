@@ -7,7 +7,6 @@ import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,15 +55,9 @@ public class Map implements IListable
 	}
 
 	@Override
-	public Object getValue()
+	public java.util.Map<NuttReference,NuttReference> getValue()
 	{
-		return "...";
-	}
-
-	@Override
-	public int getLength()
-	{
-		return elements.size();
+		return elements;
 	}
 
 	@Override public Map replicate()
@@ -161,51 +154,5 @@ public class Map implements IListable
 	public Array spread()
 	{
 		return new Array(getElementType(),asList());
-	}
-
-	@Override
-	public boolean isTrue()
-	{
-		return elements.isEmpty();
-	}
-
-	@Override public boolean lessThan(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return false;
 	}
 }

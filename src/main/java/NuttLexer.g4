@@ -61,13 +61,13 @@ KW_Imports: 'imports';
 KW_In: 'in' | '∈';
 KW_Infix: 'infix';
 KW_InstanceOf: 'instanceof';
-KW_Interface: 'interface';
 KW_Is: 'is';
 KW_Local: 'local';
 KW_Macro: 'macro';
 KW_Match: 'match';
 KW_Matched: 'matched';
 KW_Module: 'module';
+KW_Mut: 'mut';
 KW_New: 'new';
 KW_Nil: 'nil';
 KW_Not_In: OP_Not KW_In | '∉';
@@ -81,13 +81,17 @@ KW_Prefix: 'prefix';
 KW_Private: 'private';
 KW_Protected: 'protected';
 KW_Public: 'public';
+KW_Pure: 'pure';
 KW_Record: 'record';
 KW_Repeat: 'repeat';
 KW_Requires: 'requires';
 KW_Return: 'return';
 KW_Reverse: 'reverse';
+KW_Static: 'static';
 KW_Then: 'then';
+KW_This: 'this';
 KW_To: 'to';
+KW_Trait: 'trait';
 KW_True: 'true' | '⊤';
 KW_Try: 'try';
 KW_Type: 'type';
@@ -101,7 +105,9 @@ KW_With: 'with';
 KW_Yield: 'yield';
 LineComment: '//|' ~[\r\n]* -> skip;
 //NAME: [a-zA-Z_][a-zA-Z_0-9]*;
-NAME: Alpha (Alpha | Digit | OP_Underscore)* | OP_Underscore (Alpha | Digit | OP_Underscore)+;
+//NAME: AlphaLower (AlphaLower | DigitOrUnderscore)* | OP_Underscore (AlphaLower | DigitOrUnderscore)+;
+
+NAME: Alpha (Alpha | DigitOrUnderscore)* | OP_Underscore (Alpha | DigitOrUnderscore)+;
 
 fragment Alpha: AlphaLower | AlphaUpper;
 fragment AlphaLower: [a-z];
@@ -162,11 +168,15 @@ Op_Custom: DEFAULT_OP DEFAULT_OP+;
 Question: '?';
 SHEBANG: '#' '!' SingleLineInputCharacter* -> channel(HIDDEN);
 SemiColon: ';';
+
+//Type: (AlphaUpper AlphaLowerOrDigit* OP_Underscore?)* (AlphaUpper AlphaLowerOrDigit*)+;
+
 UtfEscape: '\\' 'u{' HexDigit+ '}';
-fragment Char: '\\\'' | ~['];
-fragment WChar: '\\"' | ~["];
+fragment AlphaLowerOrDigit: AlphaLower | Digit;
+fragment Char: ~['];
+fragment WChar: ~["];
 fragment Digit: [0-9];
-fragment DigitOrUnderscore: Digit | '_';
+fragment DigitOrUnderscore: Digit | OP_Underscore;
 fragment ExponentPart: [eE] [+-]? Digit+;
 fragment HexDigit: [0-9a-fA-F];
 fragment HexDigitOrUnderscore: HexDigit | '_';
@@ -178,6 +188,4 @@ fragment SingleLineInputCharacter: ~[\r\n\u0085\u2028\u2029];
 
 WS: [ \t\u000C\r\n]+ -> skip;
 
-WQuote: '"';
-
-Normal_string: WQuote WChar* WQuote;
+Normal_string: '"' WChar* '"';

@@ -29,7 +29,9 @@ module_name_or_group: module_name
 
 block: stat*;
 
-functiondef:KW_Funct flat_name_list funcbody;
+functiondef: KW_Funct flat_name_list funcbody;
+
+funct_modifier: KW_Pure | KW_Static;
 
 stat: demand #demandStat
 	| KW_Doif exp stat #do_if_stat
@@ -52,7 +54,7 @@ stat: demand #demandStat
     | try_catch #try_catch_stat
     | OP_Pass #pass_stat
     | type_def #type_def_stat
-    | interface_def #interface_def_stat
+    | trait_def #trait_def_stat
     | class_def #class_def_stat
 //    | enum_def #enum_def_stat
     | record_def #record_def_stat
@@ -61,38 +63,42 @@ stat: demand #demandStat
     | function_yield #yield_stat
     | KW_Break #break_stat
     | KW_Continue #continue_stat
+    | match_to #match_to_stat
     ;
 
 
-type_param: flat_type=NAME
+type_param: flat_type=type_flat_name
 	| Brace_Paren_Left type_param Brace_Paren_Right
 	| template_type
 	| relation_type
 	| sum_type=type_param (OP_Add sum_type=type_param)+
 //	| union_type=type_param (OP_Mult union_type=type_param)+
 	;
-template_type: complex_type_start=NAME (OP_Or type_param | type_param_list);
+template_type: name=type_flat_name Brace_Square_Left type_param_list Brace_Square_Right;
 relation_type: KW_Type (OP_Extends type_param OP_Implements type_param | OP_Extends type_param | OP_Implements type_param);
-type_param_list: Brace_Curly_Left type_param (Comma type_param)* Brace_Curly_Right;
+type_param_list: type_param (Comma type_param)*;
 
-interface_def: KW_Interface NAME (OP_Extends parent_interface=NAME)? Brace_Curly_Left signature_def* Brace_Curly_Right;
-class_def:
-annotation* KW_Class class_name=NAME (OP_Extends parent_class=NAME)? (OP_Implements interface=NAME (Comma interface=NAME)*)?
-Brace_Curly_Left
-	class_member*
-Brace_Curly_Right;
+trait_def: KW_Trait type_flat_name (OP_Extends parent_trait=type_flat_name)? Brace_Curly_Left signature_def* Brace_Curly_Right;
+
+class_header: KW_Class class_name=type_flat_name
+	(OP_Extends parent_class=type_flat_name)?
+	(OP_Implements trait=type_flat_name
+	(Comma trait=type_flat_name)*)?;
+
+class_def: annotation* class_header Brace_Curly_Left class_member* Brace_Curly_Right;
+
 access_modifier: KW_Public | KW_Protected | KW_Private;
 
 class_member: operator_decl
 	| access_modifier? (functiondef | var_decl);
 
 signature_def: NAME funct_signature;
-funct_signature: using? (vararg_or_signature | Brace_Paren_Left var_signature_list? Brace_Paren_Right) func_output;
+funct_signature: funct_modifier? using? (vararg_or_signature | Brace_Paren_Left var_signature_list? Brace_Paren_Right) func_output;
 
 type_def: KW_Type derived_type=type_param (OP_Extends parent_type=type_param)? (children=type_param_list | OP_Assign type_param);
 
 record_def:
-annotation* KW_Record record_name=NAME (OP_Extends parent_record=NAME)? (OP_Implements interface=NAME (Comma interface=NAME)*)?
+annotation* KW_Record record_name=NAME (OP_Extends parent_record=NAME)? (OP_Implements trait=NAME (Comma trait=NAME)*)?
 Brace_Curly_Left
 	record_member_list
 Brace_Curly_Right;
@@ -110,7 +116,8 @@ overloading_operator: operator_infix
 
 //enum_def: KW_Enum NAME Brace_Curly_Left enum_case (Comma enum_case)* Brace_Curly_Right;
 
-operator_decl: (KW_Prefix | KW_Infix | KW_Postfix)? KW_Operator? overloading_operator local_funct;
+operator_decl: operator_qualifier? KW_Operator? overloading_operator local_funct;
+operator_qualifier: KW_Prefix | KW_Infix | KW_Postfix;
 
 annotation_decl: KW_Annotation NAME Brace_Curly_Left (KW_Param? vararg_or_signature)* KW_Return exp Brace_Curly_Right;
 
@@ -132,7 +139,7 @@ loop: for_each_loop
     | while_do_loop
     | repeat_until_loop;
 
-for_each_loop: KW_For ind=(NAME|OP_Underscore) (Comma val=(NAME|OP_Underscore))? op_direction explist stat;
+for_each_loop: KW_For ind=(OP_Underscore|NAME) (Comma val=(OP_Underscore|NAME))? op_direction explist stat;
 
 op_direction: OP_Forward
 	| OP_Backward;
@@ -157,63 +164,61 @@ var_decl: scope_qualifier? constant_qualifier var_signature_list | alias_decl;
 
 scope_qualifier: KW_Global | KW_Outer Brace_Paren_Left exp Brace_Paren_Right;
 
-constant_qualifier: KW_Var | KW_Val;
+constant_qualifier: KW_Var | KW_Val | KW_Mut;
 
-alias_decl: KW_Alias anchor_name=NAME KW_As alias_name (Comma alias_name)*;
-alias_name: NAME;
+type_flat_name: NAME;
+
+alias_decl: KW_Alias anchor_name=NAME KW_As alias_name=NAME (Comma alias_name=NAME)*;
 
 
 by_type_var_decl: Colon type_param;
 by_value_var_decl: OP_Assign assign_right=exp;
 
-list_initializer: Brace_Curly_Left explist? Brace_Curly_Right;
-
 //Nutt declarations end
 
 explist: exp (Comma exp)*;
 
-qualified_name: NAME (Dot NAME)+;
-
 exp: NAME #explicit_variable
-	| qualified_name #qualified_variable
+	| KW_This #this_exp
+	| OP_Pass exp #spread_exp
 	| atom #explicit_atom
 	| type_param #explicit_type
-	| operator #explicit_operator
+	| explicit_operator #explicit_operator_exp
 	| do_done_block #block_exp
 	| OP_Reverse exp #reverse_exp
 	| exp OP_Compose exp #compose_exp
 	| KW_New exp Brace_Paren_Left explist Brace_Paren_Right #new_exp
 	| KW_Eval (exp | block) #eval_exp
 	| KW_Exec (exp | stat) #exec_exp
-    | record=exp Dot index=string #record_member_access
-	| record_initializer #record_initializer_exp
-	| map_initializer #map_initializer_exp
+    | record=exp Dot
+	    (
+			flat_property=NAME
+			| string_property=string
+			| (Brace_Square_Left operator_qualifier Brace_Square_Right)? operator=explicit_operator
+		) #record_member_access
     | range_array_initializer #range_array_initializer_exp
 	| comprehense_array_initializer #comprehense_array_initializer_exp
-    | OP_Pass exp #spread_exp
-    | list_initializer #explicit_array
     | local_funct #function_definition_exp
-    | operator_prefix exp #prefix_exp
-    | left=exp operator_infix right=exp #infix_exp
-    | name=exp (KW_With using_in_call)? Brace_Paren_Left arguments=explist? Brace_Paren_Right #func_call_exp
-    | op=operator_infix Brace_Paren_Left arguments=explist? Brace_Paren_Right #op_call_exp
+    | (explicit_operator | operator_prefix) exp #prefix_exp
+    | left=exp (explicit_operator | operator_infix) right=exp #infix_exp
+    | exp (KW_With using_in_call)? Brace_Paren_Left arguments=explist? Brace_Paren_Right #func_call_exp
+    | op=explicit_operator Brace_Paren_Left arguments=explist? Brace_Paren_Right #op_call_exp
     | left=exp BackTick used=NAME BackTick right=exp #using_exp
     | left=exp (in=KW_In | not_in=KW_Not_In) right=exp #contains_exp
-    | arr=exp Brace_Square_Left index=exp Brace_Square_Right #array_access
     | Brace_Paren_Left exp Brace_Paren_Right #parenthesis_exp
     | KW_TypeOf exp #type_of_exp
     | KW_CommonOf explist #common_of_exp
-    | to_check=exp KW_InstanceOf (NAME | type_exp=exp) #instance_of_exp
+    | to_check=exp KW_InstanceOf type_exp=exp #instance_of_exp
 //    | exp KW_As type_param #type_cast
     | cond=exp Question if_true=exp (Colon if_false=exp)? #quarternary_exp// (AtSign if_undefined=exp)? #quarternary_exp
-    | KW_Match matched=exp KW_To match_branch+ default_match_branch? #match_to_exp
+    | match_to #match_to_exp
     ;
+
+match_to: KW_Match matched=exp KW_To match_branch+ default_match_branch?;
 
 //fold: OP_LeftFold | OP_RightFold;
 
 range_array_initializer: Brace_Curly_Left start=exp (Comma next=exp)? OP_Range bound=exp (SemiColon OP_Reverse)? Brace_Curly_Right;
-
-
 
 comprehense_array_initializer: Brace_Curly_Left (element=exp KW_Of)? NAME op_direction arr=exp (KW_If pred=exp)? Brace_Curly_Right;
 
@@ -230,11 +235,6 @@ operator_logical: OP_And
 
 default_match_branch: KW_Default OP_Case_Arrow exp;
 match_branch: KW_Final? explist OP_Case_Arrow branch_exp=exp;
-
-//stringContents : TEXT
-//               | ESCAPE_SEQUENCE
-//               | BACKSLASH_PAREN exp RPAR
-//               ;
 
 atom: nil
 	| boolean
@@ -258,7 +258,7 @@ float: Float
 string: Normal_string
     | Char_String;
 
-operator: BackTick operator_infix BackTick;
+explicit_operator: BackTick operator_infix BackTick;
 
 using_in_call: Brace_Curly_Left overloading_operator (Comma overloading_operator)* Brace_Curly_Right;
 
@@ -274,8 +274,7 @@ local_funct: lambda_decl
 funcbody: annotation* funct_signature OP_Assign block KW_End;
 lambda_decl: annotation* funct_signature OP_LambdaReturn lambda_exp=exp;
 
-operator_infix: operator
-	| default_infix_operator
+operator_infix: default_infix_operator
 	| Op_Custom;
 
 default_infix_operator: operator_math

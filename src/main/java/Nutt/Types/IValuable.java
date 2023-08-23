@@ -1,9 +1,7 @@
 package Nutt.Types;
 
-import Nutt.Annotations.IReplicatable;
-import Nutt.Interfaces.IBoolable;
-import Nutt.Interfaces.IMeasurable;
-import Nutt.Interfaces.ISpreadable;
+import Nutt.Annotations.IReplicable;
+import Nutt.Interfaces.IArrayable;
 import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.IFunctional;
@@ -11,7 +9,7 @@ import Nutt.Types.Functional.Type.Type;
 
 import java.util.Objects;
 
-public interface IValuable extends Nutt.Types.IComparable<IValuable>, ISpreadable, IMeasurable, IReplicatable<IValuable>, IBoolable
+public interface IValuable extends IArrayable, IReplicable<IValuable>
 {
 	default IFunctional asFunctional()
 	{

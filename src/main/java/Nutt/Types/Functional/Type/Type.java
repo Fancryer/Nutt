@@ -1,23 +1,21 @@
 package Nutt.Types.Functional.Type;
 
+import Nutt.Exceptions.NuttOperatorNotImplementedException;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Listable.Array.Array;
-import Nutt.Types.IValuable;
 import lombok.Getter;
 
 import java.util.*;
 
 public class Type implements IFunctional
 {
-	@Getter private final java.lang.String displayName;
 	private final Map<java.lang.String,Procedure> operatorMap=new HashMap<>();
-	@Getter public Type parent;
-	public List<Type> children=new ArrayList<>();
-	@Getter public List<Type> typeParameters;
+	@Getter
+	TypeHeader header;
 
 	public Type(java.lang.String displayName)
 	{
@@ -31,9 +29,8 @@ public class Type implements IFunctional
 
 	public Type(Type parent,java.lang.String displayName,List<Type> typeParameters)
 	{
-		this.displayName=displayName;
-		if(parent!=null) parent.addChild(this);
-		this.typeParameters=typeParameters;
+		this.header=TypeHeader.builder().displayName(displayName).parent(parent).typeParameters(typeParameters).build();
+		if(parent!=null) header.getParent().addChild(this);
 	}
 
 	static NuttReference LowestCommonAncestorAll(NuttReference... types)
@@ -66,17 +63,26 @@ public class Type implements IFunctional
 		while(n1!=null)
 		{
 			ancestors.put(n1.getType(),true);
-			n1=TypeInferencer.findTypeReference(n1.getType().parent);
-			System.out.println("|n1 = "+n1);
+			n1=TypeInferencer.findTypeReference(n1.getType().getHeader().getParent());
 		}
 		//Check if n2 or any of its ancestors in a map.
 		while(n2!=null)
 		{
 			if(ancestors.containsKey(n2.getType())!=ancestors.isEmpty()) return n2;
-			n2=TypeInferencer.findTypeReference(n2.getType().parent);
-			System.out.println("||n2 = "+n2);
+			n2=TypeInferencer.findTypeReference(n2.getType().getHeader().getParent());
 		}
 		return null;
+	}
+
+	public Type addOperators(Procedure... procedures)
+	{
+		return addOperators(Arrays.asList(procedures));
+	}
+
+	public Type addOperators(List<Procedure> procedures)
+	{
+		for(var procedure: procedures) operatorMap.put(procedure.getName(),procedure);
+		return this;
 	}
 
 	public boolean hasChild(java.lang.String name)
@@ -91,29 +97,18 @@ public class Type implements IFunctional
 
 	public java.lang.String toStringDebug()
 	{
-		var parentName=parent==null?"null":parent.getDisplayName();
-		return "TypeNode{displayName='%s', parent='%s', children=%s}".formatted(displayName,parentName,getChildren());
+		var parentName=getHeader().getParent()==null
+		               ?"null"
+		               :getHeader().getParent()
+		                           .getHeader()
+		                           .getDisplayName();
+		return "TypeNode{displayName='%s', parent='%s', children=%s}".formatted(getHeader().getDisplayName(),parentName,getChildren());
 	}
 
 	public List<Type> getChildren()
 	{
-		if(children==null||children.isEmpty()) return new ArrayList<>();
-		var host=new ArrayList<>(children
-				                         .stream()
-				                         .toList());
-		//children.stream().map(TypeNode::getChildren).forEach(host::addAll);
-		return host;
-	}
-
-	@Override public boolean isTrue()
-	{
-		return getLength()!=0;
-	}
-
-	@Override
-	public int getLength()
-	{
-		return getChildren().size();
+		var children=getHeader().getChildren();
+		return children==null||children.isEmpty()?new ArrayList<>():new ArrayList<>(children.stream().toList());
 	}
 
 	@Override
@@ -122,8 +117,11 @@ public class Type implements IFunctional
 		return this;
 	}
 
-	@Override public java.lang.String toSerializedString()
+	@Override
+	public java.lang.String toSerializedString()
 	{
+		var displayName=getHeader().getDisplayName();
+		var typeParameters=getHeader().getTypeParameters();
 		return switch(typeParameters.size())
 		{
 			case 0 -> displayName;
@@ -136,28 +134,30 @@ public class Type implements IFunctional
 		};
 	}
 
-	@Override public Object getValue()
+	@Override
+	public Object getValue()
 	{
 		return null;
 	}
 
-	@Override public Array spread()
+	@Override
+	public Array spread()
 	{
-		return new Array(children.stream().map(TypeInferencer::findTypeReference).toList());
+		return new Array(getHeader().getChildren().stream().map(TypeInferencer::findTypeReference).toList());
 	}
 
 	@Override
 	public Type replicate()
 	{
-		return new Type(this.parent,this.displayName,this.typeParameters);
+		return new Type(getHeader().getParent(),getHeader().getDisplayName(),getHeader().getTypeParameters());
 	}
 
 	@Override public boolean equals(Object o)
 	{
 		return this==o
 		       ||o instanceof Type type
-		         &&children.equals(type.getChildren())
-		         &&typeParameters.equals(type.getTypeParameters());
+		         &&getHeader().getChildren().equals(type.getChildren())
+		         &&getHeader().getTypeParameters().equals(type.getHeader().getTypeParameters());
 	}
 
 	@Override
@@ -166,7 +166,7 @@ public class Type implements IFunctional
 		//var childrenList="{"+NuttCommon.removeFirstAndLastChars(children.toString())+"}";
 		//return "%s%s".formatted(displayName,children.size()>0?childrenList:"");
 		//return asTree();
-		return displayName;
+		return getHeader().getDisplayName();
 	}
 
 	public Type addChild(java.lang.String typeName)
@@ -176,16 +176,14 @@ public class Type implements IFunctional
 
 	public Type addChild(Type child)
 	{
-		System.out.println("child = "+child);
 		child.setParent(this);
-		children.add(child);
+		getHeader().getChildren().add(child);
 		return this;
 	}
 
 	public Type setParent(Type parent)
 	{
-		System.out.println("parent = "+parent);
-		this.parent=parent;
+		this.getHeader().setParent(parent);
 		return this;
 	}
 
@@ -210,6 +208,7 @@ public class Type implements IFunctional
 
 	public List<Type> getNestedChildren()
 	{
+		var children=getHeader().getChildren();
 		if(children==null) return new ArrayList<>();
 		return new ArrayList<>(children
 				                       .stream()
@@ -220,6 +219,7 @@ public class Type implements IFunctional
 
 	public Set<Type> getChildrenAsSet()
 	{
+		var children=getHeader().getChildren();
 		if(children==null) return new HashSet<>();
 		var host=new TreeSet<>(children
 				                       .stream()
@@ -233,12 +233,13 @@ public class Type implements IFunctional
 
 	public Type getParentType()
 	{
-		return parent;
+		return getHeader().getParent();
 	}
 
 	public Type removeChild(Type type)
 	{
-		if(Objects.equals(this,type)) return parent.removeChild(this);
+		var children=getHeader().getChildren();
+		if(Objects.equals(this,type)) return getHeader().getParent().removeChild(this);
 		for(var child: children)
 		{
 			if(child==type)
@@ -254,8 +255,8 @@ public class Type implements IFunctional
 
 	public Type removeChild(java.lang.String typeName)
 	{
-		if(Objects.equals(displayName,typeName)) return parent.removeChild(this);
-		for(var child: children)
+		if(Objects.equals(getHeader().getDisplayName(),typeName)) return getHeader().getParent().removeChild(this);
+		for(var child: getHeader().getChildren())
 		{
 			var ret=child.removeChild(typeName);
 			if(ret!=null) return ret;
@@ -265,7 +266,7 @@ public class Type implements IFunctional
 
 	public java.lang.String asTree()
 	{
-		var sb=new StringBuilder(getDisplayName());
+		var sb=new StringBuilder(getHeader().getDisplayName());
 		sb.append(":{");
 		for(int i=0, childrenSize=getChildren().size();i<childrenSize;i++)
 		{
@@ -279,8 +280,8 @@ public class Type implements IFunctional
 
 	public Type findChild(java.lang.String typeName)
 	{
-		if(Objects.equals(displayName,typeName)) return this;
-		for(var child: children)
+		if(Objects.equals(getHeader().getDisplayName(),typeName)) return this;
+		for(var child: getHeader().getChildren())
 		{
 			var ret=child.findChild(typeName);
 			if(ret!=null) return ret;
@@ -292,7 +293,7 @@ public class Type implements IFunctional
 	{
 		//return findChild(node.getDisplayName());
 		if(Objects.equals(this,node)) return this;
-		for(var child: children)
+		for(var child: getHeader().getChildren())
 		{
 			var ret=child.findChild(node);
 			if(ret!=null) return ret;
@@ -300,48 +301,9 @@ public class Type implements IFunctional
 		return null;
 	}
 
-	@Override public boolean lessThan(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return false;
-	}
-
 	public Procedure getOperator(java.lang.String name)
 	{
-		return operatorMap.get(name);
+		return Optional.ofNullable(operatorMap.get(name))
+		               .orElseThrow(()->new NuttOperatorNotImplementedException(getHeader().getDisplayName(),name));
 	}
 }

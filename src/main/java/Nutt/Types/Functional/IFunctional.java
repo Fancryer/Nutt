@@ -34,17 +34,17 @@ public interface IFunctional extends IValuable
 
 	default boolean isActionable()
 	{
-		return Objects.equals(getType().getDisplayName(),"Actionable");
+		return Objects.equals(getType().getHeader().getDisplayName(),"Actionable");
 	}
 
 	default boolean isListable()
 	{
-		return Objects.equals(getType().getDisplayName(),"Listable");
+		return Objects.equals(getType().getHeader().getDisplayName(),"Listable");
 	}
 
 	default boolean isNumerable()
 	{
-		return Objects.equals(getType().getDisplayName(),"Numerable");
+		return Objects.equals(getType().getHeader().getDisplayName(),"Numerable");
 	}
 
 	@Override IFunctional replicate();

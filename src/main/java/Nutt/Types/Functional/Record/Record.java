@@ -17,9 +17,7 @@ import lombok.Getter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +25,6 @@ import static gen.Nutt.Vararg_or_signatureContext;
 
 public class Record implements IFunctional
 {
-	private final Map<String,Procedure> operatorMap;
 	@Getter private List<Row> rows;
 	private String name;
 
@@ -38,14 +35,18 @@ public class Record implements IFunctional
 
 	public Record(String name,List<Row> rows)
 	{
-		this(name,rows,null);
-	}
-
-	public Record(String name,List<Row> rows,Map<String,Procedure> operatorMap)
-	{
 		this.name=name;
 		this.rows=rows;
-		this.operatorMap=Objects.requireNonNullElse(operatorMap,getDefaultOperators());
+	}
+
+	private static List<Pair<Row,Row>> zipMembers(Record r1,Record r2)
+	{
+		return zipMembersStream(r1,r2).toList();
+	}
+
+	private static Stream<Pair<Row,Row>> zipMembersStream(Record r1,Record r2)
+	{
+		return Streams.zip(r1.rows.stream(),r2.rows.stream(),Pair::new);
 	}
 
 	Map<String,Procedure> getDefaultOperators()
@@ -85,28 +86,10 @@ public class Record implements IFunctional
 		return rows.stream().sorted(Comparator.comparing(Row::name)).toList();
 	}
 
-	private static List<Pair<Row,Row>> zipMembers(Record r1,Record r2)
-	{
-		return zipMembersStream(r1,r2).toList();
-	}
-
-	private static Stream<Pair<Row,Row>> zipMembersStream(Record r1,Record r2)
-	{
-		return Streams.zip(r1.rows.stream(),r2.rows.stream(),Pair::new);
-	}
-
 	public Record setName(String name)
 	{
 		this.name=name;
 		return this;
-	}
-
-	/**
-	 @return Map&lt;operator,Valuable supplier&gt;
-	 */
-	public Map<String,Procedure> getOperators()
-	{
-		return operatorMap;
 	}
 
 	@Override
@@ -133,79 +116,13 @@ public class Record implements IFunctional
 
 	@Override public Record replicate()
 	{
-		return new Record(this.name,this.rows,this.operatorMap);
+		return new Record(this.name,this.rows);
 	}
 
 	//TODO
 	@Override public Array spread()
 	{
 		return null;
-	}
-
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Data",value.getType())&&compare(value)<0;
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Data",value.getType())&&compare(value)>0;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Data",value.getType())&&compare(value)<=0;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Data",value.getType())&&compare(value)>=0;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Data",value.getType())&&compare(value)==0;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Data",value.getType())
-		       &&compare(value)!=0
-		       &&!areMembersSame((Record)value);
-	}
-
-	private boolean areMembersSame(Record record)
-	{
-		Predicate<Pair<Row,Row>>
-				areNamesSame=r->Objects.equals(r.left().name(),r.right().name()),
-				areTypesSame=r->TypeInferencer.typesEquals(r.left().ceilType(),r.right().ceilType()),
-				areValuesSame=r->r.left().value().equalTo(r.right().value());
-		return getLength()==record.getLength()&&zipMembersStream(this,record)
-				                                        .filter(areNamesSame)
-				                                        .filter(areTypesSame)
-				                                        .filter(areValuesSame)
-				                                        .count()==getLength();
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	private int compare(IValuable value)
-	{
-		return getLength()-value.getLength();
-	}
-
-	@Override
-	public int getLength()
-	{
-		return rows.size();
 	}
 
 	public IValuable getMember(String name)
@@ -218,10 +135,5 @@ public class Record implements IFunctional
 	{
 		this.rows=rows;
 		return this;
-	}
-
-	@Override public boolean isTrue()
-	{
-		return !rows.isEmpty();
 	}
 }

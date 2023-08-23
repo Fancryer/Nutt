@@ -24,8 +24,17 @@ public class EncodeBase64 extends NativeProcedure
 	{
 		var byteArray=argumentList.get(0).getValue().asFunctional().asListable().asArray();
 		if(!TypeInferencer.verdict("Int",byteArray.getElementType())) throw new RuntimeException("Array is not of type Int");
-		var bytes=new byte[byteArray.getLength()];
-		for(int i=0;i<byteArray.getLength();++i)
+		var arrayLength=byteArray.getType()
+		                         .getOperator("#")
+		                         .proceed(List.of(argumentList.get(0)))
+		                         .getValue()
+		                         .asFunctional()
+		                         .asNumerable()
+		                         .asInt()
+		                         .getValue()
+		                         .intValue();
+		var bytes=new byte[arrayLength];
+		for(int i=0;i<arrayLength;++i)
 		{
 			bytes[i]=byteArray.getAt(i)
 			                  .getValue()

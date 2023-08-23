@@ -4,7 +4,6 @@ import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.NuttInterpreter;
 import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
-import Nutt.NuttEnvironment;
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Nil;
 import gen.Nutt;
@@ -42,7 +41,6 @@ public class NuttFunctionVisitor extends NuttGenericVisitor
 		//Procedure not found, may be native
 		if(Objects.requireNonNull(evaluator.visit(ctx.name)).getValue() instanceof Procedure procedure)
 			return procedure.replicate().proceed(passedParameters);
-		System.out.println("ctx = "+NuttEnvironment.toSourceCode(ctx.name));
 		throw new RuntimeException();
 	}
 

@@ -8,12 +8,12 @@ import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.IActionable;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
 import Nutt.Visitors.VisitorPool;
 import gen.Nutt;
 import gen.Nutt.BlockContext;
 import gen.Nutt.Vararg_or_signatureContext;
 import lombok.Getter;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ import static Nutt.NuttEnvironment.toSourceCode;
 	@Override
 	public String toString()
 	{
-		return "funct %s = %s return".formatted(signature,toSourceCode(functionBody));
+		return "funct %s=%s return".formatted(signature,toSourceCode(functionBody));
 	}
 
 	public NuttReference proceed() throws NuttSuccessReturnException
@@ -79,7 +79,7 @@ import static Nutt.NuttEnvironment.toSourceCode;
 
 	private void declareYield()
 	{
-		NuttInterpreter.currentScope.addReference("yield",output,output.getType());
+		NuttInterpreter.currentScope.addReference("yield",output);
 	}
 
 	private void declareParameters()
@@ -100,11 +100,13 @@ import static Nutt.NuttEnvironment.toSourceCode;
 	{
 		var toForget=signature.getInputParameterList()
 		                      .stream()
-		                      .map(decl->functParamToVarDecl(decl).var_signature_list()
-		                                                          .vararg_or_signature(0)
-		                                                          .var_signature()
-		                                                          .NAME()
-		                                                          .getText())
+		                      .map(Procedure::functParamToVarDecl)
+		                      .map(Nutt.Var_declContext::var_signature_list)
+		                      .map(Nutt.Var_signature_listContext::vararg_or_signature)
+		                      .map(vos->vos.get(0))
+		                      .map(Nutt.Vararg_or_signatureContext::var_signature)
+		                      .map(Nutt.Var_signatureContext::NAME)
+		                      .map(ParseTree::getText)
 		                      .toList();
 		NuttInterpreter.forgetList(toForget);
 	}
@@ -131,64 +133,6 @@ import static Nutt.NuttEnvironment.toSourceCode;
 	@Override public Procedure replicate()
 	{
 		return new Procedure(this);
-	}
-
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())&&compareLength(value)<0;
-	}
-
-	private int compareLength(IValuable valuable)
-	{
-		return valuable.getLength()-getLength();
-	}
-
-	@Override
-	public int getLength()
-	{
-		return signature.getSize();
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())&&compareLength(value)>0;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())&&compareLength(value)<=0;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())&&compareLength(value)>=0;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())&&compareLength(value)==0;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())&&compareLength(value)!=0;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())
-		       &&equals(value.asFunctional().asActionable().asProcedure());
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Procedure",value.getType())
-		       &&!equals(value.asFunctional().asActionable().asProcedure());
-	}
-
-	@Override public boolean isTrue()
-	{
-		return true;
 	}
 
 	//TODO

@@ -18,7 +18,7 @@ public record Row(java.lang.String name,CeiledValue ceiledValue)
 
 	public Row(java.lang.String name,Type ceilType,IValuable valuable)
 	{
-		this(name,ceilType.getDisplayName(),valuable);
+		this(name,ceilType.getHeader().getDisplayName(),valuable);
 	}
 
 	public Row(java.lang.String name,java.lang.String ceilType,IValuable valuable)

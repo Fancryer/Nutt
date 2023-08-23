@@ -122,6 +122,17 @@ public class Int implements INumerable
 	}
 
 	@Override
+	public Int asInt()
+	{
+		return this;
+	}
+
+	@Override public boolean isBoolean()
+	{
+		return false;
+	}
+
+	@Override
 	public boolean isInt()
 	{
 		return true;
@@ -143,12 +154,6 @@ public class Int implements INumerable
 		return intType==EIntType.Long;
 	}
 
-	@Override
-	public Int asInt()
-	{
-		return this;
-	}
-
 	@Override public Int replicate()
 	{
 		return new Int(this);
@@ -156,25 +161,13 @@ public class Int implements INumerable
 
 	@Override public Boolean asBoolean()
 	{
-		return new Boolean(isTrue());
-	}
-
-	@Override
-	public boolean isTrue()
-	{
-		return asBigInteger().compareTo(BigInteger.ZERO)!=0;
+		return new Boolean(asBigInteger().compareTo(BigInteger.ZERO)!=0);
 	}
 
 	@Override
 	public java.lang.String toString()
 	{
 		return (intType==EIntType.Long?longValue:bigIntegerValue).toString();
-	}
-
-	@Override
-	public int getLength()
-	{
-		return toString().length();
 	}
 
 	@Override public Array spread()
@@ -193,51 +186,11 @@ public class Int implements INumerable
 		return intType==EIntType.Long?longValue:bigIntegerValue.longValue();
 	}
 
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<0;
-	}
-
 	private int compare(IValuable valuable)
 	{
 		var left=BigDecimalMath.toBigDecimal(toString());
 		var right=BigDecimalMath.toBigDecimal(valuable.toString());
 		return left.compareTo(right);
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>0;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<=0;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>=0;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)==0;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)!=0;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&similarTo(value);
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
 	}
 
 	enum EIntType

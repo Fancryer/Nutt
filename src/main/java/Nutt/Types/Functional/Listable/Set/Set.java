@@ -53,62 +53,21 @@ public class Set implements IListable
 		return new Set(elements);
 	}
 
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)<0;
-	}
 
-	private int compare(IValuable valuable)
-	{
-		return getLength()-valuable.getLength();
-	}
-
-	@Override
-	public int getLength()
-	{
-		return elements.size();
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)>0;
-	}	public Set add(NuttReference reference)
+	public Set add(NuttReference reference)
 	{
 		var ret=new HashSet<>(elements);
 		ret.add(reference);
 		return new Set(ret);
 	}
 
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)<=0;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)>=0;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)==0;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)!=0;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&similarTo(value);
-	}
-
 	@Override
 	public Type getType()
 	{
 		return TypeInferencer.findTypeReference("Set").getType();
-	}	@Override
+	}
+
+	@Override
 	public NuttReference getAt(NuttReference index)
 	{
 		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
@@ -121,31 +80,17 @@ public class Set implements IListable
 		return elements;
 	}
 
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
-	}
-
 	@Override
 	public Array spread()
 	{
 		return new Array(getElementType(),getElements());
 	}
 
-	@Override public boolean isTrue()
-	{
-		return !elements.isEmpty();
-	}
-
-
-
 	@Override
 	public List<NuttReference> getElements()
 	{
 		return asList();
 	}
-
-
 
 	private List<NuttReference> asList()
 	{

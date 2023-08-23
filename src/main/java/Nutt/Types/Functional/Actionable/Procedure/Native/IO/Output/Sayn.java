@@ -9,7 +9,7 @@ import Nutt.Types.Functional.Actionable.Procedure.Signature;
 
 import java.util.List;
 
-@ANativeProcedure("native.io.output")
+@ANativeProcedure("native.io.output.sayn")
 public class Sayn extends NativeProcedure
 {
 	public Sayn()

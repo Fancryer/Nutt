@@ -1,0 +1,23 @@
+['^','a,b',Int]
+`
+	Int
+		left=argumentList.get(0).getValue().asFunctional().asNumerable().asInt(),
+		right=argumentList.get(1).getValue().asFunctional().asNumerable().asInt();
+	String resString;
+	try
+	{
+		resString=left.asBigInteger().pow(right.asBigInteger().intValueExact()).toString();
+	}
+	catch(ArithmeticException e)
+	{
+		nuttLogger.appendLog
+		(
+			"Failed to calculate power of %s to %s due to huge exponent".formatted(left,right),
+			e.toString(),
+			EActionStatus.Failure,
+			ESeverity.Error
+		);
+		throw new RuntimeException(e);
+	}
+	return Int.fromString(resString).toAnonymousReference();
+`

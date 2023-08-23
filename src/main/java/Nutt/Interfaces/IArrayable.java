@@ -2,7 +2,7 @@ package Nutt.Interfaces;
 
 import Nutt.Types.Functional.Listable.Array.Array;
 
-public interface ISpreadable
+public interface IArrayable
 {
-    Array spread();
+	Array spread();
 }

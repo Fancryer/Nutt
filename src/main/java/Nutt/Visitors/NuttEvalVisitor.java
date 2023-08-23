@@ -1,7 +1,9 @@
 package Nutt.Visitors;
 
-import Nutt.Exceptions.NuttRecordOperatorNotImplementedException;
 import Nutt.Exceptions.NuttSuccessReturnException;
+import Nutt.Interpreter.Logging.EActionStatus;
+import Nutt.Interpreter.Logging.ESeverity;
+import Nutt.Interpreter.Logging.LogStamp;
 import Nutt.Interpreter.NuttInterpreter;
 import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.Interpreter.References.NuttReference;
@@ -14,22 +16,19 @@ import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.Procedure.ProcedureBuilder;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
-import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.INumerable;
-import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Record.Record;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.Nil;
 import com.sun.jdi.InvalidTypeException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static Nutt.NuttEnvironment.nuttLogger;
 import static Nutt.Visitors.VisitorPool.typeInferenceVisitor;
 import static gen.Nutt.*;
 
@@ -48,6 +47,11 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 		return visit(ctx.explist());
 	}
 
+	@Override public NuttReference visitArray_initializer(Array_initializerContext ctx)
+	{
+		return super.visitArray_initializer(ctx);
+	}
+
 	@Override public NuttReference visitExplist(ExplistContext ctx)
 	{
 		return AnonymousNuttReference.of(new Array(ctx.exp().stream().map(this::visit).toList()));
@@ -56,7 +60,7 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitExplicit_array(Explicit_arrayContext ctx)
 	{
-		return Nutt.Visitors.VisitorPool.arrayVisitor.visitExplicit_array(ctx);
+		return VisitorPool.arrayVisitor.visitExplicit_array(ctx);
 	}
 
 	@Override
@@ -101,9 +105,19 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 			return PrimitiveNuttReference.ofNumber(INumerable.abs(reference.getValue().asFunctional().asNumerable()));
 		}
 		if(op.OP_Length()!=null)
-			return PrimitiveNuttReference.ofNumber(new Int(reference.getValue().getLength()));
+			return PrimitiveNuttReference.ofNumber(reference.getType()
+			                                                .getOperator("#")
+			                                                .proceed(List.of(reference))
+			                                                .getValue()
+			                                                .asFunctional()
+			                                                .asNumerable());
 		if(op.OP_Not()!=null)
-			return PrimitiveNuttReference.ofBoolean(!VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().isTrue());
+			return PrimitiveNuttReference.ofBoolean(!VisitorPool.conditionVisitor.visit(ctx.exp())
+			                                                                     .getValue()
+			                                                                     .asFunctional()
+			                                                                     .asNumerable()
+			                                                                     .asBoolean()
+			                                                                     .isTrue());
 		throw new UnsupportedOperationException();
 	}
 
@@ -119,6 +133,7 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 			else
 				ceilType=TypeInferencer.findTypeReference(typeInferenceVisitor.visit(ctx.type_exp)
 				                                                              .getType()
+				                                                              .getHeader()
 				                                                              .getDisplayName());
 		}
 		var isInstanceOf=TypeInferencer.verdict(ceilType,TypeInferencer.findTypeReference(visit(ctx.to_check).getType()));
@@ -128,12 +143,7 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitExplicit_atom(Explicit_atomContext ctx)
 	{
-		var atom=ctx.atom();
-		if(atom.number()!=null) return visitNumber(atom.number());
-		if(atom.string()!=null) return visitString(atom.string());
-		if(atom.boolean_()!=null) return PrimitiveNuttReference.ofBoolean(atom.boolean_().KW_True()!=null);
-		if(atom.nil()!=null) return PrimitiveNuttReference.ofNil();
-		throw new RuntimeException();
+		return visitAtom(ctx.atom());
 	}
 
 	@Override
@@ -154,14 +164,14 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 		var start=visit(arrayInitializer.start);
 		var next=visit(arrayInitializer.next);
 		var range=INumerable.sub((INumerable)next.getValue(),(INumerable)start.getValue());
-		var bound=visit(arrayInitializer.bound).getValue();
+		var boundRef=visit(arrayInitializer.bound);
 		var iterator=start;
 		var valuables=new ArrayList<NuttReference>();
 		var isReverse=arrayInitializer.OP_Reverse()!=null;
-		while(iterator.getValue().lessEqualTo(bound))
+		while(NuttInterpreter.applyOperator(iterator,boundRef,"<=").getValue().asFunctional().asNumerable().asBoolean().isTrue())
 		{
 			valuables.add(isReverse?0:valuables.size(),iterator);
-			iterator=INumerable.add((INumerable)iterator.getValue(),range).toAnonymousReference();
+			iterator=NuttInterpreter.applyOperator(iterator,range.toAnonymousReference(),"+");
 		}
 		return new Array(valuables).toAnonymousReference();
 	}
@@ -202,81 +212,45 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitQuarternary_exp(Quarternary_expContext ctx)
 	{
-		return visit(VisitorPool.conditionVisitor.visit(ctx.cond).getValue().isTrue()?ctx.if_true:ctx.if_false);
+		var condition=VisitorPool.conditionVisitor.visit(ctx.cond)
+		                                          .getValue()
+		                                          .asFunctional()
+		                                          .asNumerable()
+		                                          .asBoolean()
+		                                          .isTrue();
+		var exp=condition
+		        ?ctx.if_true
+		        :ctx.if_false;
+		return visit(exp);
 	}
 
 	@Override
 	public NuttReference visitInfix_exp(Infix_expContext ctx)
 	{
-		var defaultOperator=ctx.operator_infix().default_infix_operator();
-		var left=visit(ctx.left);
-		var right=visit(ctx.right);
-		if(defaultOperator!=null)
+		nuttLogger.appendLog(LogStamp.builder().action("Visit infix exp start").build());
+		NuttReference left=visit(ctx.left), right=visit(ctx.right);
+		var op=NuttEnvironment.toSourceCode(ctx.operator_infix());
+		try
 		{
-			if(defaultOperator.operator_logical()!=null) return Nutt.Visitors.VisitorPool.conditionVisitor.visit(ctx);
-			if(defaultOperator.operator_comparison()!=null) return Nutt.Visitors.VisitorPool.compareVisitor.visitInfix_exp(ctx);
-			var op=NuttEnvironment.toSourceCode(defaultOperator);
-			if(left==null) throw new RuntimeException("Left operand is corrupted!");
-			if(left.getValue() instanceof INumerable leftAsNumerable)
-			{
-				var rightAsNumerable=right.getValue().asFunctional().asNumerable();
-				return (switch(op)
-				        {
-					        case "+" -> INumerable.add(leftAsNumerable,rightAsNumerable);
-					        case "-" -> INumerable.sub(leftAsNumerable,rightAsNumerable);
-					        case "*" -> INumerable.mult(leftAsNumerable,rightAsNumerable);
-					        case "/" -> INumerable.div(leftAsNumerable,rightAsNumerable);
-					        case "//" -> INumerable.intDiv(leftAsNumerable,rightAsNumerable);
-					        case "%" -> INumerable.mod(leftAsNumerable,rightAsNumerable);
-					        case "^" -> INumerable.pow(leftAsNumerable,rightAsNumerable);
-					        default -> new Nil();
-				        }).toAnonymousReference();
-			}
-			if(left.getValue() instanceof String str) return (Objects.equals("+",op)?str.add(right):new Nil()).toAnonymousReference();
-			if(left.getValue() instanceof IListable leftAsListable)
-			{
-				var rightAsListable=right.getValue().asFunctional().asListable();
-				var resArr=new Array(leftAsListable.getElementType());
-				var i=0;
-				for(var leftEl: leftAsListable)
-				{
-					var rightEl=rightAsListable.getAt(new Int(i).toAnonymousReference());
-					resArr.add(visit(NuttEnvironment.getTempParser(leftEl+op+rightEl).exp()));
-				}
-				return resArr.toAnonymousReference();
-			}
-			if(left.getValue() instanceof Record leftAsRecord)
-			{
-				try
-				{
-					VisitorPool.functionVisitor.invokeProcedure(leftAsRecord.getOperators().get(op),List.of(left,right));
-				}
-				catch(NuttSuccessReturnException e)
-				{
-					return e.getReference();
-				}
-				throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
-			}
-			throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
+			var ref=left.getCeilType()
+			            .getOperator(op)
+			            .proceed(List.of(left,right));
+			var log=LogStamp.builder().action("Visit infix exp end").message(left.getValue().toString()+op+right.getValue()).build();
+			nuttLogger.appendLog(log);
+			return ref;
 		}
-		else
+		catch(Exception e)
 		{
-			var op=ctx.operator_infix().Op_Custom().getText();
-			if(left==null) throw new RuntimeException("Left operand is corrupted!");
-			if(left.getValue() instanceof Record leftAsRecord)
-			{
-				try
-				{
-					VisitorPool.functionVisitor.invokeProcedure(leftAsRecord.getOperators().get(op),List.of(left,right));
-				}
-				catch(NuttSuccessReturnException e)
-				{
-					return e.getReference();
-				}
-				throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
-			}
-			throw new NuttRecordOperatorNotImplementedException(left.getType(),op);
+			nuttLogger.appendLog(LogStamp.builder()
+			                             .action("Visit infix exp with exception")
+			                             .severity(ESeverity.Fatal)
+			                             .status(EActionStatus.Failure)
+			                             .message(e.toString())
+			                             .build());
+			throw new RuntimeException(e);
 		}
+		//			if(defaultOperator.operator_logical()!=null) return Nutt.Visitors.VisitorPool.conditionVisitor.visit(ctx);
+		//			if(defaultOperator.operator_comparison()!=null) return Nutt.Visitors.VisitorPool.compareVisitor.visitInfix_exp(ctx);
 	}
 
 	@Override public NuttReference visitReverse_exp(Reverse_expContext ctx)
@@ -305,7 +279,7 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 	@Override public NuttReference visitRecord_member_access(Record_member_accessContext ctx)
 	{
 		var left=visit(ctx.record);
-		if(!TypeInferencer.verdict("Record",left.getType().getDisplayName())) throw new RuntimeException();
+		if(!TypeInferencer.verdict("Record",left.getType().getHeader().getDisplayName())) throw new RuntimeException();
 		return AnonymousNuttReference.of
 				                             (
 						                             left.getValue()
@@ -317,10 +291,25 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 
 	@Override public NuttReference visitMatch_to_exp(Match_to_expContext ctx)
 	{
+		return visitMatch_to(ctx.match_to());
+	}
+
+	@Override public NuttReference visitMatch_to(Match_toContext ctx)
+	{
 		var matched=visit(ctx.matched);
 		NuttReference lastMatch=null;
-		Predicate<Match_branchContext> branchSuits=
-				b->b.explist().exp().stream().anyMatch(m->matched.getValue().equalTo(visit(m).getValue()));
+		Predicate<Match_branchContext> branchSuits=b->b.explist()
+		                                               .exp()
+		                                               .stream()
+		                                               .anyMatch
+				                                               (
+						                                               m->NuttInterpreter.applyOperator(matched,visit(m),"=")
+						                                                                 .getValue()
+						                                                                 .asFunctional()
+						                                                                 .asNumerable()
+						                                                                 .asBoolean()
+						                                                                 .isTrue()
+				                                               );
 		for(var branch: ctx.match_branch().stream().filter(branchSuits).toList())
 		{
 			if(branchSuits.test(branch))
@@ -337,47 +326,34 @@ public class NuttEvalVisitor extends NuttGenericVisitor
 		return lastMatch;
 	}
 
-	/*
-	@Override public NuttReference visitMap_exp(Nutt.Map_expContext ctx)
-	{
-		var left=visit(ctx.left);
-		var right=visit(ctx.right);
-		if(!TypeInferencer.verdict("Listable",left.getType()))
-			throw new RuntimeException(left.getType()+" cannot be mapped!");
-		if(!TypeInferencer.verdict("Procedure",right.getType()))
-			throw new RuntimeException(right.getType()+" cannot be mapper!");
-		//var array=left.asFunctional().asListable().spread().stream().toList();
-		//		var mapper=right.asFunctional().asActionable().asProcedure();
-		//		List<IValuable> valuables=new ArrayList<>();
-		//		for(var element: array)
-		//		{
-		//			var parameters=List.of(element);
-		//			//valuables.add()
-		//		}
-		return super.visitMap_exp(ctx);
-	}
-	*/
-
 	@Override public NuttReference visitAtom(AtomContext ctx)
 	{
-		return ctx.string()!=null?VisitorPool.stringVisitor.visitString(ctx.string()):super.visitAtom(ctx);
+		nuttLogger.appendLog("Visiting atom start","");
+		NuttReference reference;
+		if(ctx.number()!=null) reference=visitNumber(ctx.number());
+		else if(ctx.string()!=null) reference=visitString(ctx.string());
+		else if(ctx.boolean_()!=null) reference=PrimitiveNuttReference.ofBoolean(ctx.boolean_().KW_True()!=null);
+		else if(ctx.nil()!=null) reference=PrimitiveNuttReference.ofNil();
+		else reference=null;
+		if(reference==null)
+		{
+			nuttLogger.appendLog("Visiting atom finish","",EActionStatus.Failure,ESeverity.Fatal);
+			throw new RuntimeException();
+		}
+		nuttLogger.appendLog("Visiting atom finish",reference.toString(),EActionStatus.Success,ESeverity.Info);
+		return reference;
 	}
 
 	@Override
 	public NuttReference visitNumber(NumberContext ctx)
 	{
+		nuttLogger.appendLog(LogStamp.builder().action("Visiting number start").status(EActionStatus.Pending).build());
 		Function<java.lang.String,java.lang.String> removeUnderscores=s->s.contains("_")?s.replaceAll("_",""):s;
-		INumerable numerable;
-		if(ctx.int_()!=null)
-		{
-			var asString=NuttEnvironment.toSourceCode(ctx.int_());
-			numerable=Nutt.Types.Functional.Numerable.Int.Int.fromString(removeUnderscores.apply(asString));
-		}
-		else
-		{
-			var asString=NuttEnvironment.toSourceCode(ctx.float_());
-			numerable=Nutt.Types.Functional.Numerable.Float.Float.fromString(removeUnderscores.apply(asString));
-		}
+		var asString=removeUnderscores.apply(NuttEnvironment.toSourceCode(ctx.int_()!=null?ctx.int_():ctx.float_()));
+		var numerable=ctx.int_()!=null
+		              ?Nutt.Types.Functional.Numerable.Int.Int.fromString(asString)
+		              :Nutt.Types.Functional.Numerable.Float.Float.fromString(asString);
+		nuttLogger.appendLog(LogStamp.builder().action("Visiting number finish").status(EActionStatus.Success).build());
 		return PrimitiveNuttReference.ofNumber(numerable);
 	}
 

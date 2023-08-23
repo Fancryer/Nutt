@@ -22,6 +22,6 @@ public class NuttSuccessReturnException extends RuntimeException
 	@Override
 	public String getMessage()
 	{
-		return "%s returned successfully".formatted(reference.getMutable().get().getValue());
+		return "%s returned successfully".formatted(reference.getValue().getValue());
 	}
 }

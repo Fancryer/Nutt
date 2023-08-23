@@ -1,0 +1,8 @@
+['+','a,b',Int]
+`
+	Int
+		left=argumentList.get(0).getValue().asFunctional().asNumerable().asInt(),
+		right=argumentList.get(1).getValue().asFunctional().asNumerable().asInt();
+	var resString=left.asBigInteger().add(right.asBigInteger()).toString();
+	return Int.fromString(resString).toAnonymousReference();
+`

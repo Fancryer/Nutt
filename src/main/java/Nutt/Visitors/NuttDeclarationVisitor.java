@@ -56,14 +56,8 @@ public class NuttDeclarationVisitor extends NuttGenericVisitor
 				throw new RuntimeException("Record '%s' cannot contain more than one '%s' row!".formatted(memberName,memberType));
 			rowList.add(new Row(NuttCommon.add(traversedMembers,memberName),memberType.getType()));
 		}
-		return NuttInterpreter
-				.currentScope
-				.addRecord
-						(
-								name,
-								new RecordBuilder().setName(name).setRows(rowList).build(),
-								TypeInferencer.addCustomType(name,"Record",new ArrayList<>()).getType()
-						);
+		TypeInferencer.addCustomType(name,"Record",new ArrayList<>());
+		return NuttInterpreter.currentScope.addRecord(name,new RecordBuilder().setName(name).setRows(rowList).build());
 	}
 
 	@Override
@@ -75,6 +69,7 @@ public class NuttDeclarationVisitor extends NuttGenericVisitor
 		{
 			var byTypeDecl=decl.var_signature().by_type;
 			var byValueDecl=decl.var_signature().by_value;
+			//Type and value pair
 			Pair<NuttReference,NuttReference> initPair;
 			EConstantQualifier constantQualifier;
 			if(ctx.constant_qualifier().KW_Val()!=null) constantQualifier=EConstantQualifier.Val;
@@ -102,25 +97,25 @@ public class NuttDeclarationVisitor extends NuttGenericVisitor
 					initPair=new Pair<>(TypeInferencer.findTypeReference("Valuable"),NilReference.getInstance());
 				}
 			}
-			System.out.printf("name: '%s', valueHash: '%s'%n",decl.var_signature().NAME().getText(),
-			                  initPair.right().getValue().hashCode());
+			//System.out.printf("name: '%s', value: '%s'%n",decl.var_signature().NAME().getText(),initPair.right().getValue());
 			references.add(NuttInterpreter.declareVariable
 					                              (
 							                              decl.var_signature().NAME().getText(),
-							                              initPair.right().getType(),
-							                              initPair.left().getValue(),
+							                              initPair.left().getType(),
+							                              initPair.right().getValue(),
 							                              constantQualifier)
 			              );
 		}
 		return new Array(references).toAnonymousReference();
 	}
 
-	@Override public NuttReference visitAlias_decl(Nutt.Alias_declContext ctx)
-	{
-		var aliasNames=ctx.alias_name().stream().map(a->a.NAME().getText()).toList();
-		if(aliasNames.stream().distinct().count()!=aliasNames.size()) throw new RuntimeException("Duplicate names in alias statement!");
-		var anchor=NuttInterpreter.getReference(ctx.anchor_name.getText());
-		aliasNames.forEach(aliasName->NuttInterpreter.currentScope.referenceContainer.put(aliasName,anchor));
-		return anchor;
-	}
+	//	@Override public NuttReference visitAlias_decl(Nutt.Alias_declContext ctx)
+	//	{
+	//		var aliasNames=ctx.alias_name().stream().map(a->a.NAME().getText()).toList();
+	//		if(aliasNames.stream().distinct().count()!=aliasNames.size()) throw new RuntimeException("Duplicate names in alias
+	//		statement!");
+	//		var anchor=NuttInterpreter.getReference(ctx.anchor_name.getText());
+	//		aliasNames.forEach(aliasName->NuttInterpreter.currentScope.referenceContainer.put(aliasName,anchor));
+	//		return anchor;
+	//	}
 }

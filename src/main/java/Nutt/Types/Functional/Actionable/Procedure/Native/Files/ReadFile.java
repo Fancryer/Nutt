@@ -25,7 +25,7 @@ public class ReadFile extends NativeProcedure
 
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var asBinary=argumentList.size()>1&&argumentList.get(1).getValue().isTrue();
+		var asBinary=argumentList.size()>1&&argumentList.get(1).getValue().asFunctional().asNumerable().asBoolean().isTrue();
 		java.lang.String elementBoundType;
 		List<NuttReference> valuables;
 		if(asBinary)

@@ -31,6 +31,11 @@ public class NuttCommon
 		return sb.toString();
 	}
 
+	public static int minmax(int a,int min,int max)
+	{
+		return Math.min(Math.max(a,min),max);
+	}
+
 	public static <T> T requireNonNullElseThrow(T obj,Throwable throwable) throws RuntimeException
 	{
 		if(obj!=null) return obj;
@@ -104,7 +109,6 @@ public class NuttCommon
 		}
 		catch(Exception e)
 		{
-			System.out.println(e.getMessage());
 			throw new RuntimeException(e);
 		}
 		return source;

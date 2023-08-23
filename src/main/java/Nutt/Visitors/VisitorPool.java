@@ -4,7 +4,6 @@ public class VisitorPool
 {
 	public final static NuttArrayVisitor arrayVisitor=new NuttArrayVisitor();
 	public final static NuttAssignmentVisitor assignmentVisitor=new NuttAssignmentVisitor();
-	public final static NuttCompareVisitor compareVisitor=new NuttCompareVisitor();
 	public final static NuttConditionVisitor conditionVisitor=new NuttConditionVisitor();
 	public final static NuttDeclarationVisitor declarationVisitor=new NuttDeclarationVisitor();
 	public final static NuttEvalVisitor evalVisitor=new NuttEvalVisitor();

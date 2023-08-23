@@ -2,17 +2,12 @@ package Nutt.Interpreter.References;
 
 import Nutt.Interpreter.NuttInterpreter.EConstantQualifier;
 import Nutt.Runtime.Mutable;
-import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
-
-import java.util.Map;
 
 import static Nutt.Interpreter.NuttInterpreter.EConstantQualifier.Mut;
 
 public class AnonymousNuttReference extends NuttReference
 {
-	public static final Map<Type,Integer> typeCountMap=new java.util.HashMap<>();
-
 	public AnonymousNuttReference(IValuable value,EConstantQualifier qualifier)
 	{
 		this(new Mutable<>(value),qualifier);
@@ -20,13 +15,7 @@ public class AnonymousNuttReference extends NuttReference
 
 	public AnonymousNuttReference(Mutable<IValuable> value,EConstantQualifier qualifier)
 	{
-		super(computeName(value),value,qualifier,value.get().getType());
-	}
-
-	public static String computeName(Mutable<IValuable> value)
-	{
-		return "$%s%d".formatted(value.get().getType().getDisplayName(),typeCountMap.compute(value.get().getType(),(k,v)->(v==null)?0:
-		                                                                                                                  v+1));
+		super(value,qualifier,value.get().getType());
 	}
 
 	public static AnonymousNuttReference of(IValuable value,EConstantQualifier qualifier)
@@ -41,6 +30,6 @@ public class AnonymousNuttReference extends NuttReference
 
 	public static AnonymousNuttReference of(NuttReference reference)
 	{
-		return new AnonymousNuttReference(reference.getMutable(),reference.getQualifier());
+		return new AnonymousNuttReference(reference.getValue(),reference.getQualifier());
 	}
 }

@@ -4,7 +4,6 @@ import Nutt.Interpreter.NuttInterpreter;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.String.String;
-import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.INumerable;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Type.Type;
@@ -86,6 +85,7 @@ public class Float implements INumerable
 
 	private static boolean fitsInDouble(java.lang.String n)
 	{
+		System.out.println("n = "+n);
 		var bigDecimal=BigDecimalMath.toBigDecimal(n);
 		var result=bigDecimal.doubleValue();
 		boolean isDoubleValueValid=!(Double.isNaN(result)||Double.isInfinite(result));
@@ -104,29 +104,22 @@ public class Float implements INumerable
 	}
 
 	@Override
-	public boolean isTrue()
+	public Float asFloat()
 	{
-		return (isBigDecimal?asBigDecimal().compareTo(BigDecimal.ZERO):asDouble())!=0;
+		return this;
 	}
 
-	public Double asDouble()
+	@Override
+	public Int asInt()
 	{
-		return isDouble()?doubleValue:Double.valueOf(bigDecimalValue.doubleValue());
+		var asStr=toString();
+		var dotIndex=asStr.indexOf('.');
+		return Int.fromString(asStr.substring(Math.max(dotIndex,0)));
 	}
 
-	public boolean isDouble()
+	@Override public boolean isBoolean()
 	{
-		return !isBigDecimal;
-	}
-
-	public BigDecimal asBigDecimal()
-	{
-		return isBigDecimal()?bigDecimalValue:BigDecimal.valueOf(doubleValue);
-	}
-
-	public boolean isBigDecimal()
-	{
-		return isBigDecimal;
+		return false;
 	}
 
 	@Override
@@ -146,28 +139,14 @@ public class Float implements INumerable
 		return isDouble()?doubleValue:bigDecimalValue;
 	}
 
-	@Override
-	public Int asInt()
+	public boolean isDouble()
 	{
-		var asStr=toString();
-		var dotIndex=asStr.indexOf('.');
-		return Int.fromString(asStr.substring(Math.max(dotIndex,0)));
-	}
-
-	@Override
-	public Float asFloat()
-	{
-		return this;
+		return !isBigDecimal;
 	}
 
 	@Override public Float replicate()
 	{
 		return new Float(this);
-	}
-
-	@Override public Boolean asBoolean()
-	{
-		return new Boolean(isTrue());
 	}
 
 	@Override
@@ -176,10 +155,19 @@ public class Float implements INumerable
 		return isDouble()?doubleValue.toString():bigDecimalValue.toPlainString();
 	}
 
-	@Override
-	public int getLength()
+	public Double asDouble()
 	{
-		return toString().length();
+		return isDouble()?doubleValue:Double.valueOf(bigDecimalValue.doubleValue());
+	}
+
+	public BigDecimal asBigDecimal()
+	{
+		return isBigDecimal()?bigDecimalValue:BigDecimal.valueOf(doubleValue);
+	}
+
+	public boolean isBigDecimal()
+	{
+		return isBigDecimal;
 	}
 
 	@Override public Array spread()
@@ -196,11 +184,6 @@ public class Float implements INumerable
 				);
 	}
 
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<0;
-	}
-
 	private int compare(IValuable valuable)
 	{
 		var left=BigDecimalMath.toBigDecimal(toString());
@@ -208,49 +191,9 @@ public class Float implements INumerable
 		return left.compareTo(right);
 	}
 
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>0;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)<=0;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)>=0;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)==0;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Numerable",value.getType())&&compare(value)!=0;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&similarTo(value);
-	}
-
 	@Override
 	public Type getType()
 	{
 		return TypeInferencer.findTypeReference("Float").getType();
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
-	}
-
-	@Override public boolean isBoolean()
-	{
-		return false;
 	}
 }

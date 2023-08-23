@@ -1,6 +1,6 @@
 package Nutt.Annotations;
 
-public interface IReplicatable<T>
+public interface IReplicable<T>
 {
 	T replicate();
 }

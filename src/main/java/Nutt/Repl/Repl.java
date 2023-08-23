@@ -82,7 +82,7 @@ public class Repl
 
 	private void print(List<NuttReference> input)
 	{
-		input.stream().map(ref->ref.getMutable().get()).forEach(System.out::println);
+		input.stream().map(NuttReference::getValue).forEach(System.out::println);
 	}
 
 	private List<NuttReference> eval(List<StatContext> input)

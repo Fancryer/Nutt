@@ -1,5 +1,7 @@
 package Nutt.Interpreter;
 
+import Nutt.Interpreter.Logging.EActionStatus;
+import Nutt.Interpreter.Logging.ESeverity;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.IValuable;
 import lombok.Getter;
@@ -8,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static Nutt.NuttEnvironment.nuttLogger;
 
 @Getter public class ReferenceContainer
 {
@@ -56,16 +60,21 @@ import java.util.Set;
 		                 .entrySet();
 	}
 
-	public ReferenceContainer put(String name,NuttReference reference)
+	public ReferenceContainer put(NuttReference reference)
 	{
+		nuttLogger.appendLog("Reference adding start",reference.toString());
 		references.add(reference);
+		nuttLogger.appendLog("Reference adding finish",
+		                     reference.toString(),
+		                     EActionStatus.Success,
+		                     ESeverity.Info);
 		return this;
 	}
 
 	public NuttReference get(IValuable valuable)
 	{
 		return references.stream()
-		                 .filter(reference->reference.getMutable().get().equals(valuable))
+		                 .filter(reference->reference.getValue().equals(valuable))
 		                 .findFirst()
 		                 .orElseThrow();
 	}

@@ -70,6 +70,6 @@ import static gen.Nutt.Vararg_or_signatureContext;
 		var parametersAsSource=inputParameterList.stream()
 		                                         .map(par->NuttEnvironment.toSourceCode(par.right()))
 		                                         .collect(Collectors.joining(","));
-		return "(%s):%s".formatted(parametersAsSource,outputRow.ceiledValue().ceilType().getDisplayName());
+		return "(%s):%s".formatted(parametersAsSource,outputRow.ceiledValue().ceilType().getHeader().getDisplayName());
 	}
 }

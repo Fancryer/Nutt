@@ -29,59 +29,8 @@ public class Nil implements IValuable
 		return new Array();
 	}
 
-	@Override
-	public int getLength()
-	{
-		return 0;
-	}
-
 	@Override public Nil replicate()
 	{
 		return new Nil();
-	}
-
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Nil",value.getType());
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return false;
-	}
-
-	@Override public boolean isTrue()
-	{
-		return false;
 	}
 }

@@ -191,3 +191,52 @@ funct get_free_disk_space(path:String):Int=
    /| NATIVE CODE |\
 return
 ```
+
+### TRANSFORM
+
+native.strings.transform
+
+-    [ ] capitalize(string: String): String: Преобразует первую букву строки в верхний регистр, остальные символы
+     остаются неизменными.
+-    [ ] lowercase(string: String): String: Преобразует все символы строки в нижний регистр.
+-    [ ] uppercase(string: String): String: Преобразует все символы строки в верхний регистр.
+-    [ ] reverse(string: String): String: Разворачивает строку в обратном порядке.
+-    [ ] replace(string: String, old: String, new: String): String: Заменяет все вхождения подстроки old на подстроку
+     new в строке.
+-    [ ] split(string: String, delimiter: String): List<String>: Разделяет строку на подстроки, используя разделитель
+     delimiter, и возвращает список подстрок.
+-    [ ] join(strings: Array\[String], delimiter: String): String: Объединяет список подстрок strings в одну строку,
+     разделяя их с помощью разделителя delimiter.
+-    [ ] trim(string: String): String: Удаляет пробельные символы в начале и конце строки.
+-    [ ] substring(string: String, start: Int, end: Int): String: Возвращает подстроку из строки, начиная с индекса
+     start и заканчивая индексом end.
+-    [ ] length(string: String): Int: Возвращает длину строки.
+
+### CHAR
+
+module native.strings.char
+
+function is_char(string: String): Boolean:
+return len(string) == 1
+
+function ord(char: String): Int:
+return ord(char)
+
+function chr(value: Int): String:
+return chr(value)
+
+function is_digit(char: String): Boolean:
+return char.isdigit()
+
+function is_letter(char: String): Boolean:
+return char.isalpha()
+
+function is_whitespace(char: String): Boolean:
+return char.isspace()
+
+function is_uppercase(char: String): Boolean:
+return char.isupper()
+
+function is_lowercase(char: String): Boolean:
+return char.islower()
+

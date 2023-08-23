@@ -60,40 +60,28 @@ public class String implements IListable
 		return new String(content.replaceAll(regex,replacement));
 	}
 
-	@Override
-	public int getLength()
-	{
-		return content.length();
-	}
-
 	@Override public String replicate()
 	{
 		return new String(this);
 	}
 
 	@Override
-	public boolean isTrue()
-	{
-		return Objects.equals(content,"true");
-	}
-
-	@Override
 	public String add(NuttReference value)
 	{
-		return new String(content+value.getMutable().get().getValue());
+		return new String(content+value.getValue().getValue());
 	}
 
 	@Override
 	public NuttReference getAt(NuttReference index)
 	{
-		return getAt(index.getMutable().get().asFunctional().asNumerable().asInt().getValue().intValue()).toAnonymousReference();
+		return getAt(index.getValue().asFunctional().asNumerable().asInt().getValue().intValue()).toAnonymousReference();
 	}
 
 	@Override
 	public String setAt(NuttReference value,NuttReference index)
 	{
-		if(!(index.getMutable().get() instanceof Int intIndex)) throw new RuntimeException();
-		var valueAsStr=java.lang.String.valueOf(value.getMutable().get().getValue());
+		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
+		var valueAsStr=java.lang.String.valueOf(value.getValue().getValue());
 		var i=intIndex.getValue().intValue();
 		return new String(new StringBuilder(content).replace(i,i,valueAsStr).toString());
 	}
@@ -153,11 +141,6 @@ public class String implements IListable
 		return new String(java.lang.String.valueOf(content.charAt(index)));
 	}
 
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)<0;
-	}
-
 	private int compare(IValuable valuable)
 	{
 		return toString().compareTo
@@ -176,36 +159,6 @@ public class String implements IListable
 		return content;
 	}
 
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)>0;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)<=0;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)>=0;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)==0;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)!=0;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&similarTo(value);
-	}
-
 	@Override
 	public Type getType()
 	{
@@ -220,11 +173,6 @@ public class String implements IListable
 	@Override public java.lang.String getValue()
 	{
 		return content;
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
 	}
 
 	@Override

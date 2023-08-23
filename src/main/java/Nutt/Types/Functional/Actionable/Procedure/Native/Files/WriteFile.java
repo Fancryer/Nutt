@@ -33,7 +33,7 @@ public class WriteFile extends NativeProcedure
 		{
 			var elements=data.getValue().spread().getValue();
 			var bytes=new byte[elements.size()];
-			IntStream.range(0,data.getValue().spread().getLength())
+			IntStream.range(0,data.getValue().spread().getElements().size())
 			         .forEach
 					         (
 							         i->bytes[i]=elements.get(i)

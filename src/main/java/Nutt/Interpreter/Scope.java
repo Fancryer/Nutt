@@ -1,5 +1,8 @@
 package Nutt.Interpreter;
 
+import Nutt.Interpreter.Logging.EActionStatus;
+import Nutt.Interpreter.Logging.ESeverity;
+import Nutt.Interpreter.Logging.LogStamp;
 import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Runtime.Mutable;
@@ -17,6 +20,7 @@ import java.util.Set;
 
 import static Nutt.Interpreter.NuttInterpreter.EConstantQualifier.Val;
 import static Nutt.Interpreter.NuttInterpreter.EConstantQualifier.Var;
+import static Nutt.NuttEnvironment.nuttLogger;
 
 public class Scope
 {
@@ -69,7 +73,7 @@ public class Scope
 			var referenceType=value.getType();
 			if(ceilType.findChild(referenceType)==null&&!ceilType.equals(referenceType))
 			{
-				throw new Nutt.Exceptions.NuttVariableStoreException(ceilType.getDisplayName(),referenceType.getDisplayName());
+				throw new Nutt.Exceptions.NuttVariableStoreException(ceilType.getHeader().getDisplayName(),referenceType.getHeader().getDisplayName());
 			}
 			variableRef.setValue(value);
 			return variableRef;
@@ -82,21 +86,17 @@ public class Scope
 
 	public NuttReference addReference(String referenceName)
 	{
-		return addReference(referenceName,new AnonymousNuttReference(new Mutable<>(new Nil()),Var),"Valuable");
+		return addReference(referenceName,new AnonymousNuttReference(new Mutable<>(new Nil()),Var));
 	}
 
-	public NuttReference addReference(String name,NuttReference variable,String ceilType)
-	{
-		return addReference(name,variable,referenceContainer.get(ceilType).getType());
-	}
-
-	public NuttReference addReference(String referenceName,NuttReference reference,Type ceilType)
+	public NuttReference addReference(String referenceName,NuttReference reference)
 	{
 		if(definedLocally(referenceName))
 		{
+			nuttLogger.appendLog("Variable is already defined:",referenceName,EActionStatus.Failure,ESeverity.Fatal);
 			throw new RuntimeException("Variable '%s' is already defined!".formatted(referenceName));
 		}
-		referenceContainer.put(referenceName,reference);
+		referenceContainer.put(reference);
 		return reference;
 	}
 
@@ -105,24 +105,19 @@ public class Scope
 		return referenceContainer.get(referenceName)!=null;
 	}
 
-	public NuttReference addRecord(String recordName,Record record,Type ceilType)
+	public NuttReference addRecord(String recordName,Record record)
 	{
-		return addReference(recordName,new NuttReference(recordName,new Mutable<>(record),Val,ceilType),ceilType);
-	}
-
-	public NuttReference addReference(String referenceName,NuttReference reference)
-	{
-		return addReference(referenceName,reference,reference.getMutable().get().getType());
+		return addReference(recordName,new NuttReference(recordName,new Mutable<>(record),Val));
 	}
 
 	public Scope addLocalType(String typeName,Type parent,List<String> children)
 	{
-		return addLocalType(typeName,parent.getDisplayName(),children);
+		return addLocalType(typeName,parent.getHeader().getDisplayName(),children);
 	}
 
 	public Scope addLocalType(String typeName,String parentName,List<String> children)
 	{
-		addReference(typeName,TypeInferencer.addCustomType(typeName,parentName,children),parentName);
+		addReference(typeName,TypeInferencer.addCustomType(typeName,parentName,children));
 		return this;
 	}
 
@@ -131,8 +126,15 @@ public class Scope
 		var entrySet=Set.copyOf(referenceContainer.entrySet());
 		for(var entry: entrySet)
 		{
-			if(Objects.requireNonNull(entry.getValue().getMutable().get()) instanceof Type type)
-				TypeInferencer.removeCustomType(type.getDisplayName());
+			if(Objects.requireNonNull(entry.getValue().getValue()) instanceof Type type)
+				TypeInferencer.removeCustomType(type.getHeader().getDisplayName());
+			nuttLogger.appendLog
+					          (
+							          LogStamp.builder()
+							                  .action("Removed variable")
+							                  .message("%s: %s".formatted(entry.getKey(),entry.getValue()))
+							                  .build()
+					          );
 			referenceContainer.remove(entry.getKey());
 		}
 		return this;
@@ -147,7 +149,7 @@ public class Scope
 	public NuttReference addProcedure(String name,Procedure procedure)
 	{
 		var procedureRef=new NuttReference(name,procedure);
-		referenceContainer.put(name,procedureRef);
+		referenceContainer.put(procedureRef);
 		return procedureRef;
 	}
 }

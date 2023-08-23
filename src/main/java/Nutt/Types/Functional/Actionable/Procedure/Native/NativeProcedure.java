@@ -12,7 +12,7 @@ public abstract class NativeProcedure extends Procedure
 
 	@Override public String toString()
 	{
-		return "funct %s%s= /|NATIVE CODE|\\ return".formatted(name,signature);
+		return "funct %s%s=return".formatted(name,signature);
 	}
 
 	@Override public Procedure replicate()

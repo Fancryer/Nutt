@@ -6,6 +6,7 @@
     <groupId>groupId</groupId>
     <artifactId>Nutt</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <properties>
         <maven.compiler.source>20</maven.compiler.source>
         <maven.compiler.target>20</maven.compiler.target>
@@ -23,7 +24,27 @@
             <artifactId>jna</artifactId>
             <version>5.13.0</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.graalvm.buildtools/native-maven-plugin -->
+        <dependency>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>0.9.23</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.14.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>javapoet</artifactId>
+            <version>1.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.29.2-GA</version>
+        </dependency>
         <!--        <dependency>-->
         <!--            <groupId>com.github.kwhat</groupId>-->
         <!--            <artifactId>jnativehook</artifactId>-->
@@ -54,58 +75,23 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
         </dependency>
-
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305 &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>com.google.code.findbugs</groupId>-->
-        <!--            <artifactId>jsr305</artifactId>-->
-        <!--            <version>3.0.2</version>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.javassist/javassist &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.javassist</groupId>-->
-        <!--            <artifactId>javassist</artifactId>-->
-        <!--            <version>3.29.2-GA</version>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/slf4j-api &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.slf4j</groupId>-->
-        <!--            <artifactId>slf4j-api</artifactId>-->
-        <!--            <version>2.0.7</version>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/slf4j-simple &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.slf4j</groupId>-->
-        <!--            <artifactId>slf4j-simple</artifactId>-->
-        <!--            <version>2.0.7</version>-->
-        <!--            <scope>test</scope>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.dom4j/dom4j &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.dom4j</groupId>-->
-        <!--            <artifactId>dom4j</artifactId>-->
-        <!--            <version>2.1.4</version>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.junit.jupiter</groupId>-->
-        <!--            <artifactId>junit-jupiter-engine</artifactId>-->
-        <!--            <version>5.10.0-M1</version>-->
-        <!--            <scope>test</scope>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/slf4j-nop &ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.slf4j</groupId>-->
-        <!--            <artifactId>slf4j-nop</artifactId>-->
-        <!--            <version>2.0.7</version>-->
-        <!--            <scope>test</scope>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.7.4</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
+            <version>1.18.28</version>
+            <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.11.0</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -118,29 +104,40 @@
                     <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>Main</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <appendAssemblyId>false</appendAssemblyId>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>0.9.24</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                            <execution>
+                                <id>test-native</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <!-- ... -->
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

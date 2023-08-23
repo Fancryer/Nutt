@@ -17,7 +17,7 @@ public class ModuleLoader
 		if(NuttInterpreter.moduleNames.contains(moduleName)) return;
 		if(moduleName.indexOf("native")==0)
 		{
-			var procedure=NativeLoader.loadNativeProcedure(moduleName.replaceAll("\\\\\\\\","."));
+			var procedure=NativeLoader.loadNativeProcedure(moduleName.replace("\\\\","."));
 			NuttInterpreter.currentScope.addProcedure(procedure.getName(),procedure);
 			return;
 		}

@@ -20,10 +20,19 @@ public class Count extends NativeProcedure
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		var list=argumentList.get(0).getValue().asFunctional().asListable();
-		var seeking=argumentList.get(1).getValue();
+		var seeking=argumentList.get(1);
 		var count=list.stream()
-		              .map(NuttReference::getValue)
-		              .filter(el->el.equalTo(seeking))
+		              .filter
+				              (
+						              el->el.getType()
+						                    .getOperator("===")
+						                    .proceed(List.of(el,seeking))
+						                    .getValue()
+						                    .asFunctional()
+						                    .asNumerable()
+						                    .asBoolean()
+						                    .isTrue()
+				              )
 		              .count();
 		return new Int(count).toAnonymousReference();
 	}

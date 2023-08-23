@@ -44,7 +44,7 @@ public class TypeInferencer
 
 	public static NuttReference findTypeReference(Type type)
 	{
-		return type==null?null:findTypeReference(type.getDisplayName());
+		return type==null?null:findTypeReference(type.getHeader().getDisplayName());
 	}
 
 	public static boolean canTypeBeAdded(String typeName,String parentName)
@@ -60,7 +60,7 @@ public class TypeInferencer
 	public static NuttReference addCustomType(String typeName,Type parent,
 	                                          List<String> children)
 	{
-		return addCustomType(typeName,parent.getDisplayName(),children);
+		return addCustomType(typeName,parent.getHeader().getDisplayName(),children);
 	}
 
 	public static Boolean verdictStringTypeParameters(List<String> typesA,List<String> typesB)
@@ -83,12 +83,14 @@ public class TypeInferencer
 		       &&verdictTypeParameters
 				       (
 						       referenceA.getType()
+						                 .getHeader()
 						                 .getTypeParameters()
 						                 .stream()
 						                 .map(TypeInferencer::findTypeReference)
 						                 .toList(),
 						       referenceB.getType()
-						                 .getTypeParameters()
+						                 .getHeader().
+						                 getTypeParameters()
 						                 .stream()
 						                 .map(TypeInferencer::findTypeReference)
 						                 .toList()
@@ -104,13 +106,13 @@ public class TypeInferencer
 
 	public static Boolean verdict(String typeA,Type typeB)
 	{
-		return verdict(typeA,typeB.getDisplayName());
+		return verdict(typeA,typeB.getHeader().getDisplayName());
 	}
 
 	public static NuttReference findTypeElse(Type type,
 	                                         Type otherType)
 	{
-		return findTypeElse(type.getDisplayName(),otherType.getDisplayName());
+		return findTypeElse(type.getHeader().getDisplayName(),otherType.getHeader().getDisplayName());
 	}
 
 	public static NuttReference findTypeElse(String typeName,String otherTypeName)
@@ -126,7 +128,7 @@ public class TypeInferencer
 			                  " ".repeat(4*depth),
 			                  depth,
 			                  offset,
-			                  tree.getDisplayName(),
+			                  tree.getHeader().getDisplayName(),
 			                  tree.hashCode());
 			int i=0;
 			for(var child: tree.getChildren()) prettyPrintTypeTree(child,depth+1,i++);
@@ -160,7 +162,7 @@ public class TypeInferencer
 
 	public static NuttReference getCommonWrapperType(List<NuttReference> types)
 	{
-		System.out.println("types = "+types);
+		//System.out.println("types = "+types);
 		if(types.isEmpty()) return findTypeReference("Nil");
 		var commonType=types.get(0);
 		if(types.size()==1) return commonType;
@@ -194,7 +196,7 @@ public class TypeInferencer
 
 	public static NuttReference findParent(NuttReference typeReference)
 	{
-		var parentType=typeReference.getValue().asFunctional().asType().parent;
+		var parentType=typeReference.getValue().asFunctional().asType().getHeader().getParent();
 		return findTypeReference(parentType);
 	}
 }

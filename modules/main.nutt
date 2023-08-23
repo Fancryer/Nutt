@@ -1,9 +1,77 @@
-module main
-imports native.io.output.say
+module main imports
+native
+{
+	io.output{sayn,say},
+	strings
+	{
+		convert.to_int,
+		transform.join
+	},
+	arrays.append
+}
 
-for _,child|->Valuable do
-	var c:Valuable=child
-	say(c)
+funct tokenize(src:String)=
+	mut token_pairs={}
+    for _,i|->{0,1..#src-1} do
+    	val c=src[i],token_pair=match c to
+    		'0','1','2','3','4','5','6','7','8','9'-->{'digit',to_int(c)}
+    		'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'-->{'variable',c}
+    		'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'-->{'constant',c}
+    		'+','-','*','/','_'-->{'math',c}
+    		'`','<','=','>'-->{'logical',c}
+    		'?','$'-->{'print',c}
+    		':',';','~','%'-->{'stack',c}
+    		'{','|','}','\\','^'-->{'flow',c}
+    		'(',')','@'-->{'macro',c}
+    		'[',']'-->{'loop',c}
+    		'.',','-->{'label',c}
+    		'#','!'-->{'service',c}
+    		'"',"\'",'&'-->{'string',c}
+    		default-->nil
+    	token_pairs=append(token_pairs,token_pair)
+    	doif c==='!' break
+    done
+	return token_pairs
 end
+
+funct execute(token_pair:Array)=
+	val token_type=token_pair[0],token_value=token_pair[1]
+	doif token_type==='digit' calc_stack=append(calc_stack,token_value)
+	doif token_type==='variable' var_stack=append(var_stack,token_value)
+end
+
+funct interprete(src:String)=
+	val get_interpreter_info=()==>join
+		(
+			"var_stack=",var_stack,
+			", calc_stack=",calc_stack,
+			", variables=",variables,
+			", constants=",constants,
+			", tokens=",tokens
+		),
+		constants=
+		{
+			//|A    B   C   D   E   F   G   H   I   J       K
+			10,     20, 30, 40, 50, 60, 70, 80, 90, 100,    200,
+			//|L    M       N       O       P       Q       R       S
+			300,    400,    500,    600,    700,    800,    900,    1000,
+			//|T    U       V       W       X       Y       Z
+			2000,   3000,   4000,   5000,   6000,   7000,   8000
+		},
+        tokens=tokenize(src)
+	mut
+		var_stack={},
+		calc_stack={},
+		variables={},
+		is_using_calc_stack=true,
+		is_in_loop=false,
+		is_in_macro=false
+	say(tokens)
+	for _,token|->tokens
+		execute(token)
+	say(get_interpreter_info())
+end
+
+interprete("12+3-?!")
 
 end

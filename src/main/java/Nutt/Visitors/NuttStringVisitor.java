@@ -14,7 +14,7 @@ public class NuttStringVisitor extends NuttGenericVisitor
 {
 	public java.lang.String extractTypeName(Type_paramContext ctx)
 	{
-		return ctx!=null?visitType_param(ctx).getType().getDisplayName():null;
+		return ctx!=null?visitType_param(ctx).getType().getHeader().getDisplayName():null;
 	}
 
 	@Override
@@ -23,7 +23,7 @@ public class NuttStringVisitor extends NuttGenericVisitor
 		return AnonymousNuttReference.of
 				                             (
 						                             ctx.Normal_string()!=null
-						                             ?new String(ctx.Normal_string().getText())
+						                             ?visitNormalString(ctx.Normal_string())
 						                             :visitCharString(ctx.Char_String())
 				                             );
 	}
@@ -31,6 +31,11 @@ public class NuttStringVisitor extends NuttGenericVisitor
 	private String visitCharString(TerminalNode charString)
 	{
 		return new String(NuttCommon.removeFirstAndLastChars(charString.getText()).replaceAll("\\\\'","'"));
+	}
+
+	private String visitNormalString(TerminalNode normalString)
+	{
+		return new String(NuttCommon.removeFirstAndLastChars(normalString.getText()));//.replaceAll("\\\\\"","\""));
 	}
 
 	private java.lang.String getFullText(ParserRuleContext context)

@@ -7,18 +7,20 @@ import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
 import lombok.Getter;
+import lombok.Setter;
 
 import static Nutt.Interpreter.NuttInterpreter.EConstantQualifier.*;
 
 @Getter
 public class NuttReference
 {
-	private final String name;
-	private final Mutable<IValuable> value;
+	protected final Mutable<IValuable> value;
 	@Getter
-	private final EConstantQualifier qualifier;
+	protected final EConstantQualifier qualifier;
 	@Getter
-	private final Type ceilType;
+	protected final Type ceilType;
+	@Setter
+	protected String name;
 
 	public NuttReference(String name,IValuable value)
 	{
@@ -48,6 +50,11 @@ public class NuttReference
 		this(name,new Mutable<>(new Nil()),Var);
 	}
 
+	public NuttReference(Mutable<IValuable> value,EConstantQualifier qualifier,Type type)
+	{
+		this("anonymous"+value.get().getType(),value,qualifier,type);
+	}
+
 	public Type getType()
 	{
 		return value.get().getType();
@@ -55,19 +62,10 @@ public class NuttReference
 
 	public IValuable getValue()
 	{
-		return getMutable().get();
+		return (isMutable()?value:value.replicate()).get();
 	}
 
-	/**
-	 @return value of variable if variable appears as mutable, otherwise its copy.
-	 */
-	public Mutable<IValuable> getMutable()
-	{
-		return isMutable()
-		       ?value
-		       :value.replicate();
-	}
-
+	/** @return value of variable if variable appears as mutable, otherwise its copy. */
 	public boolean isMutable()
 	{
 		return qualifier==Mut;
@@ -91,6 +89,6 @@ public class NuttReference
 
 	@Override public String toString()
 	{
-		return "{name='%s',value=%s,qualifier=%s,ceilType=%s}".formatted(name,value,qualifier,ceilType);
+		return "{name='%s',value=%s,qualifier=%s,ceilType=%s}".formatted(name,value.get(),qualifier,ceilType);
 	}
 }

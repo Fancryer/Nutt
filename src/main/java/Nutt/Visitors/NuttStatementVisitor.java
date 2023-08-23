@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static Nutt.NuttEnvironment.getTempParser;
@@ -80,14 +81,14 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 
 	@Override public NuttReference visitDo_if_stat(Do_if_statContext ctx)
 	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().isTrue();
+		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().asFunctional().asNumerable().asBoolean().isTrue();
 		if(cond) return visit(ctx.stat());
 		return NilReference.getInstance();
 	}
 
 	@Override public NuttReference visitDo_if_not_stat(Do_if_not_statContext ctx)
 	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().isTrue();
+		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().asFunctional().asNumerable().asBoolean().isTrue();
 		return cond?NilReference.getInstance():visit(ctx.stat());
 	}
 
@@ -122,7 +123,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override public NuttReference visitIf_then_else_block_stat(If_then_else_block_statContext ctx)
 	{
 		var block=ctx.if_then_else_block();
-		var pred=VisitorPool.conditionVisitor.visit(block.exp()).getValue().isTrue();
+		var pred=VisitorPool.conditionVisitor.visit(block.exp()).getValue().asFunctional().asNumerable().asBoolean().isTrue();
 		if(pred) return visitBlock(block.then_block().block());
 		var elseBlock=block.else_block();
 		return elseBlock!=null?visitBlock(elseBlock.block()):new String().toAnonymousReference();
@@ -257,7 +258,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 		var conditionVisitor=VisitorPool.conditionVisitor;
 		var whileBlock=NuttEnvironment.parseWithBound("do ",ctx.stat()," done").block();
 		whileLoop:
-		while(conditionVisitor.visitExplist(ctx.explist()).getValue().isTrue())
+		while(conditionVisitor.visitExplist(ctx.explist()).getValue().asFunctional().asNumerable().asBoolean().isTrue())
 		{
 			for(var stat: whileBlock.children)
 			{
@@ -306,7 +307,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitDemand(DemandContext ctx)
 	{
-		if(!VisitorPool.conditionVisitor.visitDemand(ctx).getValue().isTrue())
+		if(!VisitorPool.conditionVisitor.visitDemand(ctx).getValue().asFunctional().asNumerable().asBoolean().isTrue())
 			throw new RuntimeException("Fail on demand: "+NuttEnvironment.toSourceCode(ctx.exp()));
 		return NilReference.getInstance();
 	}
@@ -345,9 +346,57 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 		for(var element: listable)
 		{
 			lastValue=NuttInterpreter.currentScope.setReference(variableName.getValue(),element.getValue()).getValue();
-			NuttInterpreter.executeBlockAsScope(()->visitBlock(ctx));
+			try
+			{
+				NuttInterpreter.executeBlockAsScope(()->visitBlock(ctx));
+			}
+			catch(NuttContinueException e)
+			{
+				continue;
+			}
+			catch(NuttBreakException e)
+			{
+				break;
+			}
 		}
 		return lastValue.toAnonymousReference();
+	}
+
+	@Override public NuttReference visitMatch_to_stat(Match_to_statContext ctx)
+	{
+		return visitMatch_to(ctx.match_to());
+	}
+
+	@Override public NuttReference visitMatch_to(Match_toContext ctx)
+	{
+		var matched=visit(ctx.matched);
+		NuttReference lastMatch=null;
+		Predicate<Match_branchContext> branchSuits=b->b.explist()
+		                                               .exp()
+		                                               .stream()
+		                                               .anyMatch
+				                                               (
+						                                               m->NuttInterpreter.applyOperator(visit(m),matched,"===")
+						                                                                 .getValue()
+						                                                                 .asFunctional()
+						                                                                 .asNumerable()
+						                                                                 .asBoolean()
+						                                                                 .isTrue()
+				                                               );
+		for(var branch: ctx.match_branch().stream().filter(branchSuits).toList())
+		{
+			if(branchSuits.test(branch))
+			{
+				lastMatch=visit(branch.exp());
+				if(branch.KW_Final()!=null) break;
+			}
+		}
+		if(lastMatch==null)
+		{
+			if(ctx.default_match_branch()!=null) lastMatch=visit(ctx.default_match_branch().exp());
+			else throw new RuntimeException("Non exhaustive match..to expression");
+		}
+		return lastMatch;
 	}
 
 	//	@Override

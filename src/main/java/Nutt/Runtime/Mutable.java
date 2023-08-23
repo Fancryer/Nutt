@@ -1,8 +1,8 @@
 package Nutt.Runtime;
 
-import Nutt.Annotations.IReplicatable;
+import Nutt.Annotations.IReplicable;
 
-public class Mutable<T> implements IReplicatable<Mutable<T>>
+public class Mutable<T> implements IReplicable<Mutable<T>>
 {
 	private T value;
 

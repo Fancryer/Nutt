@@ -1,6 +1,10 @@
 package Nutt;
 
 import Nutt.Annotations.ANativeProcedure;
+import Nutt.Interpreter.Logging.EActionStatus;
+import Nutt.Interpreter.Logging.ESeverity;
+import Nutt.Interpreter.Logging.MarkdownLogger;
+import Nutt.Interpreter.Logging.NuttLogger;
 import Nutt.Interpreter.NuttInterpreter;
 import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.Interpreter.References.NuttReference;
@@ -33,9 +37,11 @@ import java.util.stream.IntStream;
 public class NuttEnvironment
 {
 	public static final java.util.Map<java.lang.String,Class<? extends NativeProcedure>> nativeProcedures=new HashMap<>();
+	public static final NuttLogger nuttLogger=new NuttLogger();
 
 	static
 	{
+		nuttLogger.appendLog("Native procedures processing start","succeed");
 		var packageName="Nutt.Types.Functional.Actionable.Procedure.Native";
 		var classLoader=Thread.currentThread().getContextClassLoader();
 		try
@@ -49,11 +55,14 @@ public class NuttEnvironment
 				{
 					var annotation=clazz.getAnnotation(ANativeProcedure.class);
 					nativeProcedures.put(annotation.value(),clazz.asSubclass(NativeProcedure.class));
+					nuttLogger.appendLog("Native procedure processed",annotation.value());
 				}
 			}
+			nuttLogger.appendLog("Native procedures processing finish","succeed");
 		}
 		catch(IOException e)
 		{
+			nuttLogger.appendLog("Native procedures processing finish","failed due to IO exception");
 			throw new RuntimeException(e);
 		}
 	}
@@ -65,12 +74,25 @@ public class NuttEnvironment
 
 	public NuttEnvironment(java.lang.String source,java.lang.String moduleRootPath)
 	{
-		visit(source);
-		clearInterpreter();
+		try
+		{
+			visit(source);
+		}
+		catch(Exception e)
+		{
+			nuttLogger.appendLog("Exception catched",e.toString(),EActionStatus.Failure,ESeverity.Fatal);
+			throw e;
+		}
+		finally
+		{
+			clearInterpreter();
+			new MarkdownLogger(nuttLogger.writeLogs()).writeLog(nuttLogger.getLogStamps());
+		}
 	}
 
 	public NuttEnvironment visit(java.lang.String source)
 	{
+		nuttLogger.appendLog("Environment opening","succeed");
 		var parser=setup(source);
 		VisitorPool.statementVisitor.visitChunk(parser.chunk());
 		return this;
@@ -83,7 +105,15 @@ public class NuttEnvironment
 
 	private void clearInterpreter()
 	{
-		NuttInterpreter.clear();
+		try
+		{
+			NuttInterpreter.clear();
+			nuttLogger.appendLog("Environment closing","succeed");
+		}
+		catch(Exception e)
+		{
+			nuttLogger.appendLog("Environment closing",e.toString(),EActionStatus.Failure,ESeverity.Fatal);
+		}
 	}
 
 	public static NuttReference constructReference(java.lang.String type)
@@ -94,8 +124,8 @@ public class NuttEnvironment
 	public static NuttReference constructReference(Type type)
 	{
 		if(type==null) return null;
-		if(!TypeInferencer.hasType(type.getDisplayName())) throw new RuntimeException();
-		var valuable=switch(type.getDisplayName())
+		if(!TypeInferencer.hasType(type.getHeader().getDisplayName())) throw new RuntimeException();
+		var valuable=switch(type.getHeader().getDisplayName())
 		{
 			case "Listable","Array" -> new Array();
 			case "String" -> new String();

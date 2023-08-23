@@ -1,4 +1,4 @@
-package Nutt.Types.Functional.Actionable.Procedure.Native.Strings;
+package Nutt.Types.Functional.Actionable.Procedure.Native.Strings.Transform;
 
 import Nutt.Annotations.ANativeProcedure;
 import Nutt.Exceptions.NuttSuccessReturnException;
@@ -9,7 +9,7 @@ import Nutt.Types.Functional.Listable.String.String;
 
 import java.util.List;
 
-@ANativeProcedure("native.strings")
+@ANativeProcedure("native.strings.transform.lower")
 public class Lower extends NativeProcedure
 {
 	public Lower()

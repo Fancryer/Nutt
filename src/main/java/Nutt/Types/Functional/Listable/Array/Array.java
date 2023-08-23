@@ -10,7 +10,6 @@ import Nutt.Types.IValuable;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 public class Array implements IListable
 {
@@ -72,7 +71,7 @@ public class Array implements IListable
 	@Override
 	public NuttReference getAt(NuttReference index)
 	{
-		if(!(index.getMutable().get() instanceof Int intIndex)) throw new RuntimeException();
+		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
 		return getAt(intIndex.asLong().intValue());
 	}
 
@@ -84,7 +83,7 @@ public class Array implements IListable
 	@Override
 	public Array setAt(NuttReference value,NuttReference index)
 	{
-		if(!(index.getMutable().get() instanceof Int intIndex)) throw new RuntimeException();
+		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
 		if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(getElementType()),TypeInferencer.findTypeReference(value.getType())))
 			throw new ArrayStoreException("Array of '%s' cannot store '%s'".formatted(getElementType(),value.getType()));
 		var ret=new ArrayList<>(elements);
@@ -106,6 +105,7 @@ public class Array implements IListable
 		            ?"Valuable"
 		            :elements.get(0)
 		                     .getType()
+		                     .getHeader()
 		                     .getDisplayName();
 		return new Array(type,Objects.requireNonNullElse(elements,new ArrayList<>()));
 	}
@@ -193,7 +193,7 @@ public class Array implements IListable
 	@Override
 	public List<IValuable> getValue()
 	{
-		return elements.stream().map(reference->reference.getMutable().get()).toList();
+		return elements.stream().map(NuttReference::getValue).toList();
 	}
 
 	public void remove(int index)
@@ -222,63 +222,11 @@ public class Array implements IListable
 		return new Array(this.elementBoundType,this.elements);
 	}
 
-	@Override
-	public boolean isTrue()
-	{
-		return elements.isEmpty();
-	}
-
-	@Override public boolean lessThan(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)<0;
-	}
-
-	private int compare(IValuable valuable)
-	{
-		return getLength()-valuable.getLength();
-	}
-
-	@Override
-	public int getLength()
-	{
-		return elements.size();
-	}
-
-	@Override public boolean greaterTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)>0;
-	}
-
-	@Override public boolean lessEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)<=0;
-	}
-
-	@Override public boolean greaterEqualTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)>=0;
-	}
-
-	@Override public boolean similarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)==0;
-	}
-
-	@Override public boolean notSimilarTo(IValuable value)
-	{
-		return TypeInferencer.verdict("Listable",value.getType())&&compare(value)!=0;
-	}
-
-	@Override public boolean equalTo(IValuable value)
-	{
-		if(!TypeInferencer.typesEquals(getType(),value.getType())) return false;
-		var list=value.asFunctional().asListable().asArray().getValue();
-		if(list.size()!=getLength()) return false;
-		return IntStream.range(0,list.size()).allMatch(i->list.get(i).equalTo(elements.get(i).getValue()));
-	}
-
-	@Override public boolean notEqualTo(IValuable value)
-	{
-		return TypeInferencer.typesEquals(getType(),value.getType())&&notSimilarTo(value);
-	}
+	//	@Override public boolean equalTo(IValuable value)
+	//	{
+	//		if(!TypeInferencer.typesEquals(getType(),value.getType())) return false;
+	//		var list=value.asFunctional().asListable().asArray().getValue();
+	//		if(list.size()!=getLength()) return false;
+	//		return IntStream.range(0,list.size()).allMatch(i->list.get(i).equalTo(elements.get(i).getValue()));
+	//	}
 }

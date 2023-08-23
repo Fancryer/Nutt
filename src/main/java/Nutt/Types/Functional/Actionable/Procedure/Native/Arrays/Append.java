@@ -8,7 +8,7 @@ import Nutt.Types.Functional.Actionable.Procedure.Signature;
 
 import java.util.List;
 
-@ANativeProcedure("native.arrays")
+@ANativeProcedure("native.arrays.append")
 public class Append extends NativeProcedure
 {
 	public Append()
@@ -18,7 +18,11 @@ public class Append extends NativeProcedure
 
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		argumentList.get(0).getValue().asFunctional().asListable().add(argumentList.get(1));
-		return argumentList.get(0);
+		return argumentList.get(0)
+		                   .getValue()
+		                   .asFunctional()
+		                   .asListable()
+		                   .add(argumentList.get(1))
+		                   .toAnonymousReference();
 	}
 }

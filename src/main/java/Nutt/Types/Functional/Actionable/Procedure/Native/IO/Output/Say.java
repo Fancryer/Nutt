@@ -17,7 +17,8 @@ public class Say extends NativeProcedure
 		super("say",new Signature("x:Valuable"));
 	}
 
-	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
+	@Override
+	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		if(argumentList.size()>1) throw new RuntimeException();
 		return NuttInterpreter.sayNewLine(argumentList.get(0));
