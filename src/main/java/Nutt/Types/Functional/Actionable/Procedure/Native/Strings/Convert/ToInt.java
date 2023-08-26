@@ -5,6 +5,7 @@ import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
+import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Int.Int;
 
 import java.util.List;
@@ -22,9 +23,7 @@ public class ToInt extends NativeProcedure
 	{
 		var asString=argumentList.get(0)
 		                         .getValue()
-		                         .asFunctional()
-		                         .asListable()
-		                         .asString();
+		                         .simpleCast(String.class);
 		return Int.fromString(asString.toString()).toAnonymousReference();
 	}
 }

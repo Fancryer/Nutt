@@ -73,7 +73,8 @@ public class Scope
 			var referenceType=value.getType();
 			if(ceilType.findChild(referenceType)==null&&!ceilType.equals(referenceType))
 			{
-				throw new Nutt.Exceptions.NuttVariableStoreException(ceilType.getHeader().getDisplayName(),referenceType.getHeader().getDisplayName());
+				throw new Nutt.Exceptions.NuttVariableStoreException(ceilType.getHeader().getDisplayName(),
+				                                                     referenceType.getHeader().getDisplayName());
 			}
 			variableRef.setValue(value);
 			return variableRef;
@@ -94,7 +95,7 @@ public class Scope
 		if(definedLocally(referenceName))
 		{
 			nuttLogger.appendLog("Variable is already defined:",referenceName,EActionStatus.Failure,ESeverity.Fatal);
-			throw new RuntimeException("Variable '%s' is already defined!".formatted(referenceName));
+			throw new RuntimeException("Variable '%s' is already defined with value '%s'!".formatted(referenceName,reference));
 		}
 		referenceContainer.put(reference);
 		return reference;

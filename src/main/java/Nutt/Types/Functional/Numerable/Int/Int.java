@@ -1,5 +1,7 @@
 package Nutt.Types.Functional.Numerable.Int;
 
+import Nutt.Interpreter.References.NilReference;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.String.String;
@@ -138,7 +140,8 @@ public class Int implements INumerable
 		return true;
 	}
 
-	@Override public boolean isFloat()
+	@Override
+	public boolean isFloat()
 	{
 		return false;
 	}
@@ -159,18 +162,24 @@ public class Int implements INumerable
 		return new Int(this);
 	}
 
-	@Override public Boolean asBoolean()
-	{
-		return new Boolean(asBigInteger().compareTo(BigInteger.ZERO)!=0);
-	}
-
 	@Override
 	public java.lang.String toString()
 	{
 		return (intType==EIntType.Long?longValue:bigIntegerValue).toString();
 	}
 
-	@Override public Array spread()
+	public Boolean asBoolean()
+	{
+		return new Boolean(asBigInteger().compareTo(BigInteger.ZERO)!=0);
+	}
+
+	@Override public NuttReference getProperty(java.lang.String name)
+	{
+		return NilReference.getInstance();
+	}
+
+	@Override
+	public Array spread()
 	{
 		return new Array(getType(),new String(toString()).stream().toList());
 	}

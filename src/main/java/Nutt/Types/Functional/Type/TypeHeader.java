@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Builder
@@ -13,6 +14,7 @@ public class TypeHeader
 	private java.lang.String displayName;
 	@Setter
 	private Type parent;
-	private List<Type> children;
+	@Builder.Default
+	private List<Type> children=new ArrayList<>();
 	private List<Type> typeParameters;
 }

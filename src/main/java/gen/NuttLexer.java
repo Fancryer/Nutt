@@ -1,4 +1,4 @@
-// Generated from G:/Nutt/src/main/java\NuttLexer.g4 by ANTLR 4.12.0
+// Generated from G:\Nutt\src\main\java\NuttLexer.g4 by ANTLR 4.12.0
 package gen;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

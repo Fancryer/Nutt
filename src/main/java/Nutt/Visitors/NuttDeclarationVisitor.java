@@ -13,6 +13,7 @@ import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.Procedure.ProcedureBuilder;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.String.String;
 import gen.Nutt;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class NuttDeclarationVisitor extends NuttGenericVisitor
 		                    :new ArrayList<Nutt.Vararg_or_signatureContext>();
 		var output=VisitorPool.typeInferenceVisitor.visitFunc_output(funcBody.funct_signature().func_output());
 		var procedure=new ProcedureBuilder()
-				.setSignature(new Signature(inputParameters,output.getType()))
+				.setSignature(new Signature(inputParameters,output.getType().getHeader().getDisplayName()))
 				.setFunctionBody(funcBody.block())
 				.setOutput(output)
 				.createProcedure();
@@ -47,14 +48,12 @@ public class NuttDeclarationVisitor extends NuttGenericVisitor
 		{
 			var memberName=VisitorPool.stringVisitor.visit(member.string())
 			                                        .getValue()
-			                                        .asFunctional()
-			                                        .asListable()
-			                                        .asString()
+			                                        .simpleCast(String.class)
 			                                        .toString();
 			var memberType=VisitorPool.typeInferenceVisitor.visitType_param(member.by_type_var_decl().type_param());
 			if(traversedMembers.contains(memberName))
 				throw new RuntimeException("Record '%s' cannot contain more than one '%s' row!".formatted(memberName,memberType));
-			rowList.add(new Row(NuttCommon.add(traversedMembers,memberName),memberType.getType()));
+			rowList.add(new Row(NuttCommon.add(traversedMembers,memberName),memberType));
 		}
 		TypeInferencer.addCustomType(name,"Record",new ArrayList<>());
 		return NuttInterpreter.currentScope.addRecord(name,new RecordBuilder().setName(name).setRows(rowList).build());

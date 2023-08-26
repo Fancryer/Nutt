@@ -38,8 +38,7 @@ public class NuttFunctionVisitor extends NuttGenericVisitor
 		List<NuttReference> passedParameters=ctx.arguments==null
 		                                     ?new ArrayList<>()
 		                                     :ctx.arguments.exp().stream().map(evaluator::visit).toList();
-		//Procedure not found, may be native
-		if(Objects.requireNonNull(evaluator.visit(ctx.name)).getValue() instanceof Procedure procedure)
+		if(Objects.requireNonNull(evaluator.visit(ctx.exp())).getValue() instanceof Procedure procedure)
 			return procedure.replicate().proceed(passedParameters);
 		throw new RuntimeException();
 	}
@@ -60,7 +59,7 @@ public class NuttFunctionVisitor extends NuttGenericVisitor
 
 	private Procedure getProcedureAtName(java.lang.String name)
 	{
-		return NuttInterpreter.getReference(name).getValue().asFunctional().asActionable().asProcedure();
+		return NuttInterpreter.getReference(name).getValue().simpleCast(Procedure.class);
 	}
 
 	public NuttReference invokeProcedure(Procedure procedure,List<NuttReference> parameters)

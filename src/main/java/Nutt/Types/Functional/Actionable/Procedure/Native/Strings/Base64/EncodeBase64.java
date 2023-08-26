@@ -5,8 +5,11 @@ import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
+import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.String.String;
+import Nutt.Types.Functional.Numerable.Int.Int;
 
 import java.util.Base64;
 import java.util.List;
@@ -22,15 +25,15 @@ public class EncodeBase64 extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var byteArray=argumentList.get(0).getValue().asFunctional().asListable().asArray();
+		var byteArray=argumentList.get(0).getValue().simpleCast(Array.class);
 		if(!TypeInferencer.verdict("Int",byteArray.getElementType())) throw new RuntimeException("Array is not of type Int");
 		var arrayLength=byteArray.getType()
 		                         .getOperator("#")
+		                         .getValue()
+		                         .simpleCast(Procedure.class)
 		                         .proceed(List.of(argumentList.get(0)))
 		                         .getValue()
-		                         .asFunctional()
-		                         .asNumerable()
-		                         .asInt()
+		                         .simpleCast(Int.class)
 		                         .getValue()
 		                         .intValue();
 		var bytes=new byte[arrayLength];
@@ -38,9 +41,7 @@ public class EncodeBase64 extends NativeProcedure
 		{
 			bytes[i]=byteArray.getAt(i)
 			                  .getValue()
-			                  .asFunctional()
-			                  .asNumerable()
-			                  .asInt()
+			                  .simpleCast(Int.class)
 			                  .getValue()
 			                  .byteValue();
 		}

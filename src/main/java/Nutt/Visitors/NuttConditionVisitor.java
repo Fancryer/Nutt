@@ -1,7 +1,7 @@
 package Nutt.Visitors;
 
 import Nutt.Interpreter.References.NuttReference;
-import Nutt.Types.IValuable;
+import Nutt.Types.Functional.Numerable.Boolean;
 import gen.Nutt;
 
 public class NuttConditionVisitor extends NuttGenericVisitor
@@ -11,14 +11,7 @@ public class NuttConditionVisitor extends NuttGenericVisitor
 	{
 		return visit(ctx.exp())
 				.getValue()
-				.asFunctional()
-				.asNumerable()
-				.asBoolean()
+				.simpleCast(Boolean.class)
 				.toAnonymousReference();
-	}
-
-	private boolean isTrue(IValuable valuable)
-	{
-		return valuable.asFunctional().asNumerable().asBoolean().isTrue();
 	}
 }

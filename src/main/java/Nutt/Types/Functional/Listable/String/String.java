@@ -1,8 +1,12 @@
 package Nutt.Types.Functional.Listable.String;
 
+import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.References.AnonymousNuttReference;
+import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
+import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Int.Int;
@@ -65,6 +69,30 @@ public class String implements IListable
 		return new String(this);
 	}
 
+	private int compare(IValuable valuable)
+	{
+		return toString().compareTo
+				                 (
+						                 valuable.spread()
+						                         .getElements()
+						                         .stream()
+						                         .map(Objects::toString)
+						                         .collect(Collectors.joining())
+				                 );
+	}
+
+	@Override
+	public java.lang.String toString()
+	{
+		return content;
+	}
+
+	@Override
+	public Type getType()
+	{
+		return TypeInferencer.findTypeReference("String").getType();
+	}
+
 	@Override
 	public String add(NuttReference value)
 	{
@@ -74,7 +102,7 @@ public class String implements IListable
 	@Override
 	public NuttReference getAt(NuttReference index)
 	{
-		return getAt(index.getValue().asFunctional().asNumerable().asInt().getValue().intValue()).toAnonymousReference();
+		return getAt(index.getValue().simpleCast(Int.class).getValue().intValue()).toAnonymousReference();
 	}
 
 	@Override
@@ -141,30 +169,6 @@ public class String implements IListable
 		return new String(java.lang.String.valueOf(content.charAt(index)));
 	}
 
-	private int compare(IValuable valuable)
-	{
-		return toString().compareTo
-				                 (
-						                 valuable.spread()
-						                         .getElements()
-						                         .stream()
-						                         .map(Objects::toString)
-						                         .collect(Collectors.joining())
-				                 );
-	}
-
-	@Override
-	public java.lang.String toString()
-	{
-		return content;
-	}
-
-	@Override
-	public Type getType()
-	{
-		return TypeInferencer.findTypeReference("String").getType();
-	}
-
 	@Override public java.lang.String toSerializedString()
 	{
 		return "'"+this+"'";
@@ -173,6 +177,24 @@ public class String implements IListable
 	@Override public java.lang.String getValue()
 	{
 		return content;
+	}
+
+	@Override
+	public NuttReference getProperty(java.lang.String name)
+	{
+		return switch(name)
+		{
+			case "length" -> new Int(content.length()).toAnonymousReference();
+			case "sub" -> new NativeProcedure("sub",new Signature("str:String,start:Int,end:Int","String"))
+			{
+				@Override
+				public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
+				{
+					return super.proceed(argumentList);
+				}
+			}.toAnonymousReference();
+			default -> NilReference.getInstance();
+		};
 	}
 
 	@Override

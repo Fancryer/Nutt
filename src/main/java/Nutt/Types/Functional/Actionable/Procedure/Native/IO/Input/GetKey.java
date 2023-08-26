@@ -8,7 +8,6 @@ import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.String.String;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.awt.event.KeyEvent.getKeyText;
@@ -18,7 +17,7 @@ public class GetKey extends NativeProcedure
 {
 	public GetKey()
 	{
-		super("get_key",new Signature(new ArrayList<>()));
+		super("get_key",new Signature());
 	}
 
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException

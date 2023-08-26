@@ -1,6 +1,8 @@
 package Nutt.Types.Functional.Numerable.Float;
 
 import Nutt.Interpreter.NuttInterpreter;
+import Nutt.Interpreter.References.NilReference;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.String.String;
@@ -139,11 +141,6 @@ public class Float implements INumerable
 		return isDouble()?doubleValue:bigDecimalValue;
 	}
 
-	public boolean isDouble()
-	{
-		return !isBigDecimal;
-	}
-
 	@Override public Float replicate()
 	{
 		return new Float(this);
@@ -153,6 +150,16 @@ public class Float implements INumerable
 	public java.lang.String toString()
 	{
 		return isDouble()?doubleValue.toString():bigDecimalValue.toPlainString();
+	}
+
+	public boolean isDouble()
+	{
+		return !isBigDecimal;
+	}
+
+	@Override public NuttReference getProperty(java.lang.String name)
+	{
+		return NilReference.getInstance();
 	}
 
 	public Double asDouble()

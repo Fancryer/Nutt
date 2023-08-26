@@ -126,10 +126,4 @@ public interface INumerable extends IFunctional
 	@Override Number getValue();
 
 	@Override INumerable replicate();
-
-	default Boolean asBoolean()
-	{
-		if(this instanceof Boolean) return (Boolean)this;
-		throw new ClassCastException("Numerable type is not a Boolean");
-	}
 }

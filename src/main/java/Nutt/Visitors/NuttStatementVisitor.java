@@ -11,6 +11,7 @@ import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Listable.String.String;
+import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
@@ -81,14 +82,13 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 
 	@Override public NuttReference visitDo_if_stat(Do_if_statContext ctx)
 	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().asFunctional().asNumerable().asBoolean().isTrue();
-		if(cond) return visit(ctx.stat());
-		return NilReference.getInstance();
+		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().simpleCast(Boolean.class).isTrue();
+		return cond?visit(ctx.stat()):NilReference.getInstance();
 	}
 
 	@Override public NuttReference visitDo_if_not_stat(Do_if_not_statContext ctx)
 	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().asFunctional().asNumerable().asBoolean().isTrue();
+		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().simpleCast(Boolean.class).isTrue();
 		return cond?NilReference.getInstance():visit(ctx.stat());
 	}
 
@@ -123,7 +123,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override public NuttReference visitIf_then_else_block_stat(If_then_else_block_statContext ctx)
 	{
 		var block=ctx.if_then_else_block();
-		var pred=VisitorPool.conditionVisitor.visit(block.exp()).getValue().asFunctional().asNumerable().asBoolean().isTrue();
+		var pred=VisitorPool.conditionVisitor.visit(block.exp()).getValue().simpleCast(Boolean.class).isTrue();
 		if(pred) return visitBlock(block.then_block().block());
 		var elseBlock=block.else_block();
 		return elseBlock!=null?visitBlock(elseBlock.block()):new String().toAnonymousReference();
@@ -258,7 +258,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 		var conditionVisitor=VisitorPool.conditionVisitor;
 		var whileBlock=NuttEnvironment.parseWithBound("do ",ctx.stat()," done").block();
 		whileLoop:
-		while(conditionVisitor.visitExplist(ctx.explist()).getValue().asFunctional().asNumerable().asBoolean().isTrue())
+		while(conditionVisitor.visitExplist(ctx.explist()).getValue().simpleCast(Boolean.class).isTrue())
 		{
 			for(var stat: whileBlock.children)
 			{
@@ -307,7 +307,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitDemand(DemandContext ctx)
 	{
-		if(!VisitorPool.conditionVisitor.visitDemand(ctx).getValue().asFunctional().asNumerable().asBoolean().isTrue())
+		if(!VisitorPool.conditionVisitor.visitDemand(ctx).getValue().simpleCast(Boolean.class).isTrue())
 			throw new RuntimeException("Fail on demand: "+NuttEnvironment.toSourceCode(ctx.exp()));
 		return NilReference.getInstance();
 	}
@@ -378,9 +378,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 				                                               (
 						                                               m->NuttInterpreter.applyOperator(visit(m),matched,"===")
 						                                                                 .getValue()
-						                                                                 .asFunctional()
-						                                                                 .asNumerable()
-						                                                                 .asBoolean()
+						                                                                 .simpleCast(Boolean.class)
 						                                                                 .isTrue()
 				                                               );
 		for(var branch: ctx.match_branch().stream().filter(branchSuits).toList())

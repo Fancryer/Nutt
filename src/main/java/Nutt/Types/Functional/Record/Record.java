@@ -1,6 +1,6 @@
 package Nutt.Types.Functional.Record;
 
-import Nutt.NuttEnvironment;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.Pair;
 import Nutt.ParseHelpers.Row;
 import Nutt.TypeInferencer;
@@ -10,7 +10,6 @@ import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
 import com.google.common.collect.Streams;
 import lombok.Getter;
 
@@ -21,11 +20,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static gen.Nutt.Vararg_or_signatureContext;
-
 public class Record implements IFunctional
 {
-	@Getter private List<Row> rows;
+	@Getter
+	private List<Row> rows;
 	private String name;
 
 	public Record(List<Row> rows)
@@ -64,8 +62,7 @@ public class Record implements IFunctional
 
 	private static Signature getDefaultSignature()
 	{
-		Function<String,Vararg_or_signatureContext> paramContextFunction=s->NuttEnvironment.getTempParser(s).vararg_or_signature();
-		return new Signature(List.of(paramContextFunction.apply("r1"),paramContextFunction.apply("r2")));
+		return new Signature("r1,r2");
 	}
 
 	private static String convertToInfixed(String op,List<Row> rows)
@@ -98,6 +95,11 @@ public class Record implements IFunctional
 		return TypeInferencer.findTypeReference(name).getType();
 	}
 
+	@Override public Record replicate()
+	{
+		return new Record(this.name,this.rows);
+	}
+
 	@Override public String toSerializedString()
 	{
 		return toString();
@@ -109,26 +111,24 @@ public class Record implements IFunctional
 		return null;
 	}
 
+	@Override public NuttReference getProperty(String name)
+	{
+		return rows.stream()
+		           .filter(row->row.name().equals(name))
+		           .findAny()
+		           .map(Row::reference)
+		           .orElseThrow(RuntimeException::new);
+	}
+
 	@Override public String toString()
 	{
 		return "{%s}".formatted(rows.stream().map(Row::toString).collect(Collectors.joining(",")));
-	}
-
-	@Override public Record replicate()
-	{
-		return new Record(this.name,this.rows);
 	}
 
 	//TODO
 	@Override public Array spread()
 	{
 		return null;
-	}
-
-	public IValuable getMember(String name)
-	{
-		for(var row: rows) if(row.name().equals(name)) return row.value();
-		throw new RuntimeException();
 	}
 
 	public Record setRows(List<Row> rows)

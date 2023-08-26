@@ -1,5 +1,6 @@
 package Nutt.Types.Functional.Listable.Array;
 
+import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
@@ -58,7 +59,25 @@ public class Array implements IListable
 		elements.clear();
 	}
 
+	@Override public String toSerializedString()
+	{
+		var asEmpty="[]";
+		var asElements="[%s]".formatted(
+				NuttCommon.removeFirstAndLastChars(
+						elements.stream()
+						        .map(reference->reference.getValue().toSerializedString())
+						        .toList()
+						        .toString()));
+		return elements.isEmpty()
+		       ?asEmpty
+		       :asElements;
+	}
+
 	@Override
+	public List<IValuable> getValue()
+	{
+		return elements.stream().map(NuttReference::getValue).toList();
+	}	@Override
 	public Array add(NuttReference value)
 	{
 		if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(elementBoundType),TypeInferencer.findTypeReference(value.getType())))
@@ -69,16 +88,50 @@ public class Array implements IListable
 	}
 
 	@Override
+	public NuttReference getProperty(String name)
+	{
+		return switch(name)
+		{
+			case "length" -> new Int(elements.size()).toAnonymousReference();
+			default -> NilReference.getInstance();
+		};
+	}
+
+	public void remove(int index)
+	{
+		elements.remove(index);
+	}	@Override
 	public NuttReference getAt(NuttReference index)
 	{
 		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
 		return getAt(intIndex.asLong().intValue());
 	}
 
-	public NuttReference getAt(int index)
+	@Override
+	public String toString()
+	{
+		var asEmpty="{}";
+		var asElements="{%s}".formatted(
+				NuttCommon.removeFirstAndLastChars(
+						elements.stream()
+						        .map(NuttReference::getValue)
+						        .map(IValuable::toString)
+						        .toList()
+						        .toString()));
+		return elements.isEmpty()
+		       ?asEmpty
+		       :asElements;
+	}
+
+	@Override public Array replicate()
+	{
+		return new Array(this.elementBoundType,this.elements);
+	}	public NuttReference getAt(int index)
 	{
 		return elements.get(index);
 	}
+
+
 
 	@Override
 	public Array setAt(NuttReference value,NuttReference index)
@@ -92,11 +145,15 @@ public class Array implements IListable
 		return new Array(elementBoundType,ret);
 	}
 
+
+
 	@Override
 	public List<NuttReference> getElements()
 	{
 		return new ArrayList<>(elements);
 	}
+
+
 
 	@Override
 	public Array setElements(List<NuttReference> elements)
@@ -174,52 +231,6 @@ public class Array implements IListable
 	public Type getType()
 	{
 		return TypeInferencer.findTypeReference("Array").getType();
-	}
-
-	@Override public String toSerializedString()
-	{
-		var asEmpty="[]";
-		var asElements="[%s]".formatted(
-				NuttCommon.removeFirstAndLastChars(
-						elements.stream()
-						        .map(reference->reference.getValue().toSerializedString())
-						        .toList()
-						        .toString()));
-		return elements.isEmpty()
-		       ?asEmpty
-		       :asElements;
-	}
-
-	@Override
-	public List<IValuable> getValue()
-	{
-		return elements.stream().map(NuttReference::getValue).toList();
-	}
-
-	public void remove(int index)
-	{
-		elements.remove(index);
-	}
-
-	@Override
-	public String toString()
-	{
-		var asEmpty="{}";
-		var asElements="{%s}".formatted(
-				NuttCommon.removeFirstAndLastChars(
-						elements.stream()
-						        .map(NuttReference::getValue)
-						        .map(IValuable::toString)
-						        .toList()
-						        .toString()));
-		return elements.isEmpty()
-		       ?asEmpty
-		       :asElements;
-	}
-
-	@Override public Array replicate()
-	{
-		return new Array(this.elementBoundType,this.elements);
 	}
 
 	//	@Override public boolean equalTo(IValuable value)

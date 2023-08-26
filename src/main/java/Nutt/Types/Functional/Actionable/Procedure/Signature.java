@@ -1,11 +1,6 @@
 package Nutt.Types.Functional.Actionable.Procedure;
 
 import Nutt.NuttEnvironment;
-import Nutt.Pair;
-import Nutt.ParseHelpers.CeiledValue;
-import Nutt.ParseHelpers.Row;
-import Nutt.TypeInferencer;
-import Nutt.Types.Functional.Type.Type;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -17,8 +12,11 @@ import static gen.Nutt.Vararg_or_signatureContext;
 
 @Getter public class Signature
 {
-	private final List<Pair<String,Vararg_or_signatureContext>> inputParameterList;
-	private final Row outputRow;
+	/**
+	 Contains array of name-value pairs
+	 */
+	private final List<String[]> inputParameterList;
+	private final String[] outputRow;
 
 	public Signature(String signaturesAsString)
 	{
@@ -37,21 +35,11 @@ import static gen.Nutt.Vararg_or_signatureContext;
 
 	public Signature(List<Vararg_or_signatureContext> paramContexts,String outputType)
 	{
-		this(paramContexts,TypeInferencer.findTypeReference(outputType).getType());
-	}
-
-	public Signature(List<Vararg_or_signatureContext> paramContexts,Type outputType)
-	{
 		inputParameterList=paramContexts
 				.stream()
-				.map(p->new Pair<>(p.var_signature().NAME().getText(),p))
+				.map(p->new java.lang.String[]{p.var_signature().NAME().getText(),NuttEnvironment.toSourceCode(p)})
 				.toList();
-		outputRow=new Row("yield",new CeiledValue(outputType.getType(),NuttEnvironment.constructReference(outputType).getValue()));
-	}
-
-	public Signature(List<Vararg_or_signatureContext> paramContexts)
-	{
-		this(paramContexts,TypeInferencer.findTypeReference("Valuable").getType());
+		outputRow=new java.lang.String[]{"yield",outputType};
 	}
 
 	public Signature()
@@ -68,8 +56,8 @@ import static gen.Nutt.Vararg_or_signatureContext;
 	public String toString()
 	{
 		var parametersAsSource=inputParameterList.stream()
-		                                         .map(par->NuttEnvironment.toSourceCode(par.right()))
+		                                         .map(par->par[1])
 		                                         .collect(Collectors.joining(","));
-		return "(%s):%s".formatted(parametersAsSource,outputRow.ceiledValue().ceilType().getHeader().getDisplayName());
+		return "(%s):%s".formatted(parametersAsSource,outputRow[1]);
 	}
 }

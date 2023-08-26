@@ -2,29 +2,33 @@ package Nutt.Types.Functional.Actionable.Procedure;
 
 import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.NuttInterpreter;
+import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
-import Nutt.Pair;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.IActionable;
 import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.String.String;
+import Nutt.Types.Functional.Type.Native.ValuableType;
 import Nutt.Types.Functional.Type.Type;
+import Nutt.Types.IValuable;
 import Nutt.Visitors.VisitorPool;
 import gen.Nutt;
 import gen.Nutt.BlockContext;
-import gen.Nutt.Vararg_or_signatureContext;
 import lombok.Getter;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static Nutt.NuttEnvironment.getTempParser;
 import static Nutt.NuttEnvironment.toSourceCode;
 
-@Getter public class Procedure implements IActionable
+@Getter
+public class Procedure implements IActionable
 {
-	protected final String name;
+	protected final java.lang.String name;
 	protected final Signature signature;
 	private final BlockContext functionBody;
 	private final NuttReference output;
@@ -34,7 +38,7 @@ import static Nutt.NuttEnvironment.toSourceCode;
 		this("lambda%s".formatted(signature),signature,functionBody,TypeInferencer.findTypeReference("Nil"));
 	}
 
-	public Procedure(String name,Signature signature,BlockContext functionBody,NuttReference output)
+	public Procedure(java.lang.String name,Signature signature,BlockContext functionBody,NuttReference output)
 	{
 		this.name=name;
 		this.signature=signature;
@@ -48,7 +52,7 @@ import static Nutt.NuttEnvironment.toSourceCode;
 	}
 
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "funct %s=%s return".formatted(signature,toSourceCode(functionBody));
 	}
@@ -66,7 +70,10 @@ import static Nutt.NuttEnvironment.toSourceCode;
 				{
 					declareYield();
 					declareParameters();
-					var parameterNames=signature.getInputParameterList().stream().map(Pair::left).toList();
+					var parameterNames=signature.getInputParameterList()
+					                            .stream()
+					                            .map(p->p[0])
+					                            .toList();
 					IntStream.range(0,argumentList.size())
 					         .forEach(i->NuttInterpreter.currentScope.setReference(parameterNames.get(i),
 					                                                               argumentList.get(i).getValue()));
@@ -91,9 +98,9 @@ import static Nutt.NuttEnvironment.toSourceCode;
 		         .forEach(declarator::visitVar_decl);
 	}
 
-	private static Nutt.Var_declContext functParamToVarDecl(Pair<String,Vararg_or_signatureContext> decl)
+	private static Nutt.Var_declContext functParamToVarDecl(java.lang.String[] decl)
 	{
-		return getTempParser("var %s".formatted(toSourceCode(decl.right()))).var_decl();
+		return getTempParser("var %s".formatted(decl[1])).var_decl();
 	}
 
 	private void forgetParameters()
@@ -128,6 +135,25 @@ import static Nutt.NuttEnvironment.toSourceCode;
 	public Procedure getValue()
 	{
 		return this;
+	}
+
+	@Override
+	public NuttReference getProperty(java.lang.String name)
+	{
+		return switch(name)
+		{
+			case "args" -> new Array
+					(
+							ValuableType.getInstance(),
+							signature.getInputParameterList()
+							         .stream()
+							         .map(p->p[0])
+							         .map(String::new)
+							         .map(IValuable::toAnonymousReference)
+							         .collect(Collectors.toList())
+					).toAnonymousReference();
+			default -> NilReference.getInstance();
+		};
 	}
 
 	@Override public Procedure replicate()

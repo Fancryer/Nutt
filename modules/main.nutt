@@ -35,12 +35,12 @@ funct tokenize(src:String)=
 end
 
 funct execute(token_pair:Array)=
-	val token_type=token_pair[0],token_value=token_pair[1]
+	val token_type=token_pair.get(0),token_value=token_pair.get(1)
 	doif token_type==='digit' calc_stack=append(calc_stack,token_value)
 	doif token_type==='variable' var_stack=append(var_stack,token_value)
 end
 
-funct interprete(src:String)=
+funct interpret(src:String)=
 	val get_interpreter_info=()==>join
 		(
 			"var_stack=",var_stack,
@@ -72,6 +72,6 @@ funct interprete(src:String)=
 	say(get_interpreter_info())
 end
 
-interprete("12+3-?!")
+interpret("12+3-?!")
 
 end

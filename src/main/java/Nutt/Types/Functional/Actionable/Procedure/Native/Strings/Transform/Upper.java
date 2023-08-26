@@ -22,9 +22,7 @@ public class Upper extends NativeProcedure
 	{
 		var asUpper=argumentList.get(0)
 		                        .getValue()
-		                        .asFunctional()
-		                        .asListable()
-		                        .asString()
+		                        .simpleCast(String.class)
 		                        .getValue()
 		                        .toUpperCase();
 		return new String(asUpper).toAnonymousReference();

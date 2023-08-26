@@ -8,11 +8,8 @@ import Nutt.NuttCommon;
 import Nutt.NuttEnvironment;
 import Nutt.Repl.Repl;
 import Nutt.Runtime.Mutable;
-import Nutt.Types.Functional.Actionable.Procedure.Operator;
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
-import Nutt.Types.Functional.Actionable.Procedure.Signature;
-import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.Functional.Type.IntType;
+import Nutt.Types.Functional.Type.Native.*;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
@@ -43,25 +40,24 @@ public final class NuttInterpreter
 
 	static
 	{
-		var valuable=new Type("Valuable");
-		var nil=new Type(valuable,"Nil");
-		var functional=new Type(valuable,"Functional");
-		var listable=new Type(functional,"Listable");
+		var valuable=ValuableType.getInstance();
+		var nil=NilType.getInstance();
+		var functional=FunctionalType.getInstance();
+		var listable=ListableType.getInstance();
 
-		var string=new Type(listable,"String");
-		var array=new Type(listable,"Array");
-		var map=new Type(listable,"Map");
-		var set=new Type(listable,"Set");
-		var enumeration_=new Type(set,"Enumeration");
+		var string=StringType.getInstance();
+		var array=ArrayType.getInstance();
+		var map=MapType.getInstance();
+		var set=SetType.getInstance();
 
-		var numerable=new Type(functional,"Numerable");
+		var numerable=NumerableType.getInstance();
 		var int_=IntType.getInstance();
 
-		var boolean_=new Type(int_,"Boolean");
-		var float_=new Type(numerable,"Float");
+		var boolean_=BooleanType.getInstance();
+		var float_=FloatType.getInstance();
 
-		var actionable=new Type(functional,"Actionable");
-		var record=new Type(functional,"Record");
+		var actionable=ActionableType.getInstance();
+		var record=RecordType.getInstance();
 		var type=new Type(functional,"Type");
 
 		var procedure=new Type(actionable,"Procedure");
@@ -74,7 +70,6 @@ public final class NuttInterpreter
 		                                 array,
 		                                 map,
 		                                 set,
-		                                 enumeration_,
 		                                 numerable,
 		                                 int_,
 		                                 boolean_,
@@ -83,32 +78,20 @@ public final class NuttInterpreter
 		                                 record,
 		                                 type,
 		                                 procedure);
+		System.out.println("currentScope = "+currentScope);
 		for(var nativeType: nativeTypeList)
 		{
 			currentScope.addReference
 					            (
 							            nativeType.getHeader().getDisplayName(),
-							            new NuttReference(nativeType.getHeader().getDisplayName(),
-							                              new Mutable<>(nativeType),
-							                              EConstantQualifier.Val)
+							            new NuttReference
+									            (
+											            nativeType.getHeader().getDisplayName(),
+											            new Mutable<>(nativeType),
+											            EConstantQualifier.Val
+									            )
 					            );
 		}
-
-		Operator.builder()
-		        .name("+")
-		        .signature(new Signature("a,b","Int"))
-		        .function
-				        (
-						        list->
-						        {
-							        Int
-									        left=list.get(0).getValue().asFunctional().asNumerable().asInt(),
-									        right=list.get(1).getValue().asFunctional().asNumerable().asInt();
-							        var resString=left.asBigInteger().add(right.asBigInteger()).toString();
-							        return Int.fromString(resString).toAnonymousReference();
-						        }
-				        )
-		        .build();
 		typeTree=valuable;
 	}
 
@@ -129,7 +112,7 @@ public final class NuttInterpreter
 
 	public static NuttReference applyOperator(NuttReference left,NuttReference right,String operatorName)
 	{
-		return applyOperator(left,right,left.getType().getOperator(operatorName));
+		return applyOperator(left,right,left.getType().getOperator(operatorName).getValue().simpleCast(Procedure.class));
 	}
 
 	public static NuttReference applyOperator(NuttReference left,NuttReference right,Procedure operator)
@@ -212,9 +195,7 @@ public final class NuttInterpreter
 	{
 		return getReference(name)
 				.getValue()
-				.asFunctional()
-				.asActionable()
-				.asProcedure();
+				.simpleCast(Procedure.class);
 	}
 
 	public static NuttReference getReference(java.lang.String referenceName)

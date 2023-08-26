@@ -341,6 +341,12 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTrait_def(Nutt.Trait_defContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link Nutt#class_header}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClass_header(Nutt.Class_headerContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link Nutt#class_def}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -418,6 +424,12 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitOperator_decl(Nutt.Operator_declContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link Nutt#operator_qualifier}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOperator_qualifier(Nutt.Operator_qualifierContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link Nutt#annotation_decl}.
 	 * @param ctx the parse tree
@@ -563,23 +575,17 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitConstant_qualifier(Nutt.Constant_qualifierContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link Nutt#type}.
+	 * Visit a parse tree produced by {@link Nutt#type_flat_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitType(Nutt.TypeContext ctx);
+	T visitType_flat_name(Nutt.Type_flat_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link Nutt#alias_decl}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitAlias_decl(Nutt.Alias_declContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link Nutt#alias_name}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAlias_name(Nutt.Alias_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link Nutt#by_type_var_decl}.
 	 * @param ctx the parse tree
@@ -593,35 +599,11 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitBy_value_var_decl(Nutt.By_value_var_declContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link Nutt#array_initializer}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitArray_initializer(Nutt.Array_initializerContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link Nutt#array_element}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitArray_element(Nutt.Array_elementContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link Nutt#spread_pair}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitSpread_pair(Nutt.Spread_pairContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link Nutt#explist}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExplist(Nutt.ExplistContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link Nutt#qualified_name}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitQualified_name(Nutt.Qualified_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code this_exp}
 	 * labeled alternative in {@link Nutt#exp}.
@@ -630,40 +612,12 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitThis_exp(Nutt.This_expContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code explicit_array}
-	 * labeled alternative in {@link Nutt#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExplicit_array(Nutt.Explicit_arrayContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code explicit_variable}
 	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitExplicit_variable(Nutt.Explicit_variableContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code qualified_variable}
-	 * labeled alternative in {@link Nutt#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitQualified_variable(Nutt.Qualified_variableContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code array_access}
-	 * labeled alternative in {@link Nutt#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitArray_access(Nutt.Array_accessContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code explicit_operator}
-	 * labeled alternative in {@link Nutt#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExplicit_operator(Nutt.Explicit_operatorContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code using_exp}
 	 * labeled alternative in {@link Nutt#exp}.
@@ -678,6 +632,13 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCompose_exp(Nutt.Compose_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code property_access}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProperty_access(Nutt.Property_accessContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code prefix_exp}
 	 * labeled alternative in {@link Nutt#exp}.
@@ -728,6 +689,13 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitContains_exp(Nutt.Contains_expContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code array_initializer_exp}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArray_initializer_exp(Nutt.Array_initializer_expContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code comprehense_array_initializer_exp}
 	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
@@ -776,6 +744,20 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitFunc_call_exp(Nutt.Func_call_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code explicit_operator_exp}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExplicit_operator_exp(Nutt.Explicit_operator_expContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code spread_exp}
+	 * labeled alternative in {@link Nutt#exp}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSpread_exp(Nutt.Spread_expContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code quarternary_exp}
 	 * labeled alternative in {@link Nutt#exp}.
@@ -826,13 +808,6 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitParenthesis_exp(Nutt.Parenthesis_expContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code record_member_access}
-	 * labeled alternative in {@link Nutt#exp}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitRecord_member_access(Nutt.Record_member_accessContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code match_to_exp}
 	 * labeled alternative in {@link Nutt#exp}.
 	 * @param ctx the parse tree
@@ -852,6 +827,18 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitMatch_to(Nutt.Match_toContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link Nutt#array_initializer}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArray_initializer(Nutt.Array_initializerContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link Nutt#array_element}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArray_element(Nutt.Array_elementContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link Nutt#range_array_initializer}.
 	 * @param ctx the parse tree
@@ -955,11 +942,11 @@ public interface NuttVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitString(Nutt.StringContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link Nutt#operator}.
+	 * Visit a parse tree produced by {@link Nutt#explicit_operator}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitOperator(Nutt.OperatorContext ctx);
+	T visitExplicit_operator(Nutt.Explicit_operatorContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link Nutt#using_in_call}.
 	 * @param ctx the parse tree

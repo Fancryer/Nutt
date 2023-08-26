@@ -2,10 +2,7 @@ package Nutt.Types.Functional.Listable;
 
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.IFunctional;
-import Nutt.Types.Functional.Listable.Array.Array;
-import Nutt.Types.Functional.Listable.Map.Map;
-import Nutt.Types.Functional.Listable.Set.Set;
-import Nutt.Types.Functional.Listable.String.String;
+import Nutt.Types.Functional.Type.Native.ListableType;
 import Nutt.Types.Functional.Type.Type;
 
 import java.util.Iterator;
@@ -16,39 +13,9 @@ import java.util.stream.Stream;
 
 public interface IListable extends IFunctional, Iterable<NuttReference>
 {
-	default Array asArray()
+	@Override default Type getType()
 	{
-		if(!(this instanceof Array))
-			throw new ClassCastException("Listable type is not an Array");
-		return (Array)this;
-	}
-
-	default Set asSet()
-	{
-		if(!(this instanceof Set))
-			throw new ClassCastException("Listable type is not a Set");
-		return (Set)this;
-	}
-
-	default String asString()
-	{
-		if(!(this instanceof String))
-			throw new ClassCastException("Listable type is not a String");
-		return (String)this;
-	}
-
-	default Map asMap()
-	{
-		if(!(this instanceof Map))
-			throw new ClassCastException("Listable type is not a Map");
-		try
-		{
-			return (Map)this;
-		}
-		catch(Exception e)
-		{
-			throw new RuntimeException(e);
-		}
+		return ListableType.getInstance();
 	}
 
 	IListable add(NuttReference value);

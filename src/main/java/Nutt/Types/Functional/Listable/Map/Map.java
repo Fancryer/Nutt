@@ -1,6 +1,7 @@
 package Nutt.Types.Functional.Listable.Map;
 
 import Nutt.Interpreter.References.AnonymousNuttReference;
+import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Pair;
 import Nutt.TypeInferencer;
@@ -49,20 +50,21 @@ public class Map implements IListable
 	}
 
 	@Override
-	public Type getType()
-	{
-		return TypeInferencer.findTypeReference("Map").getType();
-	}
-
-	@Override
 	public java.util.Map<NuttReference,NuttReference> getValue()
 	{
 		return elements;
 	}
 
-	@Override public Map replicate()
+	@Override
+	public NuttReference getProperty(String name)
 	{
-		return new Map(this);
+		return NilReference.getInstance();
+	}
+
+	@Override
+	public Type getType()
+	{
+		return TypeInferencer.findTypeReference("Map").getType();
 	}
 
 	@Override
@@ -117,12 +119,6 @@ public class Map implements IListable
 		return this;
 	}
 
-	//	@Override
-	//	public IValuable insertAt(IValuable value,int i)
-	//	{
-	//		return null;
-	//	}
-
 	private List<NuttReference> asList()
 	{
 		return elements
@@ -145,9 +141,20 @@ public class Map implements IListable
 				.collect(Collectors.toList());
 	}
 
+	//	@Override
+	//	public IValuable insertAt(IValuable value,int i)
+	//	{
+	//		return null;
+	//	}
+
 	public Type getKeyType()
 	{
 		return typePair.left();
+	}
+
+	@Override public Map replicate()
+	{
+		return new Map(this);
 	}
 
 	@Override

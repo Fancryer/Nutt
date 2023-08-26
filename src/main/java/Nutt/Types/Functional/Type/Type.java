@@ -4,7 +4,6 @@ import Nutt.Exceptions.NuttOperatorNotImplementedException;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
-import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Listable.Array.Array;
 import lombok.Getter;
@@ -13,7 +12,8 @@ import java.util.*;
 
 public class Type implements IFunctional
 {
-	private final Map<java.lang.String,Procedure> operatorMap=new HashMap<>();
+	protected final Map<java.lang.String,NuttReference> operatorMap=new HashMap<>();
+	protected final Map<java.lang.String,NuttReference> propertyMap=new HashMap<>();
 	@Getter
 	TypeHeader header;
 
@@ -74,12 +74,12 @@ public class Type implements IFunctional
 		return null;
 	}
 
-	public Type addOperators(Procedure... procedures)
+	public Type addOperators(NuttReference... procedures)
 	{
 		return addOperators(Arrays.asList(procedures));
 	}
 
-	public Type addOperators(List<Procedure> procedures)
+	public Type addOperators(List<NuttReference> procedures)
 	{
 		for(var procedure: procedures) operatorMap.put(procedure.getName(),procedure);
 		return this;
@@ -118,6 +118,12 @@ public class Type implements IFunctional
 	}
 
 	@Override
+	public Type replicate()
+	{
+		return new Type(getHeader().getParent(),getHeader().getDisplayName(),getHeader().getTypeParameters());
+	}
+
+	@Override
 	public java.lang.String toSerializedString()
 	{
 		var displayName=getHeader().getDisplayName();
@@ -141,15 +147,15 @@ public class Type implements IFunctional
 	}
 
 	@Override
-	public Array spread()
+	public NuttReference getProperty(String name)
 	{
-		return new Array(getHeader().getChildren().stream().map(TypeInferencer::findTypeReference).toList());
+		return propertyMap.get(name);
 	}
 
 	@Override
-	public Type replicate()
+	public Array spread()
 	{
-		return new Type(getHeader().getParent(),getHeader().getDisplayName(),getHeader().getTypeParameters());
+		return new Array(getHeader().getChildren().stream().map(TypeInferencer::findTypeReference).toList());
 	}
 
 	@Override public boolean equals(Object o)
@@ -301,7 +307,7 @@ public class Type implements IFunctional
 		return null;
 	}
 
-	public Procedure getOperator(java.lang.String name)
+	public NuttReference getOperator(java.lang.String name)
 	{
 		return Optional.ofNullable(operatorMap.get(name))
 		               .orElseThrow(()->new NuttOperatorNotImplementedException(getHeader().getDisplayName(),name));

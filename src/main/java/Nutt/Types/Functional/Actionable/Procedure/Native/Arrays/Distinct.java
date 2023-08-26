@@ -6,6 +6,7 @@ import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.IListable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class Distinct extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var list=argumentList.get(0).getValue().asFunctional().asListable();
+		var list=argumentList.get(0).getValue().simpleCast(IListable.class);
 		var result=new ArrayList<NuttReference>();
 		for(var el: list)
 		{

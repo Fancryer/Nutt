@@ -6,6 +6,7 @@ import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
+import Nutt.Types.Functional.Numerable.Int.Int;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -23,13 +24,12 @@ public class Delay extends NativeProcedure
 	{
 		var milliseconds=argumentList.get(0)
 		                             .getValue()
-		                             .asFunctional()
-		                             .asNumerable()
-		                             .asInt();
+		                             .simpleCast(Int.class);
 		Runnable command=argumentList.size()>1
 		                 ?((Procedure)argumentList.get(1).getValue())::proceed
 		                 :(()->
-		                   {});
+		                   {
+		                   });
 		try(var executorService=Executors.newSingleThreadScheduledExecutor())
 		{
 			executorService.schedule(command,milliseconds.asLong(),TimeUnit.MILLISECONDS);

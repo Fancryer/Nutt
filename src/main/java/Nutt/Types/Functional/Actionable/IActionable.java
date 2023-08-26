@@ -1,14 +1,13 @@
 package Nutt.Types.Functional.Actionable;
 
-import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.IFunctional;
+import Nutt.Types.Functional.Type.Native.ActionableType;
+import Nutt.Types.Functional.Type.Type;
 
 public interface IActionable extends IFunctional
 {
-	default Procedure asProcedure()
+	@Override default Type getType()
 	{
-		if(!(this instanceof Procedure))
-			throw new ClassCastException("Actionable type is not a Procedure");
-		return (Procedure)this;
+		return ActionableType.getInstance();
 	}
 }

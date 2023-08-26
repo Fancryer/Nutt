@@ -4,7 +4,10 @@ import Nutt.Annotations.ANativeProcedure;
 import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
+import Nutt.Types.Functional.Listable.IListable;
+import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
 
 import java.util.List;
@@ -19,18 +22,18 @@ public class Count extends NativeProcedure
 
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var list=argumentList.get(0).getValue().asFunctional().asListable();
+		var list=argumentList.get(0).getValue().simpleCast(IListable.class);
 		var seeking=argumentList.get(1);
 		var count=list.stream()
 		              .filter
 				              (
 						              el->el.getType()
 						                    .getOperator("===")
+						                    .getValue()
+						                    .simpleCast(Procedure.class)
 						                    .proceed(List.of(el,seeking))
 						                    .getValue()
-						                    .asFunctional()
-						                    .asNumerable()
-						                    .asBoolean()
+						                    .simpleCast(Boolean.class)
 						                    .isTrue()
 				              )
 		              .count();

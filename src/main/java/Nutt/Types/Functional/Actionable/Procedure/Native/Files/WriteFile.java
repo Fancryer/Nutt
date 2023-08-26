@@ -8,6 +8,7 @@ import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
+import Nutt.Types.Functional.Numerable.Int.Int;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -37,9 +38,7 @@ public class WriteFile extends NativeProcedure
 			         .forEach
 					         (
 							         i->bytes[i]=elements.get(i)
-							                             .asFunctional()
-							                             .asNumerable()
-							                             .asInt()
+							                             .simpleCast(Int.class)
 							                             .getValue()
 							                             .byteValue()
 					         );

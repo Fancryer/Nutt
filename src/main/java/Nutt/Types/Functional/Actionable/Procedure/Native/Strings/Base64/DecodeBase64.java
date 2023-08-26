@@ -6,6 +6,7 @@ import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Int.Int;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class DecodeBase64 extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var byteArray=argumentList.get(0).getValue().asFunctional().asListable().asString();
+		var byteArray=argumentList.get(0).getValue().simpleCast(String.class);
 		var bytes=Base64.getDecoder().decode(byteArray.getValue().getBytes());
 		var decoded=new ArrayList<NuttReference>();
 		for(var b: bytes) decoded.add(new Int(b).toAnonymousReference());

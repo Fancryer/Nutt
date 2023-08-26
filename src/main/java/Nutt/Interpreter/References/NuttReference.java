@@ -71,10 +71,11 @@ public class NuttReference
 		return qualifier==Mut;
 	}
 
-	public void setValue(IValuable newValue)
+	public NuttReference setValue(IValuable newValue)
 	{
 		if(isConstant()) throw new NuttConstantVariableWriteException(name,newValue);
 		else value.set(newValue);
+		return this;
 	}
 
 	public boolean isConstant()

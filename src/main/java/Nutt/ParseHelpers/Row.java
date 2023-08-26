@@ -1,63 +1,20 @@
 package Nutt.ParseHelpers;
 
-import Nutt.TypeInferencer;
+import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
+import lombok.Builder;
 
-public record Row(java.lang.String name,CeiledValue ceiledValue)
+@Builder
+@lombok.With
+public record Row(String name,Type ceilType,NuttReference reference)
 {
-	public Row(java.lang.String name,java.lang.String ceilType)
+	public Row(String name,NuttReference reference)
 	{
-		this(name,TypeInferencer.findTypeReference(ceilType).getType());
+		this(name,reference.getType(),reference);
 	}
 
-	public Row(java.lang.String name,Type ceilType)
+	@Override public String toString()
 	{
-		this(name,new CeiledValue(ceilType));
-	}
-
-	public Row(java.lang.String name,Type ceilType,IValuable valuable)
-	{
-		this(name,ceilType.getHeader().getDisplayName(),valuable);
-	}
-
-	public Row(java.lang.String name,java.lang.String ceilType,IValuable valuable)
-	{
-		this(name,new CeiledValue(ceilType,valuable));
-	}
-
-	public Type ceilType()
-	{
-		return ceiledValue().ceilType();
-	}
-
-	public IValuable value()
-	{
-		return ceiledValue().value();
-	}
-
-	@Override public java.lang.String toString()
-	{
-		return "%s:%s".formatted(name,ceiledValue.value().toSerializedString());
-	}
-
-	public Row setName(java.lang.String name)
-	{
-		return new Row(name,ceiledValue);
-	}
-
-	public Row setCeiledValue(CeiledValue ceiledValue)
-	{
-		return new Row(name,ceiledValue);
-	}
-
-	public Row setCeilType(java.lang.String ceilType)
-	{
-		return new Row(name,new CeiledValue(ceilType,ceiledValue.value()));
-	}
-
-	public Row setValue(IValuable value)
-	{
-		return new Row(name,new CeiledValue(ceiledValue.ceilType(),value));
+		return "%s:%s".formatted(name,reference.getValue().toSerializedString());
 	}
 }

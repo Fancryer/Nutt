@@ -13,7 +13,8 @@ import java.util.Set;
 
 import static Nutt.NuttEnvironment.nuttLogger;
 
-@Getter public class ReferenceContainer
+@Getter
+public class ReferenceContainer
 {
 	private final List<NuttReference> references;
 
@@ -77,5 +78,10 @@ import static Nutt.NuttEnvironment.nuttLogger;
 		                 .filter(reference->reference.getValue().equals(valuable))
 		                 .findFirst()
 		                 .orElseThrow();
+	}
+
+	@Override public String toString()
+	{
+		return references.toString();
 	}
 }

@@ -1,5 +1,6 @@
 package Nutt.Types.Functional.Listable.Set;
 
+import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
@@ -78,6 +79,11 @@ public class Set implements IListable
 	public java.util.Set<NuttReference> getValue()
 	{
 		return elements;
+	}
+
+	@Override public NuttReference getProperty(String name)
+	{
+		return NilReference.getInstance();
 	}
 
 	@Override

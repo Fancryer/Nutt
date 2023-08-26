@@ -3,9 +3,11 @@ package Nutt;
 import Nutt.Exceptions.NuttTypeIsDeclaredException;
 import Nutt.Interpreter.NuttInterpreter;
 import Nutt.Interpreter.References.NuttReference;
+import Nutt.Types.Functional.Type.Native.*;
 import Nutt.Types.Functional.Type.Type;
 
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -23,7 +25,34 @@ public class TypeInferencer
 
 	public static NuttReference findTypeReference(String typeName)
 	{
-		return NuttInterpreter.currentScope.getReference(typeName);
+		try
+		{
+			return NuttInterpreter.currentScope.getReference(typeName);
+		}
+		catch(EmptyStackException e)
+		{
+			System.out.println("typeName = "+typeName);
+			var nativeInstance=switch(typeName)
+			{
+				case "Valuable" -> ValuableType.getInstance();
+				case "Nil" -> NilType.getInstance();
+				case "Functional" -> FunctionalType.getInstance();
+				case "Listable" -> ListableType.getInstance();
+				case "String" -> StringType.getInstance();
+				case "Array" -> ArrayType.getInstance();
+				case "Set" -> SetType.getInstance();
+				case "Map" -> MapType.getInstance();
+				case "Actionable" -> ActionableType.getInstance();
+				case "Numerable" -> NumerableType.getInstance();
+				case "Int" -> IntType.getInstance();
+				case "Boolean" -> BooleanType.getInstance();
+				case "Float" -> FloatType.getInstance();
+				case "Record" -> RecordType.getInstance();
+				default -> throw new IllegalStateException("Unknown type: %s".formatted(typeName));
+			};
+			System.out.println("nativeInstance = "+nativeInstance);
+			return nativeInstance.toAnonymousReference();
+		}
 	}
 
 	public static NuttReference addCustomType(String typeName)
@@ -196,7 +225,7 @@ public class TypeInferencer
 
 	public static NuttReference findParent(NuttReference typeReference)
 	{
-		var parentType=typeReference.getValue().asFunctional().asType().getHeader().getParent();
+		var parentType=typeReference.getValue().simpleCast(Type.class).getHeader().getParent();
 		return findTypeReference(parentType);
 	}
 }

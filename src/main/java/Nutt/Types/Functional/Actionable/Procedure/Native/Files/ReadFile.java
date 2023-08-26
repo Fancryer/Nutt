@@ -8,6 +8,7 @@ import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.String.String;
+import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.IValuable;
 
@@ -25,7 +26,7 @@ public class ReadFile extends NativeProcedure
 
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var asBinary=argumentList.size()>1&&argumentList.get(1).getValue().asFunctional().asNumerable().asBoolean().isTrue();
+		var asBinary=argumentList.size()>1&&argumentList.get(1).getValue().simpleCast(Boolean.class).isTrue();
 		java.lang.String elementBoundType;
 		List<NuttReference> valuables;
 		if(asBinary)

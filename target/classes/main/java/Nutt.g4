@@ -190,13 +190,16 @@ exp: NAME #explicit_variable
 	| KW_New exp Brace_Paren_Left explist Brace_Paren_Right #new_exp
 	| KW_Eval (exp | block) #eval_exp
 	| KW_Exec (exp | stat) #exec_exp
-    | record=exp Dot
+    | exp Dot
 	    (
 			flat_property=NAME
 			| string_property=string
 			| (Brace_Square_Left operator_qualifier Brace_Square_Right)? operator=explicit_operator
-		) #record_member_access
+		) #property_access
+	| array_initializer #array_initializer_exp
     | range_array_initializer #range_array_initializer_exp
+    | map_initializer #map_initializer_exp
+    | record_initializer #record_initializer_exp
 	| comprehense_array_initializer #comprehense_array_initializer_exp
     | local_funct #function_definition_exp
     | (explicit_operator | operator_prefix) exp #prefix_exp
@@ -216,13 +219,15 @@ exp: NAME #explicit_variable
 
 match_to: KW_Match matched=exp KW_To match_branch+ default_match_branch?;
 
-//fold: OP_LeftFold | OP_RightFold;
+array_initializer: Brace_Curly_Left (array_element (Comma array_element)*)? Brace_Curly_Right;
+
+array_element: OP_Pass? exp;
 
 range_array_initializer: Brace_Curly_Left start=exp (Comma next=exp)? OP_Range bound=exp (SemiColon OP_Reverse)? Brace_Curly_Right;
 
 comprehense_array_initializer: Brace_Curly_Left (element=exp KW_Of)? NAME op_direction arr=exp (KW_If pred=exp)? Brace_Curly_Right;
 
-map_element: key=(Char_String | NAME) SemiColon val=exp;
+map_element: key=exp SemiColon val=exp;
 map_initializer: Brace_Curly_Left map_element (Comma map_element)* Brace_Curly_Right;
 
 record_element: (name_key=NAME | string_key=string) Colon val=exp;

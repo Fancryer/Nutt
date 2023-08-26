@@ -22,9 +22,7 @@ public class Lower extends NativeProcedure
 	{
 		var asLower=argumentList.get(0)
 		                        .getValue()
-		                        .asFunctional()
-		                        .asListable()
-		                        .asString()
+		                        .simpleCast(String.class)
 		                        .getValue()
 		                        .toLowerCase();
 		return new String(asLower).toAnonymousReference();
