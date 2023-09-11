@@ -2,10 +2,11 @@ package Nutt.Visitors;
 
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.Listable.Array.Array;
-import gen.Nutt.Group_assignmentContext;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static gen.NuttParser.Group_assignmentContext;
 
 public class NuttAssignmentVisitor extends NuttGenericVisitor
 {

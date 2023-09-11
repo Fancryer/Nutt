@@ -1,22 +1,23 @@
 package Nutt.Types.Functional.Actionable.Procedure;
 
 import Nutt.NuttEnvironment;
+import Nutt.Runtime.Parameter;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static gen.Nutt.Var_signature_listContext;
-import static gen.Nutt.Vararg_or_signatureContext;
+import static gen.NuttParser.Var_signature_listContext;
+import static gen.NuttParser.Vararg_or_signatureContext;
 
 @Getter public class Signature
 {
 	/**
 	 Contains array of name-value pairs
 	 */
-	private final List<String[]> inputParameterList;
-	private final String[] outputRow;
+	private final List<Parameter> inputParameterList;
+	private final Parameter outputParameter;
 
 	public Signature(String signaturesAsString)
 	{
@@ -35,11 +36,32 @@ import static gen.Nutt.Vararg_or_signatureContext;
 
 	public Signature(List<Vararg_or_signatureContext> paramContexts,String outputType)
 	{
-		inputParameterList=paramContexts
-				.stream()
-				.map(p->new java.lang.String[]{p.var_signature().NAME().getText(),NuttEnvironment.toSourceCode(p)})
-				.toList();
-		outputRow=new java.lang.String[]{"yield",outputType};
+		this
+				(
+						paramContexts.stream()
+						             .map
+								             (
+										             vas->new Parameter
+												             (
+														             vas.var_signature().NAME().getText(),
+														             vas.var_signature().type!=null
+														             ?NuttEnvironment.toSourceCode(vas.var_signature().type.type_param())
+														             :"",
+														             vas.var_signature().value!=null
+														             ?NuttEnvironment.toSourceCode(vas.var_signature().value)
+														             :"",
+														             vas.OP_Pass()!=null
+												             )
+								             )
+						             .toList(),
+						new Parameter("return",outputType,"",false)
+				);
+	}
+
+	public Signature(List<Parameter> inputParameterList,Parameter outputParameter)
+	{
+		this.inputParameterList=inputParameterList;
+		this.outputParameter=outputParameter;
 	}
 
 	public Signature()
@@ -56,8 +78,8 @@ import static gen.Nutt.Vararg_or_signatureContext;
 	public String toString()
 	{
 		var parametersAsSource=inputParameterList.stream()
-		                                         .map(par->par[1])
+		                                         .map(Parameter::toString)
 		                                         .collect(Collectors.joining(","));
-		return "(%s):%s".formatted(parametersAsSource,outputRow[1]);
+		return "(%s):%s".formatted(parametersAsSource,outputParameter.type());
 	}
 }

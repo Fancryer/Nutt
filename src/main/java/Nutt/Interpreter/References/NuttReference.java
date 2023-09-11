@@ -1,6 +1,6 @@
 package Nutt.Interpreter.References;
 
-import Nutt.Exceptions.NuttConstantVariableWriteException;
+import Nutt.Exceptions.NuttConstantReferenceWriteException;
 import Nutt.Interpreter.NuttInterpreter.EConstantQualifier;
 import Nutt.Runtime.Mutable;
 import Nutt.Types.Functional.Type.Type;
@@ -52,7 +52,7 @@ public class NuttReference
 
 	public NuttReference(Mutable<IValuable> value,EConstantQualifier qualifier,Type type)
 	{
-		this("anonymous"+value.get().getType(),value,qualifier,type);
+		this("anonymous"+type,value,qualifier,type);
 	}
 
 	public Type getType()
@@ -60,12 +60,24 @@ public class NuttReference
 		return value.get().getType();
 	}
 
+	public <T extends IValuable,U> U getNestedValueAs(Class<T> type,Class<U> valueClass)
+	{
+		var val=getValueAs(type).getValue();
+		if(!valueClass.isInstance(val)) throw new ClassCastException();
+		return valueClass.cast(val);
+	}
+
+	public <T extends IValuable> T getValueAs(Class<T> type)
+	{
+		return getValue().simpleCast(type);
+	}
+
+	/** @return value of variable if variable appears as mutable, otherwise its copy. */
 	public IValuable getValue()
 	{
 		return (isMutable()?value:value.replicate()).get();
 	}
 
-	/** @return value of variable if variable appears as mutable, otherwise its copy. */
 	public boolean isMutable()
 	{
 		return qualifier==Mut;
@@ -73,7 +85,7 @@ public class NuttReference
 
 	public NuttReference setValue(IValuable newValue)
 	{
-		if(isConstant()) throw new NuttConstantVariableWriteException(name,newValue);
+		if(isConstant()) throw new NuttConstantReferenceWriteException(name,newValue);
 		else value.set(newValue);
 		return this;
 	}

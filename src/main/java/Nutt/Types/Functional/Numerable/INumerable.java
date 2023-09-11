@@ -88,13 +88,13 @@ public interface INumerable extends IFunctional
 
 	static INumerable negate(INumerable numerable)
 	{
-		return fromString(numerable.toBigDecimal().negate().toString());
+		var str=numerable.isFloat()
+		        ?numerable.asFloat().asBigDecimal().negate().toString()
+		        :numerable.asInt().asBigInteger().negate().toString();
+		return fromString(str);
 	}
 
-	static INumerable abs(INumerable numerable)
-	{
-		return fromString(BigDecimalMath.toBigDecimal(numerable.toString()).abs().toString());
-	}
+	Int asInt();
 
 	//	static INumerable pow(INumerable left,INumerable right)
 	//	{
@@ -115,13 +115,16 @@ public interface INumerable extends IFunctional
 	//		return new Int(res.toBigDecimal(longMathContext).toBigInteger());
 	//	}
 
-	Int asInt();
+	boolean isFloat();
+
+	static INumerable abs(INumerable numerable)
+	{
+		return fromString(BigDecimalMath.toBigDecimal(numerable.toString()).abs().toString());
+	}
 
 	boolean isBoolean();
 
 	boolean isInt();
-
-	boolean isFloat();
 
 	@Override Number getValue();
 

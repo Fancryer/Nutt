@@ -1,0 +1,56 @@
+---
+Int:
+    ">=":
+        signature:
+        - a:Int, b:Int
+        - Boolean
+        return_type: Nutt.Types.Functional.Numerable.Boolean
+        code: left.getValueAs(Int.class).asBigInteger().compareTo(right.getValueAs(Int.class).asBigInteger())>=0
+    "<=":
+        signature:
+        - a:Int, b:Int
+        - Boolean
+        return_type: Nutt.Types.Functional.Numerable.Boolean
+        code: left.getValueAs(Int.class).asBigInteger().compareTo(right.getValueAs(Int.class).asBigInteger())<=0
+    "===":
+        signature:
+        - a:Int, b:Int
+        - Boolean
+        return_type: Nutt.Types.Functional.Numerable.Boolean
+        code: left.getValueAs(Int.class).asBigInteger().compareTo(right.getValueAs(Int.class).asBigInteger())==0
+    ">":
+        signature:
+        - a:Int, b:Int
+        - Boolean
+        return_type: Nutt.Types.Functional.Numerable.Boolean
+        code: left.getValueAs(Int.class).asBigInteger().compareTo(right.getValueAs(Int.class).asBigInteger())>0
+    "<":
+        signature:
+        - a:Int, b:Int
+        - Boolean
+        return_type: Nutt.Types.Functional.Numerable.Boolean
+        code: left.getValueAs(Int.class).asBigInteger().compareTo(right.getValueAs(Int.class).asBigInteger())<0
+    "+":
+        signature:
+        - a:Int, b:Int
+        - Int
+        return_type: Nutt.Types.Functional.Numerable.Int.Int
+        code: left.getValueAs(Int.class).asBigInteger().add(right.getValueAs(Int.class).asBigInteger())
+    "-":
+        signature:
+        - a:Int, b:Int
+        - Int
+        return_type: Nutt.Types.Functional.Numerable.Int.Int
+        code: left.getValueAs(Int.class).asBigInteger().subtract(right.getValueAs(Int.class).asBigInteger())
+    "*":
+        signature:
+        - a:Int, b:Int
+        - Int
+        return_type: Nutt.Types.Functional.Numerable.Int.Int
+        code: left.getValueAs(Int.class).asBigInteger().multiply(right.getValueAs(Int.class).asBigInteger())
+    "/":
+        signature:
+        - a:Int, b:Int
+        - Int
+        return_type: Nutt.Types.Functional.Numerable.Int.Int
+        code: left.getValueAs(Int.class).asBigInteger().divide(right.getValueAs(Int.class).asBigInteger())

@@ -54,19 +54,19 @@ public class Boolean extends Int
 		return new Boolean(this);
 	}
 
-	@Override public Boolean asBoolean()
-	{
-		return this;
-	}
-
 	@Override public String toString()
 	{
 		return String.valueOf(isTrue());
 	}
 
+	@Override public Boolean asBoolean()
+	{
+		return this;
+	}
+
 	@Override public Type getType()
 	{
-		return TypeInferencer.findTypeReference("Boolean").getType();
+		return TypeInferencer.findTypeReference("Boolean").getValueAs(Type.class);
 	}
 
 	public boolean isTrue()

@@ -18,12 +18,12 @@ public class AnonymousNuttReference extends NuttReference
 		super(value,qualifier,value.get().getType());
 	}
 
-	public static AnonymousNuttReference of(IValuable value,EConstantQualifier qualifier)
+	public static <V extends IValuable> AnonymousNuttReference of(V value,EConstantQualifier qualifier)
 	{
 		return new AnonymousNuttReference(value,qualifier);
 	}
 
-	public static AnonymousNuttReference of(IValuable value)
+	public static <V extends IValuable> AnonymousNuttReference of(V value)
 	{
 		return new AnonymousNuttReference(value,Mut);
 	}

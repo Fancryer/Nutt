@@ -3,7 +3,6 @@ package Nutt;
 import Nutt.Annotations.ANativeProcedure;
 import Nutt.Interpreter.Logging.EActionStatus;
 import Nutt.Interpreter.Logging.ESeverity;
-import Nutt.Interpreter.Logging.MarkdownLogger;
 import Nutt.Interpreter.Logging.NuttLogger;
 import Nutt.Interpreter.NuttInterpreter;
 import Nutt.Interpreter.References.AnonymousNuttReference;
@@ -20,8 +19,8 @@ import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.Nil;
 import Nutt.Visitors.VisitorPool;
 import com.google.common.reflect.ClassPath;
-import gen.Nutt;
 import gen.NuttLexer;
+import gen.NuttParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -72,11 +71,11 @@ public class NuttEnvironment
 
 	}
 
-	public NuttEnvironment(java.lang.String source,java.lang.String moduleRootPath)
+	public NuttEnvironment(java.lang.String path,java.lang.String moduleRootPath)
 	{
 		try
 		{
-			visit(source);
+			visit(path);
 		}
 		catch(Exception e)
 		{
@@ -86,21 +85,22 @@ public class NuttEnvironment
 		finally
 		{
 			clearInterpreter();
-			new MarkdownLogger(nuttLogger.writeLogs()).writeLog(nuttLogger.getLogStamps());
+			nuttLogger.writeLogs();
+			//new MarkdownLogger(nuttLogger.writeLogs()).writeLog(nuttLogger.getLogStamps());
 		}
 	}
 
-	public NuttEnvironment visit(java.lang.String source)
+	public NuttEnvironment visit(java.lang.String path)
 	{
 		nuttLogger.appendLog("Environment opening","succeed");
-		var parser=setup(source);
-		VisitorPool.statementVisitor.visitChunk(parser.chunk());
+		var parser=setup(path);
+		VisitorPool.statementVisitor.visitChunk(parser.chunk(),path);
 		return this;
 	}
 
-	private Nutt setup(java.lang.String source)
+	private NuttParser setup(java.lang.String path)
 	{
-		return new Nutt(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
+		return new NuttParser(new CommonTokenStream(new NuttLexer(CharStreams.fromString(NuttCommon.readFileString(path)))));
 	}
 
 	private void clearInterpreter()
@@ -186,27 +186,27 @@ public class NuttEnvironment
 		return children;
 	}
 
-	public static Nutt getTempParser(java.lang.String source)
+	public static NuttParser getTempParser(java.lang.String source)
 	{
-		return new Nutt(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
+		return new NuttParser(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
 	}
 
-	public static Nutt parseAsSource(ParseTree ctx,boolean removeTrailing)
+	public static NuttParser parseAsSource(ParseTree ctx,boolean removeTrailing)
 	{
 		return getTempParser(removeTrailing?NuttCommon.removeFirstAndLastChars(toSourceCode(ctx)):toSourceCode(ctx));
 	}
 
-	public static Nutt parseWithPrefix(java.lang.String prefix,ParseTree ctx)
+	public static NuttParser parseWithPrefix(java.lang.String prefix,ParseTree ctx)
 	{
 		return getTempParser(prefix+toSourceCode(ctx));
 	}
 
-	public static Nutt parseWithBound(java.lang.String prefix,ParseTree ctx,java.lang.String postfix)
+	public static NuttParser parseWithBound(java.lang.String prefix,ParseTree ctx,java.lang.String postfix)
 	{
 		return getTempParser(prefix+toSourceCode(ctx)+postfix);
 	}
 
-	public static Nutt parseAsSource(ParseTree ctx)
+	public static NuttParser parseAsSource(ParseTree ctx)
 	{
 		return parseAsSource(ctx,false);
 	}

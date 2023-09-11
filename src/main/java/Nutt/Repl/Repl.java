@@ -4,11 +4,12 @@ import Nutt.Exceptions.NuttExitException;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttEnvironment;
 import Nutt.Visitors.VisitorPool;
-import gen.Nutt.StatContext;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
+import static gen.NuttParser.StatContext;
 
 public class Repl
 {

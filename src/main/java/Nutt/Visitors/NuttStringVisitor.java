@@ -4,11 +4,12 @@ import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.Types.Functional.Listable.String.String;
-import gen.Nutt.StringContext;
-import gen.Nutt.Type_paramContext;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNode;
+
+import static gen.NuttParser.StringContext;
+import static gen.NuttParser.Type_paramContext;
 
 public class NuttStringVisitor extends NuttGenericVisitor
 {

@@ -129,6 +129,12 @@ public class Int implements INumerable
 		return this;
 	}
 
+	@Override
+	public boolean isFloat()
+	{
+		return false;
+	}
+
 	@Override public boolean isBoolean()
 	{
 		return false;
@@ -138,12 +144,6 @@ public class Int implements INumerable
 	public boolean isInt()
 	{
 		return true;
-	}
-
-	@Override
-	public boolean isFloat()
-	{
-		return false;
 	}
 
 	@Override
@@ -179,7 +179,7 @@ public class Int implements INumerable
 	}
 
 	@Override
-	public Array spread()
+	public Array toArray()
 	{
 		return new Array(getType(),new String(toString()).stream().toList());
 	}
@@ -187,7 +187,7 @@ public class Int implements INumerable
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference("Int").getType();
+		return TypeInferencer.findTypeReference("Int").getValueAs(Type.class);
 	}
 
 	public Long asLong()

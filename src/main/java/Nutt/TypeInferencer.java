@@ -27,11 +27,10 @@ public class TypeInferencer
 	{
 		try
 		{
-			return NuttInterpreter.currentScope.getReference(typeName);
+			return (NuttReference)NuttInterpreter.currentScope.getReference(typeName);
 		}
 		catch(EmptyStackException e)
 		{
-			System.out.println("typeName = "+typeName);
 			var nativeInstance=switch(typeName)
 			{
 				case "Valuable" -> ValuableType.getInstance();
@@ -43,6 +42,7 @@ public class TypeInferencer
 				case "Set" -> SetType.getInstance();
 				case "Map" -> MapType.getInstance();
 				case "Actionable" -> ActionableType.getInstance();
+				case "Procedure" -> ProcedureType.getInstance();
 				case "Numerable" -> NumerableType.getInstance();
 				case "Int" -> IntType.getInstance();
 				case "Boolean" -> BooleanType.getInstance();
@@ -50,7 +50,6 @@ public class TypeInferencer
 				case "Record" -> RecordType.getInstance();
 				default -> throw new IllegalStateException("Unknown type: %s".formatted(typeName));
 			};
-			System.out.println("nativeInstance = "+nativeInstance);
 			return nativeInstance.toAnonymousReference();
 		}
 	}
@@ -86,8 +85,7 @@ public class TypeInferencer
 		return findTypeReference(typeName)!=null;
 	}
 
-	public static NuttReference addCustomType(String typeName,Type parent,
-	                                          List<String> children)
+	public static NuttReference addCustomType(String typeName,Type parent,List<String> children)
 	{
 		return addCustomType(typeName,parent.getHeader().getDisplayName(),children);
 	}
@@ -106,24 +104,25 @@ public class TypeInferencer
 
 	public static Boolean verdict(NuttReference referenceA,NuttReference referenceB)
 	{
-		return referenceA.getType()!=null
-		       &&referenceB.getType()!=null
-		       &&referenceA.getType().hasChild(referenceB.getType())
-		       &&verdictTypeParameters
-				       (
-						       referenceA.getType()
-						                 .getHeader()
-						                 .getTypeParameters()
-						                 .stream()
-						                 .map(TypeInferencer::findTypeReference)
-						                 .toList(),
-						       referenceB.getType()
-						                 .getHeader().
-						                 getTypeParameters()
-						                 .stream()
-						                 .map(TypeInferencer::findTypeReference)
-						                 .toList()
-				       );
+		boolean aIsNull=referenceA==null, bIsNull=referenceB==null;
+		if(aIsNull||bIsNull) return false;
+		Type typeA=referenceA.getType().simpleCast(Type.class), typeB=referenceB.getType().simpleCast(Type.class);
+		return typeA.hasChild(typeB);
+		//		       &&verdictTypeParameters
+		//				       (
+		//						       referenceA.getType()
+		//						                 .getHeader()
+		//						                 .getTypeParameters()
+		//						                 .stream()
+		//						                 .map(TypeInferencer::findTypeReference)
+		//						                 .toList(),
+		//						       referenceB.getType()
+		//						                 .getHeader().
+		//						                 getTypeParameters()
+		//						                 .stream()
+		//						                 .map(TypeInferencer::findTypeReference)
+		//						                 .toList()
+		//				       );
 	}
 
 	public static Boolean verdictTypeParameters(List<NuttReference> typesA,List<NuttReference> typesB)
@@ -135,11 +134,11 @@ public class TypeInferencer
 
 	public static Boolean verdict(String typeA,Type typeB)
 	{
+		System.out.printf("typeA = %s, typeB = %s%n",typeA,typeB);
 		return verdict(typeA,typeB.getHeader().getDisplayName());
 	}
 
-	public static NuttReference findTypeElse(Type type,
-	                                         Type otherType)
+	public static NuttReference findTypeElse(Type type,Type otherType)
 	{
 		return findTypeElse(type.getHeader().getDisplayName(),otherType.getHeader().getDisplayName());
 	}
@@ -225,7 +224,7 @@ public class TypeInferencer
 
 	public static NuttReference findParent(NuttReference typeReference)
 	{
-		var parentType=typeReference.getValue().simpleCast(Type.class).getHeader().getParent();
+		var parentType=typeReference.getValueAs(Type.class).getHeader().getParent();
 		return findTypeReference(parentType);
 	}
 }

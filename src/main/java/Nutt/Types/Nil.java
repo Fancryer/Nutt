@@ -15,12 +15,6 @@ public class Nil implements IValuable
 	}
 
 	@Override
-	public Type getType()
-	{
-		return NilType.getInstance();
-	}
-
-	@Override
 	public Object getValue()
 	{
 		return "nil";
@@ -31,7 +25,13 @@ public class Nil implements IValuable
 		return NilReference.getInstance();
 	}
 
-	@Override public Array spread()
+	@Override
+	public Type getType()
+	{
+		return NilType.getInstance();
+	}
+
+	@Override public Array toArray()
 	{
 		return new Array();
 	}

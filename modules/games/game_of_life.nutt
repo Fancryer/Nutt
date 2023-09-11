@@ -1,0 +1,65 @@
+module main
+imports native.sys.io.say,native.chrono.delay
+
+//| Инициализация игрового поля
+val rows=10,cols=10
+mut board=createBoard(rows,cols) //| Создание игрового поля
+
+//| Запуск игры
+while true do
+    drawBoard(board) //| Отображение текущего состояния игрового поля
+    //| Создание копии игрового поля для расчета следующего поколения
+    val nextGeneration=createBoard(rows,cols)
+    //| Обход каждой ячейки на игровом поле
+    for i,row|->rows do
+		for j,col|->cols do
+			val cell=board.get(i).get(j),liveNeighbors=countLiveNeighbors(board,i,j),
+				//| Правила игры "Жизнь"
+				is_dead=(cell===1&&(liveNeighbors<2||liveNeighbors>3)),
+                is_alive=(cell===0&&liveNeighbors===3)
+			nextGeneration.get(i).set(j,is_dead?0:is_alive?1:cell)
+        done
+    done
+    board=nextGeneration //| Обновление игрового поля для следующего поколения
+    //| Ожидание перед переходом к следующему поколению
+    delay(1000)
+done
+
+//| Функция для создания пустого игрового поля заданного размера
+funct createBoard(rows,cols)=
+	return [[0 of row |-> [0,1..rows]] of col |-> [0,1..cols]]
+end
+
+//| Функция для отображения текущего состояния игрового поля
+funct drawBoard(board:Array[Array[Int]])=
+    for i,row|->board do
+        var row=""
+        for j,col|->board.get(i) do
+            val cell=board.get(i)(j)
+            row=row+(cell===1?"X":".") //| Отображение живой ячейки символом "X", а мертвой - "."
+        done
+        say(row)
+    done
+end
+
+//| Функция для подсчета количества живых соседей у заданной ячейки
+funct countLiveNeighbors(board,row,col)=
+	val directions=
+	[
+		[-1,-1],[-1,0], [-1,1],
+		[0,-1],         [0,1],
+		[1,-1], [1,0],  [1,1]
+    ]
+    var liveNeighbors=0
+    for i,dir|->directions do
+        val dx=directions.get(i).get(0),dy=directions.get(i).get(1),
+	        newRow=row+dx,
+            newCol=col+dy
+			//| Проверка границ и подсчет живых соседей
+		doif((newRow>=0)&&(newRow<rows)&&(newCol>=0)&&(newCol<cols))
+			doif(board.get(newRow).get(newCol)===1)liveNeighbors=liveNeighbors+1
+	done
+	return liveNeighbors
+end
+
+end

@@ -1,0 +1,78 @@
+signatures:
+[
+	intSignature:
+	[
+		input:"a:Int,b:Int",
+		output:"Int",
+		nativeWrapper:"Nutt.Types.Functional.Numerable.Int.Int"
+	],
+	boolSignature:
+	[
+		input:"a:Int,b:Int",
+		output:"Boolean",
+		nativeWrapper:"Nutt.Types.Functional.Numerable.Boolean"
+	]
+]
+
+unwrappers:
+[
+	intSignature:
+	[
+		"l":left.getValueAs(Int.class).asBigInteger(),
+		"r":right.getValueAs(Int.class).asBigInteger()
+	],
+	boolSignature:
+	[
+		"l":left.getValueAs(Int.class).asBigInteger(),
+		"r":right.getValueAs(Int.class).asBigInteger()
+	]
+]
+
+operators:
+[
+	"+":
+	[
+		signature:intSignature,
+		code:`l.add(r)`
+	],
+	"-":
+	[
+		signature:intSignature,
+		code:`l.subtract(r)`
+	],
+	"*":
+	[
+		signature:intSignature,
+		code:`l.multiply(r)`
+	],
+	"/":
+	[
+		signature:intSignature,
+		code:`l.divide(r)`
+	],
+	"<=":
+	[
+		signature:boolSignature,
+		code:`l.compareTo(r)<=0`
+	],
+	"<":
+	[
+		signature:boolSignature,
+		code:`l.compareTo(r)<0`
+	],
+	"===":
+	[
+		signature:boolSignature,
+		code:`l.compareTo(r)==0`
+	],
+	">":
+	[
+		signature:boolSignature,
+		code:`l.compareTo(r)>0`
+	],
+	">=":
+	[
+		signature:boolSignature,
+		code:`l.compareTo(r)>=0`
+	]
+]

@@ -6,14 +6,14 @@ import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import lombok.Builder;
 
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 public class Operator extends NativeProcedure
 {
-	private final Function<List<NuttReference>,NuttReference> function;
+	private final BiFunction<NuttReference,NuttReference,NuttReference> function;
 
 	@Builder
-	public Operator(String name,Signature signature,Function<List<NuttReference>,NuttReference> function)
+	public Operator(String name,Signature signature,BiFunction<NuttReference,NuttReference,NuttReference> function)
 	{
 		super(name,signature);
 		this.function=function;
@@ -22,6 +22,11 @@ public class Operator extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		return function.apply(argumentList);
+		return proceed(argumentList.get(0),argumentList.get(1));
+	}
+
+	public NuttReference proceed(NuttReference left,NuttReference right) throws NuttSuccessReturnException
+	{
+		return function.apply(left,right);
 	}
 }

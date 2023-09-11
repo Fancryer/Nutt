@@ -1,10 +1,10 @@
 package Nutt.Interpreter;
 
-import Nutt.Context;
+import Nutt.ConsoleColorizer;
 import Nutt.Interpreter.Logging.EActionStatus;
 import Nutt.Interpreter.Logging.ESeverity;
+import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
-import Nutt.NuttCommon;
 import Nutt.NuttEnvironment;
 import Nutt.Repl.Repl;
 import Nutt.Runtime.Mutable;
@@ -13,7 +13,6 @@ import Nutt.Types.Functional.Type.Native.*;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.List;
@@ -34,20 +33,18 @@ public final class NuttInterpreter
 {
 	public final static Type typeTree;
 	private final static java.lang.String outputColor="green";
-	public static Scope currentScope=new Scope();
-	public static List<String> moduleNames=new ArrayList<>();
-	public static Context context;
+	public static Scope currentScope;
 
 	static
 	{
 		var valuable=ValuableType.getInstance();
 		var nil=NilType.getInstance();
 		var functional=FunctionalType.getInstance();
+		var type=TypeType.getInstance();
 		var listable=ListableType.getInstance();
 
 		var string=StringType.getInstance();
 		var array=ArrayType.getInstance();
-		var map=MapType.getInstance();
 		var set=SetType.getInstance();
 
 		var numerable=NumerableType.getInstance();
@@ -57,28 +54,26 @@ public final class NuttInterpreter
 		var float_=FloatType.getInstance();
 
 		var actionable=ActionableType.getInstance();
-		var record=RecordType.getInstance();
-		var type=new Type(functional,"Type");
+		var procedure=ProcedureType.getInstance();
 
-		var procedure=new Type(actionable,"Procedure");
+		var record=RecordType.getInstance();
 
 		var nativeTypeList=Arrays.asList(valuable,
 		                                 nil,
 		                                 functional,
+		                                 type,
 		                                 listable,
 		                                 string,
 		                                 array,
-		                                 map,
+		                                 procedure,
 		                                 set,
 		                                 numerable,
 		                                 int_,
 		                                 boolean_,
 		                                 float_,
 		                                 actionable,
-		                                 record,
-		                                 type,
-		                                 procedure);
-		System.out.println("currentScope = "+currentScope);
+		                                 record);
+		//System.out.println("currentScope = "+currentScope);
 		for(var nativeType: nativeTypeList)
 		{
 			currentScope.addReference
@@ -92,13 +87,24 @@ public final class NuttInterpreter
 									            )
 					            );
 		}
+		var map=MapType.getInstance();
+		currentScope.addReference
+				            (
+						            map.getHeader().getDisplayName(),
+						            new NuttReference
+								            (
+										            map.getHeader().getDisplayName(),
+										            new Mutable<>(map),
+										            EConstantQualifier.Val
+								            )
+				            );
 		typeTree=valuable;
 	}
 
 	public static Scope getGlobalScope()
 	{
 		var scope=currentScope;
-		while(scope.parent!=null) scope=scope.parent;
+		while(scope.getParent()!=null) scope=scope.getParent();
 		return scope;
 	}
 
@@ -112,7 +118,7 @@ public final class NuttInterpreter
 
 	public static NuttReference applyOperator(NuttReference left,NuttReference right,String operatorName)
 	{
-		return applyOperator(left,right,left.getType().getOperator(operatorName).getValue().simpleCast(Procedure.class));
+		return applyOperator(left,right,left.getType().getOperator(operatorName).getValueAs(Procedure.class));
 	}
 
 	public static NuttReference applyOperator(NuttReference left,NuttReference right,Procedure operator)
@@ -138,7 +144,7 @@ public final class NuttInterpreter
 	public static Scope createScope()
 	{
 		var scope=new Scope();
-		scope.parent=currentScope;
+		scope.setParent(currentScope);
 		return scope;
 	}
 
@@ -149,7 +155,7 @@ public final class NuttInterpreter
 
 	public static java.lang.String getColorizedFormat(java.lang.String format)
 	{
-		return "%s".formatted(Nutt.ConsoleColorizer.colorize(format,outputColor));
+		return "%s".formatted(ConsoleColorizer.colorize(format,outputColor));
 	}
 
 	public static List<NuttReference> sayFormatted(List<NuttReference> args)
@@ -168,6 +174,12 @@ public final class NuttInterpreter
 	{
 		System.out.printf(getColorizedFormat("%s")+"%n",reference.getValue());
 		return reference;
+	}
+
+	public static NuttReference sayNewLine()
+	{
+		System.out.println();
+		return NilReference.getInstance();
 	}
 
 	public static void clear()
@@ -193,18 +205,15 @@ public final class NuttInterpreter
 
 	public static Procedure getProcedure(java.lang.String name)
 	{
-		return getReference(name)
-				.getValue()
-				.simpleCast(Procedure.class);
+		return getReference(name).getValueAs(Procedure.class);
 	}
 
 	public static NuttReference getReference(java.lang.String referenceName)
 	{
 		try
 		{
-			var reference=currentScope.getReference(referenceName);
 			nuttLogger.appendLog("Interpreter getting reference '%s'".formatted(referenceName),"");
-			return reference;
+			return currentScope.getReference(referenceName);
 		}
 		catch(EmptyStackException e)
 		{
@@ -216,6 +225,9 @@ public final class NuttInterpreter
 
 	public static void main(java.lang.String[] args) throws Exception
 	{
+		//		var source="[[1,2.7],['asd',4]]";
+		//		var parser=new NuttParser(new CommonTokenStream(new NuttLexer(CharStreams.fromString(source))));
+		//		System.out.println(VisitorPool.typeInferenceVisitor.visit(parser.exp()));
 		if(args.length==0)
 			new Repl().loop();
 		else runModule(args[0]);
@@ -232,17 +244,17 @@ public final class NuttInterpreter
 	// .3.2.jar;G:\Nutt\guava-31.1-jre.jar;C:\Users\Vadimir.KOMPUTER\.ivy2\cache\org.scala-lang\scala3-library_3\jars\scala3-library_3-3.2
 	// .2.jar;C:\Users\Vadimir.KOMPUTER\.ivy2\cache\org.scala-lang\scala-library\jars\scala-library-2.13.10.jar;G:\antlr-4.12.0-complete
 	// .jar;C:\Users\Vadimir.KOMPUTER\.m2\repository\org\projectlombok\lombok\1.18.26\lombok-1.18.26.jar;G:\Nutt\jackson-annotations-2.15
-	// .2.jar;G:\Nutt\jackson-core-2.15.2.jar;G:\Nutt\jackson-databind-2.15.2.jar Main G:\\Nutt\\modules\\main.nutt
+	// .2.jar;G:\Nutt\jackson-core-2.15.2.jar;G:\Nutt\jackson-databind-2.15.2.jar Main G:\\Nutt\\modules\\gaxt.nutt
 
 	public static void runModule(java.lang.String path,java.lang.String moduleRootPath)
 	{
-		new NuttEnvironment(NuttCommon.readFileString(path),moduleRootPath);
+		new NuttEnvironment(path,moduleRootPath);
 	}
 
 	public Scope removeScope()
 	{
 		var old=currentScope.clear();
-		currentScope=currentScope.parent;
+		currentScope=currentScope.getParent();
 		return old;
 	}
 

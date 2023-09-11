@@ -12,13 +12,15 @@ import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
+import com.google.common.collect.Lists;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class String implements IListable
 {
-
+	@Getter
 	private java.lang.String content;
 
 	public String()
@@ -64,16 +66,11 @@ public class String implements IListable
 		return new String(content.replaceAll(regex,replacement));
 	}
 
-	@Override public String replicate()
-	{
-		return new String(this);
-	}
-
 	private int compare(IValuable valuable)
 	{
 		return toString().compareTo
 				                 (
-						                 valuable.spread()
+						                 valuable.toArray()
 						                         .getElements()
 						                         .stream()
 						                         .map(Objects::toString)
@@ -90,7 +87,12 @@ public class String implements IListable
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference("String").getType();
+		return TypeInferencer.findTypeReference("String").getValueAs(Type.class);
+	}
+
+	@Override public String replicate()
+	{
+		return new String(this);
 	}
 
 	@Override
@@ -102,16 +104,16 @@ public class String implements IListable
 	@Override
 	public NuttReference getAt(NuttReference index)
 	{
-		return getAt(index.getValue().simpleCast(Int.class).getValue().intValue()).toAnonymousReference();
+		return getAt(index.getValueAs(Int.class).getValue().intValue()).toAnonymousReference();
 	}
 
 	@Override
-	public String setAt(NuttReference value,NuttReference index)
+	public NuttReference setAt(NuttReference index,NuttReference value)
 	{
 		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
 		var valueAsStr=java.lang.String.valueOf(value.getValue().getValue());
 		var i=intIndex.getValue().intValue();
-		return new String(new StringBuilder(content).replace(i,i,valueAsStr).toString());
+		return new String(new StringBuilder(content).replace(i,i,valueAsStr).toString()).toAnonymousReference();
 	}
 
 	@Override
@@ -125,10 +127,15 @@ public class String implements IListable
 				);
 	}
 
-	@Override public String setElements(List<NuttReference> elements)
+	@Override public NuttReference setElements(List<NuttReference> elements)
 	{
-		this.content=elements.stream().map(reference->reference.getValue().toString()).collect(Collectors.joining());
-		return this;
+		var content=elements.stream().map(reference->reference.getValue().toString()).collect(Collectors.joining());
+		return new String(content).toAnonymousReference();
+	}
+
+	@Override public List<NuttReference> getElementsReversed()
+	{
+		return Lists.reverse(getElements());
 	}
 
 	@Override
@@ -193,12 +200,25 @@ public class String implements IListable
 					return super.proceed(argumentList);
 				}
 			}.toAnonymousReference();
+			case "replace" -> new NativeProcedure("replace",new Signature("str:String,pattern:String,to:String","String"))
+			{
+				@Override
+				public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
+				{
+					var str=argumentList.get(0)
+					                    .getValueAs(String.class)
+					                    .getValue()
+					                    .replace(argumentList.get(1).getValueAs(String.class).getValue(),
+					                             argumentList.get(2).getValueAs(String.class).getValue());
+					return new String(str).toAnonymousReference();
+				}
+			}.toAnonymousReference();
 			default -> NilReference.getInstance();
 		};
 	}
 
 	@Override
-	public Array spread()
+	public Array toArray()
 	{
 		List<NuttReference> valuables=Arrays
 				.stream(content.split(""))

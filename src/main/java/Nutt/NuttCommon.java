@@ -17,6 +17,16 @@ public class NuttCommon
 		return TypeInferencer.findTypeReference(type)!=null;
 	}
 
+	public static <T,R> R ifNullElse(T obj,R ifNull,R ifNotNull)
+	{
+		return obj==null?ifNull:ifNotNull;
+	}
+
+	public static <T,R> R ifEqualElse(T obj,T other,R ifEqual,R ifNotEqual)
+	{
+		return obj.equals(other)?ifEqual:ifNotEqual;
+	}
+
 	public static <K,V> String prettyPrintedMap(Map<K,V> map)
 	{
 		StringBuilder sb=new StringBuilder("{\n");

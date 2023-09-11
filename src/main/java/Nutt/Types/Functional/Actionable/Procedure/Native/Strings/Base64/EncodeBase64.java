@@ -25,23 +25,20 @@ public class EncodeBase64 extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var byteArray=argumentList.get(0).getValue().simpleCast(Array.class);
+		var byteArray=argumentList.get(0).getValueAs(Array.class);
 		if(!TypeInferencer.verdict("Int",byteArray.getElementType())) throw new RuntimeException("Array is not of type Int");
 		var arrayLength=byteArray.getType()
 		                         .getOperator("#")
-		                         .getValue()
-		                         .simpleCast(Procedure.class)
+		                         .getValueAs(Procedure.class)
 		                         .proceed(List.of(argumentList.get(0)))
-		                         .getValue()
-		                         .simpleCast(Int.class)
+		                         .getValueAs(Int.class)
 		                         .getValue()
 		                         .intValue();
 		var bytes=new byte[arrayLength];
 		for(int i=0;i<arrayLength;++i)
 		{
 			bytes[i]=byteArray.getAt(i)
-			                  .getValue()
-			                  .simpleCast(Int.class)
+			                  .getValueAs(Int.class)
 			                  .getValue()
 			                  .byteValue();
 		}

@@ -1,0 +1,5 @@
+module output
+
+funct say(x:Valuable):Nil=???
+
+end

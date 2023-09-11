@@ -87,7 +87,7 @@ public class Float implements INumerable
 
 	private static boolean fitsInDouble(java.lang.String n)
 	{
-		System.out.println("n = "+n);
+		//System.out.println("n = "+n);
 		var bigDecimal=BigDecimalMath.toBigDecimal(n);
 		var result=bigDecimal.doubleValue();
 		boolean isDoubleValueValid=!(Double.isNaN(result)||Double.isInfinite(result));
@@ -119,6 +119,11 @@ public class Float implements INumerable
 		return Int.fromString(asStr.substring(Math.max(dotIndex,0)));
 	}
 
+	@Override public boolean isFloat()
+	{
+		return true;
+	}
+
 	@Override public boolean isBoolean()
 	{
 		return false;
@@ -128,11 +133,6 @@ public class Float implements INumerable
 	public boolean isInt()
 	{
 		return false;
-	}
-
-	@Override public boolean isFloat()
-	{
-		return true;
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class Float implements INumerable
 		return isBigDecimal;
 	}
 
-	@Override public Array spread()
+	@Override public Array toArray()
 	{
 		var str=toString();
 		var parts=str.split(",");
@@ -185,7 +185,7 @@ public class Float implements INumerable
 		var right=new String(parts[1]);
 		return new Array
 				(
-						Stream.of(left.spread(),right.spread())
+						Stream.of(left.toArray(),right.toArray())
 						      .map(NuttInterpreter.currentScope.referenceContainer::get)
 						      .collect(Collectors.toList())
 				);
@@ -201,6 +201,6 @@ public class Float implements INumerable
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference("Float").getType();
+		return TypeInferencer.findTypeReference("Float").getValueAs(Type.class);
 	}
 }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-@ANativeProcedure("native.chrono")
+@ANativeProcedure("native.chrono.delay")
 public class Delay extends NativeProcedure
 {
 	public Delay()
@@ -23,8 +23,7 @@ public class Delay extends NativeProcedure
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		var milliseconds=argumentList.get(0)
-		                             .getValue()
-		                             .simpleCast(Int.class);
+		                             .getValueAs(Int.class);
 		Runnable command=argumentList.size()>1
 		                 ?((Procedure)argumentList.get(1).getValue())::proceed
 		                 :(()->

@@ -21,8 +21,7 @@ public class Upper extends NativeProcedure
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		var asUpper=argumentList.get(0)
-		                        .getValue()
-		                        .simpleCast(String.class)
+		                        .getValueAs(String.class)
 		                        .getValue()
 		                        .toUpperCase();
 		return new String(asUpper).toAnonymousReference();

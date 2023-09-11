@@ -20,8 +20,7 @@ public class Append extends NativeProcedure
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		return argumentList.get(0)
-		                   .getValue()
-		                   .simpleCast(IListable.class)
+		                   .getValueAs(IListable.class)
 		                   .add(argumentList.get(1))
 		                   .toAnonymousReference();
 	}

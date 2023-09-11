@@ -1,5 +1,6 @@
 package Nutt.Types.Functional.Listable;
 
+import Nutt.Interfaces.*;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Type.Native.ListableType;
@@ -11,19 +12,26 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public interface IListable extends IFunctional, Iterable<NuttReference>
+public interface IListable extends IFunctional,
+                                   IIndexed<NuttReference,NuttReference,NuttReference>,
+                                   IStreamable<NuttReference>,
+                                   IMappable,
+                                   Iterable<NuttReference>,
+                                   IPairable<NuttReference,NuttReference>,
+                                   IReversible<IListable,NuttReference>
 {
-	@Override default Type getType()
+	@Override
+	default Type getType()
 	{
 		return ListableType.getInstance();
 	}
 
+	@Override
+	IListable replicate();
+
 	IListable add(NuttReference value);
 
-	NuttReference getAt(NuttReference index);
-
-	IListable setAt(NuttReference value,NuttReference index);
-
+	@Override
 	default <T> Stream<T> map(java.util.function.Function<NuttReference,? extends T> mapper)
 	{
 		return stream().map(mapper);
@@ -36,21 +44,24 @@ public interface IListable extends IFunctional, Iterable<NuttReference>
 
 	List<NuttReference> getElements();
 
-	IListable setElements(List<NuttReference> elements);
+	NuttReference setElements(List<NuttReference> elements);
 
 	Type getElementType();
 
-	@Override default Iterator<NuttReference> iterator()
+	@Override
+	default Iterator<NuttReference> iterator()
 	{
 		return getElements().iterator();
 	}
 
-	@Override default void forEach(Consumer<? super NuttReference> action)
+	@Override
+	default void forEach(Consumer<? super NuttReference> action)
 	{
 		getElements().forEach(action);
 	}
 
-	@Override default Spliterator<NuttReference> spliterator()
+	@Override
+	default Spliterator<NuttReference> spliterator()
 	{
 		return getElements().spliterator();
 	}

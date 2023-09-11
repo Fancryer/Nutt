@@ -30,8 +30,9 @@ KW_All: 'all' | '∀';
 KW_Annotation: 'annotation';
 KW_As: 'as';
 KW_Break: 'break';
+KW_Both: 'both';
 KW_Catch: 'catch';
-KW_Class: 'class';
+KW_Prototype: 'proto';
 KW_Continue: 'continue';
 KW_CommonOf: 'commonof';
 KW_Default: 'default';
@@ -68,6 +69,7 @@ KW_Match: 'match';
 KW_Matched: 'matched';
 KW_Module: 'module';
 KW_Mut: 'mut';
+KW_Neither: 'neither';
 KW_New: 'new';
 KW_Nil: 'nil';
 KW_Not_In: OP_Not KW_In | '∉';
@@ -81,13 +83,11 @@ KW_Prefix: 'prefix';
 KW_Private: 'private';
 KW_Protected: 'protected';
 KW_Public: 'public';
-KW_Pure: 'pure';
 KW_Record: 'record';
 KW_Repeat: 'repeat';
 KW_Requires: 'requires';
 KW_Return: 'return';
 KW_Reverse: 'reverse';
-KW_Static: 'static';
 KW_Then: 'then';
 KW_This: 'this';
 KW_To: 'to';
@@ -100,6 +100,7 @@ KW_Until: 'until';
 KW_Using: 'using';
 KW_Val: 'val';
 KW_Var: 'var';
+KW_Where: 'where';
 KW_While: 'while';
 KW_With: 'with';
 KW_Yield: 'yield';
@@ -113,7 +114,7 @@ fragment Alpha: AlphaLower | AlphaUpper;
 fragment AlphaLower: [a-z];
 fragment AlphaUpper: [A-Z];
 
-NATIVE: '$$NATIVE.';
+NATIVE: '$$.';
 OP_Add: '+';
 OP_And: '&' | 'and' | '∧';
 OP_Append: ';;';
@@ -144,6 +145,7 @@ OP_Mult: '*' | '×' | '⋅';
 OP_Not: '!' | 'not' | '¬';
 OP_Or: '|' | 'or' | '∨';
 OP_Pass:'...';
+OP_Placeholder: '???';
 OP_Power: '^';
 OP_Range: '..';
 OP_Reverse: '<|>';
@@ -152,6 +154,7 @@ OP_SlightlyGreater: '~>';
 OP_SlightlyLess: '<~';
 OP_Sub: '-';
 OP_Tilda: '~';
+OP_TypeAnnotation: '->';
 OP_Underscore: '_';
 OP_Xor: 'xor' | '⊻';
 Op_Greater_Equal: '>=' | '≥' | '≧';
@@ -162,6 +165,9 @@ fragment
 DEFAULT_OP: '+' | '-' | '*' | '/' | '%' | '$' | '<' | '>' | '&'
 	| '|' | '^' | '~' | '?' | '⊕' | '≠' | '≢' | '≥' | '≧' | '⊻' | '∨'
 	| '¬' | '×' | '⋅' | '≤' | '≦' | '≡' | '÷' | '↤' | '↦';
+
+fragment
+Exclamation: '!';
 
 Op_Custom: DEFAULT_OP DEFAULT_OP+;
 
@@ -183,7 +189,6 @@ fragment HexDigitOrUnderscore: HexDigit | '_';
 fragment HexExponentPart: [pP] [+-]? Digit+;
 fragment HexIntDigitPart: (HexDigit+ HexDigitOrUnderscore*)? HexDigit+;
 fragment IntDigitPart: (Digit+ DigitOrUnderscore*)? Digit+;
-fragment MacroContent: ~'`';
 fragment SingleLineInputCharacter: ~[\r\n\u0085\u2028\u2029];
 
 WS: [ \t\u000C\r\n]+ -> skip;

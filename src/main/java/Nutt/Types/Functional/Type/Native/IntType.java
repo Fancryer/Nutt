@@ -1,10 +1,9 @@
 package Nutt.Types.Functional.Type.Native;
 
-import Nutt.Exceptions.NuttTypeCastException;
 import Nutt.Types.Functional.Actionable.Procedure.Operator;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
+import Nutt.Types.Functional.Numerable.Boolean;
 import Nutt.Types.Functional.Numerable.Int.Int;
-import Nutt.Types.IValuable;
 import lombok.Getter;
 
 public class IntType extends NativeType
@@ -12,81 +11,133 @@ public class IntType extends NativeType
 	@Getter
 	private final static IntType instance=new IntType();
 
-	public IntType()
+	private IntType()
 	{
 		super(NumerableType.getInstance(),"Int");
 		var intSignature=new Signature("a:Int,b:Int","Int");
+		var boolSignature=new Signature("a:Int,b:Int","Boolean");
 		addOperators
 				(
-						Operator.builder()
-						        .name("+")
-						        .signature(intSignature)
-						        .function
-								        (
-										        list->
-										        {
-											        IValuable self=list.get(1).getValue();
-											        if(!Int.class.isInstance(self))
-												        throw new NuttTypeCastException(self.getType().toString(),
-												                                        Int.class.getSimpleName());
-											        IValuable self1=list.get(0).getValue();
-											        if(!Int.class.isInstance(self1))
-												        throw new NuttTypeCastException(self1.getType().toString(),
-												                                        Int.class.getSimpleName());
-											        Int left=Int.class.cast(self1),
-													        right=Int.class.cast(self);
-											        var resString=left.asBigInteger().add(right.asBigInteger()).toString();
-											        return Int.fromString(resString).toAnonymousReference();
-										        }
-								        )
-						        .build()
-						        .toAnonymousReference(),
-						Operator.builder()
-						        .name("-")
-						        .signature(intSignature)
-						        .function
-								        (
-										        list->
-										        {
-											        IValuable self=list.get(1).getValue();
-											        if(!Int.class.isInstance(self))
-												        throw new NuttTypeCastException(self.getType().toString(),
-												                                        Int.class.getSimpleName());
-											        IValuable self1=list.get(0).getValue();
-											        if(!Int.class.isInstance(self1))
-												        throw new NuttTypeCastException(self1.getType().toString(),
-												                                        Int.class.getSimpleName());
-											        Int left=Int.class.cast(self1),
-													        right=Int.class.cast(self);
-											        var resString=left.asBigInteger().subtract(right.asBigInteger()).toString();
-											        return Int.fromString(resString).toAnonymousReference();
-										        }
-								        )
-						        .build()
-						        .toAnonymousReference(),
-						Operator.builder()
-						        .name("*")
-						        .signature(intSignature)
-						        .function
-								        (
-										        list->
-										        {
-											        IValuable self=list.get(1).getValue();
-											        if(!Int.class.isInstance(self))
-												        throw new NuttTypeCastException(self.getType().toString(),
-												                                        Int.class.getSimpleName());
-											        IValuable self1=list.get(0).getValue();
-											        if(!Int.class.isInstance(self1))
-												        throw new NuttTypeCastException(self1.getType().toString(),
-												                                        Int.class.getSimpleName());
-											        Int left=Int.class.cast(self1),
-													        right=Int.class.cast(self);
-											        var resString=left.asBigInteger().multiply(right.asBigInteger()).toString();
-											        return Int.fromString(resString).toAnonymousReference();
-										        }
-								        )
-						        .build()
-						        .toAnonymousReference()
+						new Operator
+								(
+										"+",
+										intSignature,
+										(left,right)->new Int
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .add(right.getValueAs(Int.class).asBigInteger())
+												)
+												.toAnonymousReference()
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										"-",
+										intSignature,
+										(left,right)->new Int
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .subtract(right.getValueAs(Int.class).asBigInteger())
+												)
+												.toAnonymousReference()
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										"*",
+										intSignature,
+										(left,right)->new Int
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .multiply(right.getValueAs(Int.class).asBigInteger())
+												)
+												.toAnonymousReference()
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										"/",
+										intSignature,
+										(left,right)->new Int
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .divide(right.getValueAs(Int.class).asBigInteger())
+												)
+												.toAnonymousReference()
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										"<=",
+										boolSignature,
+										(left,right)->new Boolean
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .compareTo(right.getValueAs(Int.class).asBigInteger())<=0
+												)
+												.toAnonymousReference()
+
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										"<",
+										boolSignature,
+										(left,right)->new Boolean
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .compareTo(right.getValueAs(Int.class).asBigInteger())<0
+												)
+												.toAnonymousReference()
+
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										"===",
+										boolSignature,
+										(left,right)->new Boolean
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .compareTo(right.getValueAs(Int.class).asBigInteger())==0
+												)
+												.toAnonymousReference()
+
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										">",
+										boolSignature,
+										(left,right)->new Boolean
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .compareTo(right.getValueAs(Int.class).asBigInteger())>0
+												)
+												.toAnonymousReference()
+								)
+								.toAnonymousReference(),
+						new Operator
+								(
+										">=",
+										boolSignature,
+										(left,right)->new Boolean
+												(
+														left.getValueAs(Int.class)
+														    .asBigInteger()
+														    .compareTo(right.getValueAs(Int.class).asBigInteger())>=0
+												)
+												.toAnonymousReference()
+								)
+								.toAnonymousReference()
 				);
 	}
 }

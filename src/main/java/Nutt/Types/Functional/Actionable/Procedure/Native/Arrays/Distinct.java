@@ -22,7 +22,7 @@ public class Distinct extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var list=argumentList.get(0).getValue().simpleCast(IListable.class);
+		var list=argumentList.get(0).getValueAs(IListable.class);
 		var result=new ArrayList<NuttReference>();
 		for(var el: list)
 		{

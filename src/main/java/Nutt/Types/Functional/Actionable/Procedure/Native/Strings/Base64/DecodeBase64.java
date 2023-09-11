@@ -24,7 +24,7 @@ public class DecodeBase64 extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var byteArray=argumentList.get(0).getValue().simpleCast(String.class);
+		var byteArray=argumentList.get(0).getValueAs(String.class);
 		var bytes=Base64.getDecoder().decode(byteArray.getValue().getBytes());
 		var decoded=new ArrayList<NuttReference>();
 		for(var b: bytes) decoded.add(new Int(b).toAnonymousReference());

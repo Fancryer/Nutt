@@ -4,8 +4,10 @@ import Nutt.Exceptions.NuttOperatorNotImplementedException;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttCommon;
 import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.IFunctional;
 import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Type.Native.TypeType;
 import lombok.Getter;
 
 import java.util.*;
@@ -33,6 +35,7 @@ public class Type implements IFunctional
 		if(parent!=null) header.getParent().addChild(this);
 	}
 
+	@SafeVarargs
 	static NuttReference LowestCommonAncestorAll(NuttReference... types)
 	{
 		return types.length==0
@@ -74,15 +77,15 @@ public class Type implements IFunctional
 		return null;
 	}
 
-	public Type addOperators(NuttReference... procedures)
+	@SafeVarargs
+	public final void addOperators(NuttReference... procedures)
 	{
-		return addOperators(Arrays.asList(procedures));
+		addOperators(Arrays.asList(procedures));
 	}
 
-	public Type addOperators(List<NuttReference> procedures)
+	public void addOperators(List<NuttReference> procedures)
 	{
-		for(var procedure: procedures) operatorMap.put(procedure.getName(),procedure);
-		return this;
+		for(var procedure: procedures) operatorMap.put(procedure.getValueAs(Procedure.class).getName(),procedure);
 	}
 
 	public boolean hasChild(java.lang.String name)
@@ -114,7 +117,7 @@ public class Type implements IFunctional
 	@Override
 	public Type getType()
 	{
-		return this;
+		return TypeType.getInstance();
 	}
 
 	@Override
@@ -153,7 +156,7 @@ public class Type implements IFunctional
 	}
 
 	@Override
-	public Array spread()
+	public Array toArray()
 	{
 		return new Array(getHeader().getChildren().stream().map(TypeInferencer::findTypeReference).toList());
 	}
@@ -297,12 +300,13 @@ public class Type implements IFunctional
 
 	public Type findChild(Type node)
 	{
-		//return findChild(node.getDisplayName());
+		//System.out.println("node = "+node);
 		if(Objects.equals(this,node)) return this;
 		for(var child: getHeader().getChildren())
 		{
 			var ret=child.findChild(node);
-			if(ret!=null) return ret;
+			//System.out.println("ret = "+ret);
+			if(ret!=null&&ret.getHeader().getDisplayName().equals(node.getHeader().getDisplayName())) return ret;
 		}
 		return null;
 	}
@@ -311,5 +315,10 @@ public class Type implements IFunctional
 	{
 		return Optional.ofNullable(operatorMap.get(name))
 		               .orElseThrow(()->new NuttOperatorNotImplementedException(getHeader().getDisplayName(),name));
+	}
+
+	public Map<String,NuttReference> getOperators()
+	{
+		return operatorMap;
 	}
 }

@@ -1,9 +1,13 @@
 package Nutt.Types.Functional.Type.Native;
 
-import Nutt.Types.Functional.Actionable.Procedure.Operator;
+import Nutt.Exceptions.NuttSuccessReturnException;
+import Nutt.Interpreter.References.NuttReference;
+import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
 import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Map.Map;
 import lombok.Getter;
+
+import java.util.List;
 
 public class MapType extends NativeType
 {
@@ -13,14 +17,17 @@ public class MapType extends NativeType
 	public MapType()
 	{
 		super(ListableType.getInstance(),"Map");
-		addOperators
-				(
-						Operator.builder()
-						        .name("get")
-						        .signature(new Signature("m:Map,k:Valuable","Valuable"))
-						        .function(list->list.get(0).getValue().simpleCast(Map.class).getAt(list.get(1)))
-						        .build()
-						        .toAnonymousReference()
-				);
+		propertyMap.put
+				           (
+						           "get",
+						           new NativeProcedure("get",new Signature("m:Map,k:Valuable","Valuable"))
+						           {
+							           @Override
+							           public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
+							           {
+								           return argumentList.get(0).getValueAs(Map.class).getAt(argumentList.get(1));
+							           }
+						           }.toAnonymousReference()
+				           );
 	}
 }

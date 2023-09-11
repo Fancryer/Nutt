@@ -21,9 +21,7 @@ public class ToInt extends NativeProcedure
 	@Override
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var asString=argumentList.get(0)
-		                         .getValue()
-		                         .simpleCast(String.class);
+		var asString=argumentList.get(0).getValueAs(String.class);
 		return Int.fromString(asString.toString()).toAnonymousReference();
 	}
 }

@@ -9,6 +9,7 @@ import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,23 +50,22 @@ public class Set implements IListable
 		                                                                   .toString()));
 	}
 
+	@Override
+	public Type getType()
+	{
+		return TypeInferencer.findTypeReference("Set").getValueAs(Type.class);
+	}
+
 	@Override public Set replicate()
 	{
 		return new Set(elements);
 	}
-
 
 	public Set add(NuttReference reference)
 	{
 		var ret=new HashSet<>(elements);
 		ret.add(reference);
 		return new Set(ret);
-	}
-
-	@Override
-	public Type getType()
-	{
-		return TypeInferencer.findTypeReference("Set").getType();
 	}
 
 	@Override
@@ -76,20 +76,13 @@ public class Set implements IListable
 	}
 
 	@Override
-	public java.util.Set<NuttReference> getValue()
+	public NuttReference setAt(NuttReference index,NuttReference value)
 	{
-		return elements;
-	}
-
-	@Override public NuttReference getProperty(String name)
-	{
-		return NilReference.getInstance();
-	}
-
-	@Override
-	public Array spread()
-	{
-		return new Array(getElementType(),getElements());
+		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
+		var list=asList();
+		list.set(intIndex.asLong()
+		                 .intValue(),value);
+		return new Set(new HashSet<>(list)).toAnonymousReference();
 	}
 
 	@Override
@@ -98,9 +91,15 @@ public class Set implements IListable
 		return asList();
 	}
 
-	private List<NuttReference> asList()
+	@Override
+	public NuttReference setElements(List<NuttReference> elements)
 	{
-		return new ArrayList<>(elements);
+		return this.toAnonymousReference();
+	}
+
+	@Override public List<NuttReference> getElementsReversed()
+	{
+		return Lists.reverse(getElements());
 	}
 
 	@Override
@@ -115,6 +114,17 @@ public class Set implements IListable
 		return elements.iterator();
 	}
 
+	@Override public IListable addAll(IListable listable)
+	{
+		listable.forEach(this::add);
+		return this;
+	}
+
+	private List<NuttReference> asList()
+	{
+		return new ArrayList<>(elements);
+	}
+
 	//	@Override
 	//	public IValuable insertAt(IValuable value,int i)
 	//	{
@@ -124,24 +134,19 @@ public class Set implements IListable
 	//	}
 
 	@Override
-	public Set setAt(NuttReference value,NuttReference index)
+	public java.util.Set<NuttReference> getValue()
 	{
-		if(!(index.getValue() instanceof Int intIndex)) throw new RuntimeException();
-		var list=asList();
-		list.set(intIndex.asLong()
-		                 .intValue(),value);
-		return new Set(new HashSet<>(list));
+		return elements;
+	}
+
+	@Override public NuttReference getProperty(String name)
+	{
+		return NilReference.getInstance();
 	}
 
 	@Override
-	public IListable setElements(List<NuttReference> elements)
+	public Array toArray()
 	{
-		return this;
-	}
-
-	@Override public IListable addAll(IListable listable)
-	{
-		listable.forEach(this::add);
-		return this;
+		return new Array(getElementType(),getElements());
 	}
 }

@@ -30,11 +30,11 @@ public class WriteFile extends NativeProcedure
 			NuttCommon.writeFile(path,List.of(data.toString()));
 			return NilReference.getInstance();
 		}
-		else if(TypeInferencer.verdict("Int",data.getValue().spread().getElementType()))
+		else if(TypeInferencer.verdict("Int",data.getValue().toArray().getElementType()))
 		{
-			var elements=data.getValue().spread().getValue();
+			var elements=data.getValue().toArray().getValue();
 			var bytes=new byte[elements.size()];
-			IntStream.range(0,data.getValue().spread().getElements().size())
+			IntStream.range(0,data.getValue().toArray().getElements().size())
 			         .forEach
 					         (
 							         i->bytes[i]=elements.get(i)

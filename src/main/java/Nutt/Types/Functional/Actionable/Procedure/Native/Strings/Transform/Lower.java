@@ -21,8 +21,7 @@ public class Lower extends NativeProcedure
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		var asLower=argumentList.get(0)
-		                        .getValue()
-		                        .simpleCast(String.class)
+		                        .getValueAs(String.class)
 		                        .getValue()
 		                        .toLowerCase();
 		return new String(asLower).toAnonymousReference();

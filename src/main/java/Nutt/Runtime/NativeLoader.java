@@ -32,7 +32,7 @@ public class NativeLoader
 				}
 			}
 		}
-		throw new RuntimeException();
+		throw new RuntimeException(modulePath+" not found");
 	}
 
 	public record NativeProcedureInfo(String name,String module,NativeProcedure procedure)

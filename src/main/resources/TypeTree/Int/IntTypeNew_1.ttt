@@ -1,0 +1,47 @@
+>signatures>
+	>intSignature>
+		input:`a:Int,b:Int`,
+		output:`Int`,
+		nativeWrapper:`Nutt.Types.Functional.Numerable.Int.Int`
+	<<,
+	>boolSignature>
+		input:`a:Int,b:Int`,
+		output:`Boolean`,
+		nativeWrapper:`Nutt.Types.Functional.Numerable.Boolean`
+	<<
+<<
+
+>unwrappers>
+	>intUnwrapper>
+		`l`:`left.getValueAs(Int.class).asBigInteger()`,
+		`r`:`right.getValueAs(Int.class).asBigInteger()`
+	<<,
+	>boolUnwrapper>
+		`l`:`left.getValueAs(Int.class).asBigInteger()`,
+		`r`:`right.getValueAs(Int.class).asBigInteger()`
+	<<
+<<
+
+>operators>
+	>>
+		signature:intSignature,
+		unwrapper:intUnwrapper,
+		>operators>
+			`+`:`l.add(r)`,
+			`-`:`l.subtract(r)`,
+			`*`:`l.multiply(r)`,
+			`/`:`l.divide(r)`
+		<<
+	<<,
+	>>
+		signature:boolSignature,
+		unwrapper:boolUnwrapper,
+		>operators>
+			`<=`:`l.compareTo(r)<=0`,
+			`<`:`l.compareTo(r)<0`,
+			`===`:`l.compareTo(r)==0`,
+			`>`:`l.compareTo(r)>0`,
+			`>=`:`l.compareTo(r)>=0`
+		<<
+	<<
+<<

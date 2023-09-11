@@ -1,13 +1,17 @@
 package Nutt.Types.Functional.Listable.Map;
 
+import Nutt.Exceptions.NuttSuccessReturnException;
 import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.Pair;
 import Nutt.TypeInferencer;
+import Nutt.Types.Functional.Actionable.Procedure.Native.NativeProcedure;
+import Nutt.Types.Functional.Actionable.Procedure.Signature;
 import Nutt.Types.Functional.Listable.Array.Array;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Type.Type;
+import com.google.common.collect.Lists;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,13 +62,29 @@ public class Map implements IListable
 	@Override
 	public NuttReference getProperty(String name)
 	{
+		if(name.equals("get"))
+		{
+			return new NativeProcedure("get",new Signature("m:Map,k:Valuable","Valuable"))
+			{
+				@Override
+				public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
+				{
+					return getAt(argumentList.get(1));
+				}
+			}.toAnonymousReference();
+		}
 		return NilReference.getInstance();
 	}
 
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference("Map").getType();
+		return TypeInferencer.findTypeReference("Map").getValueAs(Type.class);
+	}
+
+	@Override public Map replicate()
+	{
+		return new Map(this);
 	}
 
 	@Override
@@ -79,12 +99,12 @@ public class Map implements IListable
 	}
 
 	@Override
-	public Map setAt(NuttReference value,NuttReference index)
+	public NuttReference setAt(NuttReference index,NuttReference value)
 	{
 		if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(getKeyType()),TypeInferencer.findTypeReference(index.getType())))
 			throw new RuntimeException();
 		elements.put(index,value);
-		return this;
+		return this.toAnonymousReference();
 	}
 
 	@Override
@@ -94,9 +114,14 @@ public class Map implements IListable
 	}
 
 	@Override
-	public Map setElements(List<NuttReference> elements)
+	public NuttReference setElements(List<NuttReference> elements)
 	{
-		return this;
+		return this.toAnonymousReference();
+	}
+
+	@Override public List<NuttReference> getElementsReversed()
+	{
+		return Lists.reverse(getElements());
 	}
 
 	@Override
@@ -118,6 +143,12 @@ public class Map implements IListable
 	{
 		return this;
 	}
+
+	//	@Override
+	//	public IValuable insertAt(IValuable value,int i)
+	//	{
+	//		return null;
+	//	}
 
 	private List<NuttReference> asList()
 	{
@@ -141,24 +172,13 @@ public class Map implements IListable
 				.collect(Collectors.toList());
 	}
 
-	//	@Override
-	//	public IValuable insertAt(IValuable value,int i)
-	//	{
-	//		return null;
-	//	}
-
 	public Type getKeyType()
 	{
 		return typePair.left();
 	}
 
-	@Override public Map replicate()
-	{
-		return new Map(this);
-	}
-
 	@Override
-	public Array spread()
+	public Array toArray()
 	{
 		return new Array(getElementType(),asList());
 	}

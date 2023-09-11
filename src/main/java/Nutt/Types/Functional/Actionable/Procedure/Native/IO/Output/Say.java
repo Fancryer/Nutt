@@ -21,6 +21,6 @@ public class Say extends NativeProcedure
 	public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
 		if(argumentList.size()>1) throw new RuntimeException();
-		return NuttInterpreter.sayNewLine(argumentList.get(0));
+		return argumentList.isEmpty()?NuttInterpreter.sayNewLine():NuttInterpreter.sayNewLine(argumentList.get(0));
 	}
 }

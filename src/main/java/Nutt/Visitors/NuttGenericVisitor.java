@@ -1,9 +1,9 @@
 package Nutt.Visitors;
 
 import Nutt.Interpreter.References.NuttReference;
-import gen.NuttBaseVisitor;
+import gen.NuttParserBaseVisitor;
 
-public class NuttGenericVisitor extends NuttBaseVisitor<NuttReference>
+public class NuttGenericVisitor extends NuttParserBaseVisitor<NuttReference>
 {
 	public NuttGenericVisitor(){}
 }

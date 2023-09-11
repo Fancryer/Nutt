@@ -1,5 +1,6 @@
 package Nutt.Interpreter;
 
+import Nutt.Exceptions.NuttVariableNotDefinedException;
 import Nutt.Interpreter.Logging.EActionStatus;
 import Nutt.Interpreter.Logging.ESeverity;
 import Nutt.Interpreter.Logging.LogStamp;
@@ -12,20 +13,27 @@ import Nutt.Types.Functional.Record.Record;
 import Nutt.Types.Functional.Type.Type;
 import Nutt.Types.IValuable;
 import Nutt.Types.Nil;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.EmptyStackException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Function;
 
 import static Nutt.Interpreter.NuttInterpreter.EConstantQualifier.Val;
 import static Nutt.Interpreter.NuttInterpreter.EConstantQualifier.Var;
 import static Nutt.NuttEnvironment.nuttLogger;
 
+@Getter
+@AllArgsConstructor
 public class Scope
 {
-	public final ReferenceContainer referenceContainer;
-	Scope parent=null;
+	public ReferenceContainer referenceContainer;
+	@Setter
+	private Scope parent=null;
 
 	public Scope()
 	{
@@ -50,7 +58,7 @@ public class Scope
 	public NuttReference forgetReference(String referenceName)
 	{
 		NuttReference returnVar=null;
-		if(!defined(referenceName)) return null;
+		if(!defined(referenceName)) throw new NuttVariableNotDefinedException(referenceName);
 		if(definedLocally(referenceName)) returnVar=forgetLocally(referenceName);
 		if(parent!=null) returnVar=Objects.requireNonNullElse(returnVar,parent.forgetReference(referenceName));
 		return returnVar;
@@ -60,7 +68,7 @@ public class Scope
 	{
 		if(definedLocally(variableName)) return referenceContainer.get(variableName);
 		if(parent!=null) return parent.getReference(variableName);
-		throw new EmptyStackException();
+		throw new NuttVariableNotDefinedException(variableName);
 	}
 
 	public NuttReference setReference(String referenceName,IValuable value)
@@ -71,13 +79,12 @@ public class Scope
 			var variableRef=getReference(referenceName);
 			var ceilType=variableRef.getCeilType();
 			var referenceType=value.getType();
-			if(ceilType.findChild(referenceType)==null&&!ceilType.equals(referenceType))
+			if(ceilType.findChild(referenceType)==null)
 			{
 				throw new Nutt.Exceptions.NuttVariableStoreException(ceilType.getHeader().getDisplayName(),
 				                                                     referenceType.getHeader().getDisplayName());
 			}
-			variableRef.setValue(value);
-			return variableRef;
+			return variableRef.setValue(value);
 		}
 		catch(IllegalAccessException e)
 		{
@@ -124,20 +131,18 @@ public class Scope
 
 	public Scope clear()
 	{
-		var entrySet=Set.copyOf(referenceContainer.entrySet());
-		for(var entry: entrySet)
-		{
-			if(Objects.requireNonNull(entry.getValue().getValue()) instanceof Type type)
-				TypeInferencer.removeCustomType(type.getHeader().getDisplayName());
-			nuttLogger.appendLog
-					          (
-							          LogStamp.builder()
-							                  .action("Removed variable")
-							                  .message("%s: %s".formatted(entry.getKey(),entry.getValue()))
-							                  .build()
-					          );
-			referenceContainer.remove(entry.getKey());
-		}
+		Function<Map.Entry<String,NuttReference>,LogStamp> getLogStamp=entry->
+				LogStamp.builder()
+				        .action("Removed variable")
+				        .message(String.format("%s: %s",
+				                               entry.getKey(),
+				                               entry.getValue()))
+				        .build();
+		referenceContainer.entrySet()
+		                  .stream()
+		                  .map(getLogStamp)
+		                  .forEach(nuttLogger::appendLog);
+		referenceContainer.getReferences().clear();
 		return this;
 	}
 
@@ -149,7 +154,7 @@ public class Scope
 
 	public NuttReference addProcedure(String name,Procedure procedure)
 	{
-		var procedureRef=new NuttReference(name,procedure);
+		var procedureRef=new NuttReference(name,new Mutable<>(procedure),Val,getReference("Procedure").getValueAs(Type.class));
 		referenceContainer.put(procedureRef);
 		return procedureRef;
 	}

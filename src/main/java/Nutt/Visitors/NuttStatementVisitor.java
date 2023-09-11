@@ -1,54 +1,69 @@
 package Nutt.Visitors;
 
 import Nutt.Exceptions.*;
+import Nutt.Interpreter.ForEachLoop;
 import Nutt.Interpreter.NuttInterpreter;
 import Nutt.Interpreter.References.AnonymousNuttReference;
 import Nutt.Interpreter.References.NilReference;
 import Nutt.Interpreter.References.NuttReference;
-import Nutt.ModuleLoader;
+import Nutt.Interpreter.WhileDoLoop;
+import Nutt.ModuleManager.Loader;
 import Nutt.NuttEnvironment;
 import Nutt.TypeInferencer;
-import Nutt.Types.Functional.Listable.Array.Array;
+import Nutt.Types.Functional.Actionable.Procedure.Procedure;
 import Nutt.Types.Functional.Listable.IListable;
 import Nutt.Types.Functional.Listable.String.String;
 import Nutt.Types.Functional.Numerable.Boolean;
+import Nutt.Types.Functional.Numerable.Int.Int;
 import Nutt.Types.Functional.Type.Type;
-import Nutt.Types.IValuable;
-import Nutt.Types.Nil;
-import com.google.common.collect.Lists;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import static Nutt.NuttEnvironment.getTempParser;
-import static gen.Nutt.*;
+import static Nutt.Visitors.VisitorPool.evalVisitor;
+import static gen.NuttParser.*;
 
 public class NuttStatementVisitor extends NuttGenericVisitor
 {
-	@Override public NuttReference visitChunk(ChunkContext ctx)
+	@Override
+	public NuttReference visitChunk(ChunkContext ctx)
 	{
-		System.out.println(ctx.module());
-		return visitModule(ctx.module());
+		return visitChunk(ctx,null);
 	}
 
-	@Override public NuttReference visitModule(ModuleContext ctx)
+	public NuttReference visitChunk(ChunkContext ctx,java.lang.String path)
 	{
-		visitModule_start(ctx.module_start());
+		//System.out.println(ctx.module());
+		return visitModule(ctx.module(),path);
+	}
+
+	public NuttReference visitModule(ModuleContext ctx,java.lang.String path)
+	{
+		visitModule_start(ctx.module_start(),path);
 		for(var i: ctx.module_import()) visitModule_import(i);
 		visitBlock(ctx.block());
 		return NilReference.getInstance();
 	}
 
+	public NuttReference visitModule_start(Module_startContext ctx,java.lang.String path)
+	{
+		return new String(Loader.importModule(ctx.NAME().getText())).toAnonymousReference();
+	}
+
+	@Override
+	public NuttReference visitModule(ModuleContext ctx)
+	{
+		return visitModule(ctx,null);
+	}
+
 	@Override
 	public NuttReference visitModule_start(Module_startContext ctx)
 	{
-		var moduleName=new ModuleLoader().getFullModuleName(ctx.module_name());
-		NuttInterpreter.moduleNames.add(moduleName);
-		return new String(moduleName).toAnonymousReference();
+		return visitModule_start(ctx,null);
 	}
 
 	@Override
@@ -61,7 +76,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitModule_import(Module_importContext ctx)
 	{
-		new ModuleLoader().importModuleContext(ctx,this);
+		new Loader().importModuleContext(ctx);
 		return new String().toAnonymousReference();
 	}
 
@@ -82,13 +97,13 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 
 	@Override public NuttReference visitDo_if_stat(Do_if_statContext ctx)
 	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().simpleCast(Boolean.class).isTrue();
+		var cond=evalVisitor.visit(ctx.exp()).getValueAs(Boolean.class).isTrue();
 		return cond?visit(ctx.stat()):NilReference.getInstance();
 	}
 
 	@Override public NuttReference visitDo_if_not_stat(Do_if_not_statContext ctx)
 	{
-		var cond=VisitorPool.conditionVisitor.visit(ctx.exp()).getValue().simpleCast(Boolean.class).isTrue();
+		var cond=evalVisitor.visit(ctx.exp()).getValueAs(Boolean.class).isTrue();
 		return cond?NilReference.getInstance():visit(ctx.stat());
 	}
 
@@ -123,7 +138,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override public NuttReference visitIf_then_else_block_stat(If_then_else_block_statContext ctx)
 	{
 		var block=ctx.if_then_else_block();
-		var pred=VisitorPool.conditionVisitor.visit(block.exp()).getValue().simpleCast(Boolean.class).isTrue();
+		var pred=evalVisitor.visit(block.exp()).getValueAs(Boolean.class).isTrue();
 		if(pred) return visitBlock(block.then_block().block());
 		var elseBlock=block.else_block();
 		return elseBlock!=null?visitBlock(elseBlock.block()):new String().toAnonymousReference();
@@ -153,16 +168,15 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 		throw new NuttExitException();
 	}
 
-	@Override public NuttReference visitReturn_stat(Return_statContext ctx)
-	{
-		throw new NuttSuccessReturnException(VisitorPool.evalVisitor.visit(ctx.function_return().exp()));
-	}
-
+	/**
+	 Visits the return statement in the Nutt language.
+	 @param ctx the return statement context
+	 @return the Nutt reference of the evaluated expression
+	 */
 	@Override
-	public NuttReference visitYield_stat(Yield_statContext ctx)
+	public NuttReference visitReturn_stat(Return_statContext ctx)
 	{
-		throw new NuttSuccessReturnException(VisitorPool.evalVisitor.visit(ctx.function_yield().explist()));
-		//return new NuttFunctionVisitor(interpreter).visitFunction_yield();
+		throw new NuttSuccessReturnException(evalVisitor.visit(ctx.function_return().exp()));
 	}
 
 	@Override
@@ -177,6 +191,11 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 		throw new NuttContinueException();
 	}
 
+	@Override public NuttReference visitMatch_to_stat(Match_to_statContext ctx)
+	{
+		return visitMatch_to(ctx.match_to());
+	}
+
 	@Override
 	public NuttReference visitGroup_assignment(Group_assignmentContext ctx)
 	{
@@ -186,23 +205,20 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitComposed_assign(Composed_assignContext ctx)
 	{
-		var variableName=ctx.NAME().getText();
-		var operator=NuttEnvironment.toSourceCode(ctx.operator_composed().composed_assign_op().operator_infix());
-		Supplier<java.lang.String> normalize=()->"%s=%s%s%s".formatted(
-				variableName,variableName,operator,NuttEnvironment.toSourceCode(ctx.operator_composed().exp()));
-		return visitGroup_assignment(getTempParser(normalize.get()).group_assignment());
-	}
-
-	@Override
-	public NuttReference visitSelf_assign(Self_assignContext ctx)
-	{
-		var variableName=ctx.NAME().getText();
-		var firstOp=NuttEnvironment.toSourceCode(ctx.operator_postfix().operator_math(0));
-		var secondOp=NuttEnvironment.toSourceCode(ctx.operator_postfix().operator_math(1));
-		var postfixOperator=firstOp+secondOp;
-		var stepIsOne=postfixOperator.equals("++")||postfixOperator.equals("--");
-		var normalize="%s=%s%s%s".formatted(variableName,variableName,firstOp,stepIsOne?"1":variableName);
-		return visitGroup_assignment(getTempParser(normalize).group_assignment());
+		NuttReference reciever=evalVisitor.visit(ctx.exp()), value=evalVisitor.visit(ctx.operator_composed().exp());
+		return reciever.setValue
+				               (
+						               reciever.getType()
+						                       .getOperator
+								                       (
+										                       NuttEnvironment.toSourceCode(ctx.operator_composed()
+										                                                       .composed_assign_op()
+										                                                       .operator_infix())
+								                       )
+						                       .getValueAs(Procedure.class)
+						                       .proceed(List.of(reciever,value))
+						                       .getValue()
+				               );
 	}
 
 	@Override
@@ -225,58 +241,50 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitFor_each_loop(For_each_loopContext ctx)
 	{
-		var elementName=new String(ctx.val.getText());
-		var bDirectionIsForward=ctx.op_direction().OP_Forward()!=null;
-		var expList=bDirectionIsForward?ctx.explist().exp():Lists.reverse(ctx.explist().exp());
-		var evaluator=VisitorPool.evalVisitor;
-		NuttReference lastValue;
-		var block=getTempParser("do %s done".formatted(NuttEnvironment.toSourceCode(ctx.stat()))).block();
-		if(expList.size()==1)
+		return new ForEachLoop(ctx.exp(),ctx.stat(),ctx.ind.getText(),ctx.val.getText(),ctx.op_direction().OP_Forward()!=null).run();
+	}
+
+	private NuttReference forEachOnIListable(IListable listable,java.lang.String indexName,java.lang.String variableName,BlockContext ctx)
+	{
+		var commonExpType=TypeInferencer.getCommonIValuableWrapperType(listable.getElements());
+		Var_declContext varDecl=getTempParser("var %s:%s%n".formatted(variableName,commonExpType)).var_decl();
+		VisitorPool.declarationVisitor.visit(varDecl);
+		boolean useIndex=!Objects.equals(indexName,"_");
+		if(useIndex)
 		{
-			var exp=evaluator.visit(expList.get(0));
-			//			if(!TypeInferencer.findTypeReference("Listable").getType().hasChild(exp.getType()))
-			//				throw new RuntimeException("Cannot iterate over "+exp.getType());
-			//			var listable=exp.getValue().asFunctional().asListable();
-			var listable=exp.getValue().spread();
-			lastValue=forEachOnIListable
-					(
-							bDirectionIsForward
-							?listable
-							:listable.setElements(Lists.reverse(listable.getElements())),
-							elementName,
-							block
-					);
+			Var_declContext indDecl=getTempParser("var %s:Int%n".formatted(indexName)).var_decl();
+			VisitorPool.declarationVisitor.visit(indDecl);
 		}
-		else lastValue=forEachOnExpList(expList,elementName,block,evaluator);
-		NuttInterpreter.currentScope.forgetReference(elementName.toString());
-		return lastValue;
+		NuttReference lastReference=NilReference.getInstance();
+		int i=0;
+		for(var element: listable)
+		{
+			if(useIndex)
+			{
+				NuttInterpreter.currentScope.setReference(indexName,new Int(i++));
+				System.out.println(NuttInterpreter.getReference(indexName).getValue());
+			}
+			lastReference=NuttInterpreter.currentScope.setReference(variableName,element.getValue());
+			try
+			{
+				NuttInterpreter.executeBlockAsScope(()->visitBlock(ctx));
+			}
+			catch(NuttContinueException e)
+			{
+				continue;
+			}
+			catch(NuttBreakException e)
+			{
+				break;
+			}
+		}
+		return lastReference;
 	}
 
 	@Override
 	public NuttReference visitWhile_do_loop(While_do_loopContext ctx)
 	{
-		var conditionVisitor=VisitorPool.conditionVisitor;
-		var whileBlock=NuttEnvironment.parseWithBound("do ",ctx.stat()," done").block();
-		whileLoop:
-		while(conditionVisitor.visitExplist(ctx.explist()).getValue().simpleCast(Boolean.class).isTrue())
-		{
-			for(var stat: whileBlock.children)
-			{
-				try
-				{
-					visit(stat);
-				}
-				catch(NuttBreakException e)
-				{
-					break whileLoop;
-				}
-				catch(NuttContinueException e)
-				{
-					continue whileLoop;
-				}
-			}
-		}
-		return new String().toAnonymousReference();
+		return new WhileDoLoop(ctx.exp(),ctx.stat()).run();
 	}
 
 	@Override
@@ -307,7 +315,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	@Override
 	public NuttReference visitDemand(DemandContext ctx)
 	{
-		if(!VisitorPool.conditionVisitor.visitDemand(ctx).getValue().simpleCast(Boolean.class).isTrue())
+		if(!VisitorPool.conditionVisitor.visitDemand(ctx).getValueAs(Boolean.class).isTrue())
 			throw new RuntimeException("Fail on demand: "+NuttEnvironment.toSourceCode(ctx.exp()));
 		return NilReference.getInstance();
 	}
@@ -335,36 +343,6 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 		{
 			return e.getReference();
 		}
-	}
-
-	private NuttReference forEachOnIListable(IListable listable,String variableName,BlockContext ctx)
-	{
-		var commonExpType=TypeInferencer.getCommonIValuableWrapperType(listable.getElements());
-		var varDecl=getTempParser("var %s:%s%n".formatted(variableName,commonExpType)).var_decl();
-		VisitorPool.declarationVisitor.visit(varDecl);
-		IValuable lastValue=new Nil();
-		for(var element: listable)
-		{
-			lastValue=NuttInterpreter.currentScope.setReference(variableName.getValue(),element.getValue()).getValue();
-			try
-			{
-				NuttInterpreter.executeBlockAsScope(()->visitBlock(ctx));
-			}
-			catch(NuttContinueException e)
-			{
-				continue;
-			}
-			catch(NuttBreakException e)
-			{
-				break;
-			}
-		}
-		return lastValue.toAnonymousReference();
-	}
-
-	@Override public NuttReference visitMatch_to_stat(Match_to_statContext ctx)
-	{
-		return visitMatch_to(ctx.match_to());
 	}
 
 	@Override public NuttReference visitMatch_to(Match_toContext ctx)
@@ -403,20 +381,7 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 	//		return super.visitLoopStatement(ctx);
 	//	}
 
-	private NuttReference forEachOnExpList(List<ExpContext> expList,String variableName,BlockContext block,NuttEvalVisitor evaluator)
-	{
-		var iteratorDecl="var %s:%s%n".formatted(variableName,TypeInferencer.getTypeTreeRoot());
-		VisitorPool.declarationVisitor.visit(getTempParser(iteratorDecl).var_decl());
-		List<NuttReference> valueList=new ArrayList<>();
-		for(var exp: expList)
-		{
-			valueList.add(NuttInterpreter.currentScope.setReference(variableName.getValue(),evaluator.visit(exp).getValue()));
-			NuttInterpreter.executeBlockAsScope(()->visitBlock(block));
-		}
-		return new Array(valueList).toAnonymousReference();
-	}
-
-	public NuttReference tryYield(BlockContext functionBody,Type expectedType)
+	public NuttReference tryReturn(BlockContext functionBody,Type expectedType)
 	{
 		try
 		{
@@ -424,10 +389,10 @@ public class NuttStatementVisitor extends NuttGenericVisitor
 		}
 		catch(NuttSuccessReturnException e)
 		{
-			var yieldedType=e.getReference().getType();
-			if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(expectedType),TypeInferencer.findTypeReference(yieldedType)))
-				throw new RuntimeException("Yielded %s, expected %s".formatted(expectedType,yieldedType));
-			NuttInterpreter.forget("yield");
+			var returnedType=e.getReference().getType();
+			if(!TypeInferencer.verdict(TypeInferencer.findTypeReference(expectedType),TypeInferencer.findTypeReference(returnedType)))
+				throw new RuntimeException("Returned %s, expected %s".formatted(expectedType,returnedType));
+			NuttInterpreter.forget("return");
 			return e.getReference();
 		}
 		return NilReference.getInstance();

@@ -7,12 +7,12 @@ public abstract class NativeProcedure extends Procedure
 {
 	public NativeProcedure(String name,Signature signature)
 	{
-		super(name,signature,null,null);
+		super(name,signature,null);
 	}
 
 	@Override public String toString()
 	{
-		return "funct %s%s=return".formatted(name,signature);
+		return "funct %s%s=end".formatted(name,signature);
 	}
 
 	@Override public Procedure replicate()

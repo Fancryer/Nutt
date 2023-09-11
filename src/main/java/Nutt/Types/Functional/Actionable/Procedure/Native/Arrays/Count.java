@@ -22,18 +22,16 @@ public class Count extends NativeProcedure
 
 	@Override public NuttReference proceed(List<NuttReference> argumentList) throws NuttSuccessReturnException
 	{
-		var list=argumentList.get(0).getValue().simpleCast(IListable.class);
+		var list=argumentList.get(0).getValueAs(IListable.class);
 		var seeking=argumentList.get(1);
 		var count=list.stream()
 		              .filter
 				              (
 						              el->el.getType()
 						                    .getOperator("===")
-						                    .getValue()
-						                    .simpleCast(Procedure.class)
+						                    .getValueAs(Procedure.class)
 						                    .proceed(List.of(el,seeking))
-						                    .getValue()
-						                    .simpleCast(Boolean.class)
+						                    .getValueAs(Boolean.class)
 						                    .isTrue()
 				              )
 		              .count();

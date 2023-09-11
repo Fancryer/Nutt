@@ -1,14 +1,11 @@
 package Nutt.Types.Functional.Actionable.Procedure;
 
-import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttEnvironment;
-import Nutt.TypeInferencer;
 
 public class LambdaBuilder
 {
 	private Signature signature;
 	private String lambdaExp;
-	private NuttReference output=TypeInferencer.findTypeReference("Nil");
 
 	public LambdaBuilder setSignature(Signature signature)
 	{
@@ -19,12 +16,6 @@ public class LambdaBuilder
 	public LambdaBuilder setFunctionBody(String expContext)
 	{
 		this.lambdaExp=expContext;
-		return this;
-	}
-
-	public LambdaBuilder setOutput(NuttReference output)
-	{
-		this.output=output;
 		return this;
 	}
 
@@ -39,8 +30,7 @@ public class LambdaBuilder
 				(
 						name,
 						signature,
-						NuttEnvironment.getTempParser("yield "+lambdaExp).block(),
-						output
+						NuttEnvironment.getTempParser("return "+lambdaExp).block()
 				);
 	}
 }

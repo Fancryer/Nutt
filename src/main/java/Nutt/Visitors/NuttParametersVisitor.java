@@ -2,14 +2,12 @@ package Nutt.Visitors;
 
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.NuttEnvironment;
-import gen.Nutt.Var_declContext;
-import gen.Nutt.Var_signature_listContext;
 
 import java.util.List;
 
 import static Nutt.Interpreter.NuttInterpreter.getReference;
 import static Nutt.Visitors.VisitorPool.declarationVisitor;
-import static gen.Nutt.Vararg_or_signatureContext;
+import static gen.NuttParser.*;
 
 public class NuttParametersVisitor extends NuttGenericVisitor
 {

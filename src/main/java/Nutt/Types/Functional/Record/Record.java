@@ -92,7 +92,7 @@ public class Record implements IFunctional
 	@Override
 	public Type getType()
 	{
-		return TypeInferencer.findTypeReference(name).getType();
+		return TypeInferencer.findTypeReference(name).getValueAs(Type.class);
 	}
 
 	@Override public Record replicate()
@@ -100,7 +100,8 @@ public class Record implements IFunctional
 		return new Record(this.name,this.rows);
 	}
 
-	@Override public String toSerializedString()
+	@Override
+	public String toSerializedString()
 	{
 		return toString();
 	}
@@ -111,7 +112,8 @@ public class Record implements IFunctional
 		return null;
 	}
 
-	@Override public NuttReference getProperty(String name)
+	@Override
+	public NuttReference getProperty(String name)
 	{
 		return rows.stream()
 		           .filter(row->row.name().equals(name))
@@ -120,13 +122,15 @@ public class Record implements IFunctional
 		           .orElseThrow(RuntimeException::new);
 	}
 
-	@Override public String toString()
+	@Override
+	public String toString()
 	{
 		return "{%s}".formatted(rows.stream().map(Row::toString).collect(Collectors.joining(",")));
 	}
 
 	//TODO
-	@Override public Array spread()
+	@Override
+	public Array toArray()
 	{
 		return null;
 	}

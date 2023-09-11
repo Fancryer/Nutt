@@ -16,9 +16,10 @@ public class Mutable<T> implements IReplicable<Mutable<T>>
 		return value;
 	}
 
-	public void set(T value)
+	public T set(T value)
 	{
 		this.value=value;
+		return value;
 	}
 
 	@Override public Mutable<T> replicate()

@@ -9,78 +9,81 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static Nutt.NuttEnvironment.nuttLogger;
 
 @Getter
 public class ReferenceContainer
 {
-	private final List<NuttReference> references;
+	private final Map<String,NuttReference> references;
 
 	public ReferenceContainer()
 	{
-		references=new ArrayList<>();
+		references=new ConcurrentHashMap<>();
 	}
 
 	public ReferenceContainer(List<NuttReference> references)
 	{
-		this.references=references;
+		this.references=new ConcurrentHashMap<>();
+		for(NuttReference reference: references)
+		{
+			this.references.put(reference.getName(),reference);
+		}
 	}
 
-	public NuttReference get(int index)
-	{
-		return references.get(index);
-	}
-
-	//Returns previous reference
 	public NuttReference remove(String name)
 	{
-		var reference=get(name);
-		references.remove(reference);
+		NuttReference reference=references.remove(name);
+		if(reference!=null)
+		{
+			nuttLogger.appendLog(
+					"Removed variable",
+					reference.toString(),
+					EActionStatus.Success,
+					ESeverity.Info
+			                    );
+		}
 		return reference;
 	}
 
 	public NuttReference get(String name)
 	{
-		return references.stream()
-		                 .filter(reference->reference.getName().equals(name))
-		                 .findFirst()
-		                 .orElse(null);
+		return references.get(name);
 	}
 
-	public NuttReference remove(int index)
+	public List<Map.Entry<String,NuttReference>> entrySet()
 	{
-		return references.remove(index);
-	}
-
-	public Set<Map.Entry<String,NuttReference>> entrySet()
-	{
-		return references.stream()
-		                 .collect(java.util.stream.Collectors.toMap(NuttReference::getName,reference->reference))
-		                 .entrySet();
+		return new ArrayList<>(references.entrySet());
 	}
 
 	public ReferenceContainer put(NuttReference reference)
 	{
 		nuttLogger.appendLog("Reference adding start",reference.toString());
-		references.add(reference);
-		nuttLogger.appendLog("Reference adding finish",
-		                     reference.toString(),
-		                     EActionStatus.Success,
-		                     ESeverity.Info);
+		references.put(reference.getName(),reference);
+		nuttLogger.appendLog(
+				"Reference adding finish",
+				reference.toString(),
+				EActionStatus.Success,
+				ESeverity.Info
+		                    );
 		return this;
 	}
 
 	public NuttReference get(IValuable valuable)
 	{
-		return references.stream()
-		                 .filter(reference->reference.getValue().equals(valuable))
-		                 .findFirst()
-		                 .orElseThrow();
+		for(NuttReference reference: references.values())
+		{
+			if(reference.getValue().equals(valuable))
+			{
+				return reference;
+			}
+		}
+		throw new RuntimeException("Reference not found");
 	}
 
-	@Override public String toString()
+	@Override
+	public String toString()
 	{
 		return references.toString();
 	}

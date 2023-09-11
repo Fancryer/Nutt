@@ -1,9 +1,10 @@
 package Nutt.Interpreter.Logging;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -48,12 +49,20 @@ public class NuttLogger
 						                                                  .replace(":",""),
 						                                    extension
 				                                    );
-		var logFile=new File(Path.of(logFilePath).toUri());
-		if(!logFile.getParentFile().mkdirs()) return logFilePath;
-		try(var writer=new FileWriter(logFile,true))
+		try
 		{
-			writer.write(logStamps.stream().map(LogStamp::serialize).toList().toString());
-			return logFilePath;
+			Path logFile=Paths.get(logFilePath);
+			if(!Files.exists(logFile))
+			{
+				Files.createDirectories(logFile.getParent());
+				Files.createFile(logFile);
+			}
+
+			try(FileWriter writer=new FileWriter(logFile.toFile(),true))
+			{
+				writer.write(logStamps.stream().map(LogStamp::serialize).toList().toString());
+				return logFilePath;
+			}
 		}
 		catch(IOException e)
 		{

@@ -3,8 +3,6 @@ package Nutt.Visitors;
 import Nutt.Interpreter.References.NuttReference;
 import Nutt.TypeInferencer;
 import Nutt.Types.Functional.Listable.Array.Array;
-import gen.Nutt;
-import gen.Nutt.Array_elementContext;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,10 +10,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static Nutt.Visitors.VisitorPool.evalVisitor;
+import static gen.NuttParser.Array_elementContext;
+import static gen.NuttParser.Array_initializer_expContext;
 
 public class NuttArrayVisitor extends NuttGenericVisitor
 {
-	@Override public NuttReference visitArray_initializer_exp(Nutt.Array_initializer_expContext ctx)
+	@Override public NuttReference visitArray_initializer_exp(Array_initializer_expContext ctx)
 	{
 		var elementContexts=ctx
 				.array_initializer()
@@ -34,7 +34,7 @@ public class NuttArrayVisitor extends NuttGenericVisitor
 		NuttReference exp=evalVisitor.visit(ctx.exp());
 		return ctx.OP_Pass()!=null
 		       ?exp.getValue()
-		           .spread()
+		           .toArray()
 		           .getElements()
 		       :List.of(exp);
 	}
